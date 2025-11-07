@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  PUBLIC
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken  String   @unique
+  userId        String
+  expires       DateTime
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(PUBLIC)
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Categoria {
+  id          String    @id @default(cuid())
+  nombre      String    @unique
+  slug        String    @unique
+  descripcion String?
+  imagen      String?
+  perfumes    Perfume[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Marca {
+  id          String    @id @default(cuid())
+  nombre      String    @unique
+  slug        String    @unique
+  descripcion String?
+  logo        String?
+  pais        String?
+  perfumes    Perfume[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Perfume {
+  id              String     @id @default(cuid())
+  nombre          String
+  slug            String     @unique
+  descripcion     String     @db.Text
+  precio          Float
+  precioDescuento Float?
+  imagenPrincipal String
+  imagenes        String[]   // Array de URLs de Cloudinary
+  stock           Int        @default(0)
+  destacado       Boolean    @default(false)
+  activo          Boolean    @default(true)
+  
+  // Relaciones
+  categoriaId     String
+  categoria       Categoria  @relation(fields: [categoriaId], references: [id])
+  marcaId         String
+  marca           Marca      @relation(fields: [marcaId], references: [id])
+  
+  // Características
+  genero          String?    // Masculino, Femenino, Unisex
+  volumen         String?    // 50ml, 100ml, etc.
+  notas           String[]   // Notas olfativas
+  
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([categoriaId])
+  @@index([marcaId])
+  @@index([slug])
+  @@index([activo, destacado])
+}
