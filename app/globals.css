@@ -57,6 +57,22 @@
   }
 }
 
+/* Degradado difuso de fondo */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40rem 40rem at 10% 15%, rgba(255, 204, 128, 0.35), transparent 60%),
+    radial-gradient(45rem 45rem at 90% 20%, rgba(255, 128, 171, 0.30), transparent 60%),
+    radial-gradient(42rem 42rem at 20% 85%, rgba(99, 102, 241, 0.30), transparent 60%),
+    radial-gradient(48rem 48rem at 80% 80%, rgba(16, 185, 129, 0.25), transparent 60%);
+  filter: blur(20px);
+  opacity: 0.9;
+}
+
 /* Header Styles */
 .header-container {
   position: sticky;
