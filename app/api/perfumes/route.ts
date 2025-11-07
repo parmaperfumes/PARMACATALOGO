@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+export async function GET() {
+	if (!process.env.DATABASE_URL) {
+		return NextResponse.json([])
+	}
+	try {
+		const perfumes = await prisma.perfume.findMany({
+			orderBy: { createdAt: "desc" },
+		})
+		return NextResponse.json(perfumes)
+	} catch (e: any) {
+		return new NextResponse(e?.message || "Error al listar", { status: 500 })
+	}
+}
+
 export async function POST(req: NextRequest) {
 	const data = await req.json()
 
