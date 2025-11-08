@@ -35,8 +35,8 @@ export default function LoginPage() {
 				</div>
 				<form onSubmit={onSubmit} className="bg-card p-6 rounded-lg border space-y-4">
 					<div>
-						<label className="block text-sm font-medium">Email</label>
-						<Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+						<label className="block text-sm font-medium">Email o Usuario</label>
+						<Input type="text" value={email} onChange={(e) => setEmail(e.target.value)} required />
 					</div>
 					<div>
 						<label className="block text-sm font-medium">Contraseña</label>

@@ -1,25 +1,29 @@
 import { NextAuthOptions } from "next-auth"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import EmailProvider from "next-auth/providers/email"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 
 const hasDB = !!process.env.DATABASE_URL
+
+// Función para obtener Prisma de forma segura
 const getPrisma = async () => {
 	if (!hasDB) return undefined
 	try {
-		return (await import("@/lib/prisma")).prisma
-	} catch {
-		// prisma client no generado; tratar como si no hubiera DB
+		const prismaModule = await import("@/lib/prisma")
+		return prismaModule.prisma
+	} catch (error) {
+		console.warn("Prisma no disponible:", error)
 		return undefined
 	}
 }
 
 type AppRole = "ADMIN" | "EDITOR" | "PUBLIC"
 
+// No configurar adapter en el nivel superior para evitar errores
+// Se configurará dinámicamente si es necesario
+
 export const authOptions: NextAuthOptions = {
-  adapter: undefined,
+  adapter: undefined, // No usar adapter si no hay DB configurada
   trustHost: true,
   providers: [
     CredentialsProvider({
@@ -41,26 +45,32 @@ export const authOptions: NextAuthOptions = {
           } catch {}
         }
 
-        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase()
-        const adminPass = process.env.ADMIN_PASSWORD
-        const adminHash = process.env.ADMIN_PASSWORD_HASH
-        if (adminEmail && (adminPass || adminHash)) {
-          const passOk = adminHash ? await bcrypt.compare(password, adminHash) : password === adminPass
-          if (email === adminEmail && passOk) {
+        // Autenticación con variables de entorno (para desarrollo sin DB)
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase()?.trim()
+        const adminPass = process.env.ADMIN_PASSWORD?.trim()
+        const adminHash = process.env.ADMIN_PASSWORD_HASH?.trim()
+        
+        if (adminEmail && email === adminEmail) {
+          if (adminHash) {
+            // Si hay hash, comparar con bcrypt
+            try {
+              const passOk = await bcrypt.compare(password, adminHash)
+              if (passOk) {
+                return { id: "admin", name: "Admin", email: adminEmail, role: "ADMIN" as AppRole }
+              }
+            } catch (error) {
+              console.error("Error comparando hash:", error)
+            }
+          } else if (adminPass && password === adminPass) {
+            // Si no hay hash, comparar directamente
             return { id: "admin", name: "Admin", email: adminEmail, role: "ADMIN" as AppRole }
           }
         }
         return null
       },
     }),
-    ...(process.env.SMTP_HOST && process.env.SMTP_PORT
-      ? [
-          EmailProvider({
-            server: { host: process.env.SMTP_HOST, port: Number(process.env.SMTP_PORT), auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } },
-            from: process.env.SMTP_FROM,
-          }),
-        ]
-      : []),
+    // EmailProvider requiere adapter, así que solo si hay DB configurada
+    // (No incluirlo si no hay DB para evitar errores)
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [
           GoogleProvider({ clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET }),
@@ -94,5 +104,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: { signIn: '/login' },
   session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET,
 }
 
