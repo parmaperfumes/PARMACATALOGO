@@ -39,32 +39,51 @@ export default function EditPerfumePage() {
 
 	useEffect(() => {
 		async function load() {
-			const res = await fetch(`/api/perfumes/${params.id}`)
-			if (!res.ok) {
-				alert("No se pudo cargar el perfume (¿tienes DB configurada?)")
-				return
-			}
-			const p = await res.json()
+			try {
+				const res = await fetch(`/api/perfumes/${params.id}`)
+				if (!res.ok) {
+					const errorText = await res.text()
+					console.error("Error al cargar perfume:", res.status, errorText)
+					let errorMessage = "No se pudo cargar el perfume"
+					if (res.status === 501 || errorText.includes("DB no configurada") || errorText.includes("DATABASE_URL")) {
+						errorMessage = `Error de configuración (${res.status}): ${errorText}\n\nPor favor, verifica:\n1. Que DATABASE_URL esté en .env.local\n2. Que el servidor se haya reiniciado después de agregar la variable\n3. Abre http://localhost:3001/api/test-db para verificar la conexión`
+					} else if (res.status === 404 || errorText.includes("No encontrado") || errorText.includes("404")) {
+						errorMessage = "Perfume no encontrado"
+					} else if (errorText.includes("Can't reach") || errorText.includes("connection")) {
+						errorMessage = "No se puede conectar a la base de datos. Verifica que el proyecto de Supabase esté activo (no pausado)."
+					} else {
+						errorMessage = `Error (${res.status}): ${errorText}`
+					}
+					alert(errorMessage)
+					return
+				}
+				const p = await res.json()
+			// Cargar los tamaños desde la base de datos
+			const sizes = p.sizes || []
 			form.reset({
-				name: p.nombre,
-				slug: p.slug,
-				subtitle: undefined,
+				name: p.nombre || "",
+				slug: p.slug || "",
+				subtitle: p.subtitulo || "",
 				brand: undefined,
 				gender: (p.genero as any) || "HOMBRE",
 				description: p.descripcion || "",
-				price: Number(p.precio),
+				price: Number(p.precio) || 0,
 				discountPrice: p.precioDescuento || undefined,
-				mainImage: p.imagenPrincipal,
+				mainImage: p.imagenPrincipal || "",
 				gallery: (p.imagenes || []).slice(1).join(", "),
 				stock: p.stock || 0,
 				highlight: !!p.destacado,
 				active: !!p.activo,
 				volumen: p.volumen || "",
 				notas: (p.notas || []).join(", "),
-				size30: true,
-				size50: true,
-				size100: true,
+				size30: sizes.includes(30),
+				size50: sizes.includes(50),
+				size100: sizes.includes(100),
 			})
+			} catch (error: any) {
+				console.error("Error al cargar perfume:", error)
+				alert(`Error al cargar el perfume: ${error.message || "Error desconocido"}`)
+			}
 		}
 		load()
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,7 +96,7 @@ export default function EditPerfumePage() {
 		return {
 			id: v.slug || "edit",
 			name: (v.name || "").toUpperCase(),
-			subtitle: v.subtitle || "EAU DE PARFUM",
+			subtitle: v.subtitle || undefined, // Si está vacío (NADA), no mostrar subtítulo
 			brand: v.brand || "Parma",
 			gender: v.gender,
 			images: images.length ? images : [v.mainImage],
@@ -98,8 +117,10 @@ export default function EditPerfumePage() {
 			destacado: !!data.highlight,
 			activo: !!data.active,
 			genero: data.gender,
+			subtitulo: data.subtitle || null, // Guardar el subtítulo
 			volumen: data.volumen,
 			notas: data.notas ? data.notas.split(",").map((s) => s.trim()) : [],
+			sizes: [data.size30 && 30, data.size50 && 50, data.size100 && 100].filter(Boolean),
 		}
 		const res = await fetch(`/api/perfumes/${params.id}`, {
 			method: "PUT",
@@ -118,8 +139,13 @@ export default function EditPerfumePage() {
 				<Input {...form.register("name")} />
 				<label className="block text-sm font-medium">Slug</label>
 				<Input {...form.register("slug")} />
-				<label className="block text-sm font-medium">Subtítulo</label>
-				<Input {...form.register("subtitle")} />
+				<label className="block text-sm font-medium">Subtítulo/Tipo</label>
+				<select className="border rounded-md h-10 px-3 w-full" {...form.register("subtitle")}>
+					<option value="">NADA</option>
+					<option value="EAU DE PARFUM">EAU DE PARFUM</option>
+					<option value="EAU DE TOILETTE">EAU DE TOILETTE</option>
+					<option value="EAU DE COLOGNE">EAU DE COLOGNE</option>
+				</select>
 				<label className="block text-sm font-medium">Marca</label>
 				<Input {...form.register("brand")} />
 				<label className="block text-sm font-medium">Género</label>
