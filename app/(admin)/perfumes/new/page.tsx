@@ -15,8 +15,6 @@ const perfumeSchema = z.object({
 	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]).default("HOMBRE"),
 	price: z.coerce.number().positive("El precio debe ser mayor a 0"),
 	mainImage: z.string().url("URL de imagen válida requerida"),
-	secondaryImage: z.string().url().optional().or(z.literal("")), // Imagen secundaria (segunda botella)
-	gallery: z.string().optional(), // comma separated URLs
 	stock: z.coerce.number().int().nonnegative().default(0),
 	highlight: z.boolean().optional(),
 	active: z.boolean().default(true),
@@ -42,8 +40,6 @@ export default function AdminNewPerfumePage() {
 			price: 99.9,
 			mainImage:
 				"https://images.unsplash.com/photo-1530639832026-05bafb67fb58?q=80&w=800&auto=format&fit=crop",
-			secondaryImage:
-				"https://images.unsplash.com/photo-1558862109-d63b5a6c4f3f?q=80&w=800&auto=format&fit=crop",
 			stock: 0,
 			highlight: false,
 			active: true,
@@ -61,11 +57,7 @@ export default function AdminNewPerfumePage() {
 			values.size100 ? 100 : undefined,
 		].filter(Boolean) as Product["sizes"]
 
-		const images = [
-			values.mainImage,
-			...(values.secondaryImage ? [values.secondaryImage] : []),
-			...(values.gallery ? values.gallery.split(",").map(s => s.trim()) : []),
-		].filter(Boolean) as string[]
+		const images = [values.mainImage].filter(Boolean) as string[]
 
 		// Generar slug automáticamente desde el nombre
 		const slug = values.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
@@ -90,11 +82,7 @@ export default function AdminNewPerfumePage() {
 			slug: slug,
 			precio: data.price,
 			imagenPrincipal: data.mainImage,
-			imagenes: [
-				data.mainImage,
-				...(data.secondaryImage ? [data.secondaryImage] : []),
-				...(data.gallery ? data.gallery.split(",").map(s => s.trim()) : []),
-			],
+			imagenes: [data.mainImage],
 			stock: data.stock,
 			destacado: !!data.highlight,
 			activo: !!data.active,
@@ -171,24 +159,14 @@ export default function AdminNewPerfumePage() {
 
 				{/* Imágenes */}
 				<div className="space-y-4 border-b pb-6">
-					<h2 className="text-lg font-semibold">Imágenes</h2>
+					<h2 className="text-lg font-semibold">Imagen</h2>
 					
 					<div>
-						<label className="block text-sm font-medium mb-1">Imagen Principal (Botella 1) *</label>
+						<label className="block text-sm font-medium mb-1">URL de la Imagen *</label>
 						<Input {...form.register("mainImage")} placeholder="URL de la imagen" />
 						{form.formState.errors.mainImage && (
 							<p className="text-xs text-red-500 mt-1">{form.formState.errors.mainImage.message}</p>
 						)}
-					</div>
-
-					<div>
-						<label className="block text-sm font-medium mb-1">Imagen Secundaria (Botella 2)</label>
-						<Input {...form.register("secondaryImage")} placeholder="URL de la segunda botella" />
-					</div>
-
-					<div>
-						<label className="block text-sm font-medium mb-1">Galería Adicional</label>
-						<Input {...form.register("gallery")} placeholder="URLs separadas por coma" />
 					</div>
 				</div>
 
