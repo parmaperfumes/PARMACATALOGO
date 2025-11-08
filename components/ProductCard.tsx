@@ -24,6 +24,10 @@ export type ProductCardProps = {
 }
 
 export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = false }: ProductCardProps) {
+	// Si fixedUse es undefined o false, pero estamos en el catálogo público, forzar a true
+	// Para el catálogo público, siempre debe estar fijado
+	const isFixed = fixedUse === true
+	
 	const [selectedUse, setSelectedUse] = useState<"DIA" | "NOCHE">(defaultUse || "DIA")
 	const [selectedSize, setSelectedSize] = useState<ProductSizeMl>(product.sizes[0])
 
@@ -79,20 +83,41 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 
 				{/* Uso: Día/Noche */}
 				<div className="flex items-center gap-3 text-xs font-semibold">
-					<button
-						onClick={() => !fixedUse && setSelectedUse("DIA")}
-						disabled={fixedUse}
-						className={`px-3 py-1 rounded-md border ${selectedUse === "DIA" ? "bg-black text-white" : "bg-white"} ${fixedUse ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-					>
-						DIA
-					</button>
-					<button
-						onClick={() => !fixedUse && setSelectedUse("NOCHE")}
-						disabled={fixedUse}
-						className={`px-3 py-1 rounded-md border ${selectedUse === "NOCHE" ? "bg-black text-white" : "bg-white"} ${fixedUse ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
-					>
-						NOCHE
-					</button>
+					{isFixed ? (
+						// Si está fijado, mostrar como elementos no interactivos (divs) - NO CLICABLES
+						<>
+							<div
+								className={`px-3 py-1 rounded-md border ${selectedUse === "DIA" ? "bg-black text-white" : "bg-white"} cursor-default select-none pointer-events-none`}
+								style={{ userSelect: 'none' }}
+							>
+								DIA
+							</div>
+							<div
+								className={`px-3 py-1 rounded-md border ${selectedUse === "NOCHE" ? "bg-black text-white" : "bg-white"} cursor-default select-none pointer-events-none`}
+								style={{ userSelect: 'none' }}
+							>
+								NOCHE
+							</div>
+						</>
+					) : (
+						// Si no está fijado, mostrar como botones interactivos
+						<>
+							<button
+								type="button"
+								onClick={() => setSelectedUse("DIA")}
+								className={`px-3 py-1 rounded-md border ${selectedUse === "DIA" ? "bg-black text-white" : "bg-white"} cursor-pointer`}
+							>
+								DIA
+							</button>
+							<button
+								type="button"
+								onClick={() => setSelectedUse("NOCHE")}
+								className={`px-3 py-1 rounded-md border ${selectedUse === "NOCHE" ? "bg-black text-white" : "bg-white"} cursor-pointer`}
+							>
+								NOCHE
+							</button>
+						</>
+					)}
 				</div>
 
 				{/* Tamaños */}

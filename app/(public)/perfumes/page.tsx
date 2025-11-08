@@ -12,10 +12,13 @@ type PerfumeFromDB = {
 	imagenes: string[]
 	sizes: number[]
 	activo: boolean
+	usoPorDefecto?: string | null
+	fijarUso?: boolean
 }
 
 export default function PerfumesPage() {
 	const [perfumes, setPerfumes] = useState<Product[]>([])
+	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
@@ -24,6 +27,7 @@ export default function PerfumesPage() {
 				const res = await fetch("/api/perfumes")
 				if (res.ok) {
 					const data: PerfumeFromDB[] = await res.json()
+					setPerfumesData(data) // Guardar los datos originales
 					// Convertir los perfumes de la BD al formato Product
 					const converted: Product[] = data.map((p) => ({
 						id: p.id,
@@ -65,11 +69,17 @@ export default function PerfumesPage() {
 				</div>
 			) : (
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-					{perfumes.map((perfume) => (
-						<div key={perfume.id} className="max-w-sm mx-auto w-full">
-							<ProductCard product={perfume} />
-						</div>
-					))}
+					{perfumes.map((perfume, index) => {
+						const perfumeData = perfumesData[index]
+						const defaultUse = (perfumeData?.usoPorDefecto as "DIA" | "NOCHE") || "DIA"
+						// En el catálogo público, SIEMPRE fijar el uso (no permitir cambios)
+						const fixedUse = true
+						return (
+							<div key={perfume.id} className="max-w-sm mx-auto w-full">
+								<ProductCard product={perfume} defaultUse={defaultUse} fixedUse={fixedUse} />
+							</div>
+						)
+					})}
 				</div>
 			)}
 		</div>

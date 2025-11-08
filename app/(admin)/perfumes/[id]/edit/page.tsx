@@ -112,9 +112,8 @@ export default function EditPerfumePage() {
 			subtitulo: data.subtitle || null,
 			volumen: data.volumen,
 			sizes: [data.size30 && 30, data.size50 && 50, data.size100 && 100].filter(Boolean),
+			usoPorDefecto: data.usoPorDefecto || null,
 		}
-		// Solo agregar usoPorDefecto si está definido (no lo guardaremos si la columna no existe)
-		// El backend manejará si la columna existe o no
 		const res = await fetch(`/api/perfumes/${params.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },

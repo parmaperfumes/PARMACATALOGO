@@ -100,7 +100,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 			sizes: data.sizes ?? [],
 		}
 		
-		// Intentar actualizar usando Prisma, pero si falla por campos que no existen, usar SQL raw
+		// Agregar usoPorDefecto si está presente en los datos (ahora que la columna existe)
+		if (data.usoPorDefecto !== undefined) {
+			updateData.usoPorDefecto = data.usoPorDefecto ?? null
+		}
+		if (data.fijarUso !== undefined) {
+			updateData.fijarUso = data.fijarUso ?? false
+		}
+		
+		// Intentar actualizar usando Prisma
 		let perfume
 		try {
 			perfume = await prisma.perfume.update({
@@ -108,61 +116,24 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 				data: updateData,
 			})
 		} catch (e: any) {
-			// Si el error es por columnas que no existen, usar SQL raw
+			// Si el error es por columnas que no existen, usar SQL raw sin usoPorDefecto
 			if (e.message?.includes("column") || e.message?.includes("does not exist") || e.message?.includes("Unknown arg")) {
 				// Construir la consulta SQL manualmente con solo los campos que existen
 				const setParts: string[] = []
 				const values: any[] = []
 				let paramIndex = 1
 				
-				if (updateData.nombre !== undefined) {
-					setParts.push(`nombre = $${paramIndex++}`)
-					values.push(updateData.nombre)
-				}
-				if (updateData.slug !== undefined) {
-					setParts.push(`slug = $${paramIndex++}`)
-					values.push(updateData.slug)
-				}
-				if (updateData.precio !== undefined) {
-					setParts.push(`precio = $${paramIndex++}`)
-					values.push(updateData.precio)
-				}
-				if (updateData.imagenPrincipal !== undefined) {
-					setParts.push(`"imagenPrincipal" = $${paramIndex++}`)
-					values.push(updateData.imagenPrincipal)
-				}
-				if (updateData.imagenes !== undefined) {
-					setParts.push(`imagenes = $${paramIndex++}`)
-					values.push(updateData.imagenes)
-				}
-				if (updateData.stock !== undefined) {
-					setParts.push(`stock = $${paramIndex++}`)
-					values.push(updateData.stock)
-				}
-				if (updateData.destacado !== undefined) {
-					setParts.push(`destacado = $${paramIndex++}`)
-					values.push(updateData.destacado)
-				}
-				if (updateData.activo !== undefined) {
-					setParts.push(`activo = $${paramIndex++}`)
-					values.push(updateData.activo)
-				}
-				if (updateData.genero !== undefined) {
-					setParts.push(`genero = $${paramIndex++}`)
-					values.push(updateData.genero)
-				}
-				if (updateData.subtitulo !== undefined) {
-					setParts.push(`subtitulo = $${paramIndex++}`)
-					values.push(updateData.subtitulo)
-				}
-				if (updateData.volumen !== undefined) {
-					setParts.push(`volumen = $${paramIndex++}`)
-					values.push(updateData.volumen)
-				}
-				if (updateData.sizes !== undefined) {
-					setParts.push(`sizes = $${paramIndex++}`)
-					values.push(updateData.sizes)
-				}
+				// Agregar todos los campos básicos (SIN usoPorDefecto)
+				const basicFields = ['nombre', 'slug', 'precio', 'imagenPrincipal', 'imagenes', 'stock', 'destacado', 'activo', 'genero', 'subtitulo', 'volumen', 'sizes']
+				basicFields.forEach(field => {
+					if (updateData[field] !== undefined) {
+						const fieldName = field === 'imagenPrincipal' ? '"imagenPrincipal"' : field
+						setParts.push(`${fieldName} = $${paramIndex++}`)
+						values.push(updateData[field])
+					}
+				})
+				
+				// NO intentar agregar usoPorDefecto aquí porque sabemos que la columna no existe
 				
 				const idParamIndex = paramIndex
 				values.push(id)
