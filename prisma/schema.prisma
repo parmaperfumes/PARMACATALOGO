@@ -113,6 +113,8 @@ model Perfume {
   volumen         String?    // 50ml, 100ml, etc.
   notas           String[]   // Notas olfativas
   sizes           Int[]      // [30, 50, 100] - Tamaños disponibles
+  usoPorDefecto   String?    // DIA, NOCHE
+  fijarUso        Boolean    @default(false) // Si es true, no se puede cambiar DIA/NOCHE
   
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt

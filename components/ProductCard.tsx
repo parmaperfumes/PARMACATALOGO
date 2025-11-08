@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 
 export type ProductSizeMl = 30 | 50 | 100
@@ -19,11 +19,20 @@ export type ProductCardProps = {
 	product: Product
 	onAdd?: (payload: { productId: string; size: ProductSizeMl; use: "DIA" | "NOCHE" }) => void
 	className?: string
+	defaultUse?: "DIA" | "NOCHE" // Valor fijo para DIA/NOCHE
+	fixedUse?: boolean // Si es true, los botones no se pueden cambiar
 }
 
-export function ProductCard({ product, onAdd, className }: ProductCardProps) {
-	const [selectedUse, setSelectedUse] = useState<"DIA" | "NOCHE">("DIA")
+export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = false }: ProductCardProps) {
+	const [selectedUse, setSelectedUse] = useState<"DIA" | "NOCHE">(defaultUse || "DIA")
 	const [selectedSize, setSelectedSize] = useState<ProductSizeMl>(product.sizes[0])
+
+	// Actualizar selectedUse cuando cambie defaultUse
+	useEffect(() => {
+		if (defaultUse) {
+			setSelectedUse(defaultUse)
+		}
+	}, [defaultUse])
 
 	return (
 		<div className={`rounded-2xl overflow-hidden border bg-white ${className ?? ""}`}>
@@ -71,14 +80,16 @@ export function ProductCard({ product, onAdd, className }: ProductCardProps) {
 				{/* Uso: Día/Noche */}
 				<div className="flex items-center gap-3 text-xs font-semibold">
 					<button
-						onClick={() => setSelectedUse("DIA")}
-						className={`px-3 py-1 rounded-md border ${selectedUse === "DIA" ? "bg-black text-white" : "bg-white"}`}
+						onClick={() => !fixedUse && setSelectedUse("DIA")}
+						disabled={fixedUse}
+						className={`px-3 py-1 rounded-md border ${selectedUse === "DIA" ? "bg-black text-white" : "bg-white"} ${fixedUse ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
 					>
 						DIA
 					</button>
 					<button
-						onClick={() => setSelectedUse("NOCHE")}
-						className={`px-3 py-1 rounded-md border ${selectedUse === "NOCHE" ? "bg-black text-white" : "bg-white"}`}
+						onClick={() => !fixedUse && setSelectedUse("NOCHE")}
+						disabled={fixedUse}
+						className={`px-3 py-1 rounded-md border ${selectedUse === "NOCHE" ? "bg-black text-white" : "bg-white"} ${fixedUse ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
 					>
 						NOCHE
 					</button>

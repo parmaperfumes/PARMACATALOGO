@@ -11,23 +11,18 @@ import { ProductCard, type Product } from "@/components/ProductCard"
 
 const schema = z.object({
 	name: z.string().min(2),
-	slug: z.string().min(2),
 	subtitle: z.string().optional(),
-	brand: z.string().optional(),
 	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]).default("HOMBRE"),
-	description: z.string().optional(),
 	price: z.coerce.number().positive(),
-	discountPrice: z.coerce.number().positive().optional().or(z.literal(0)).transform(v => (v ? v : undefined)),
 	mainImage: z.string().url(),
-	gallery: z.string().optional(),
 	stock: z.coerce.number().int().nonnegative().default(0),
 	highlight: z.boolean().optional(),
 	active: z.boolean().default(true),
 	volumen: z.string().optional(),
-	notas: z.string().optional(),
 	size30: z.boolean().default(true),
 	size50: z.boolean().default(true),
 	size100: z.boolean().default(true),
+	usoPorDefecto: z.enum(["DIA", "NOCHE"]).optional(),
 })
 
 type FormT = z.infer<typeof schema>
@@ -62,23 +57,18 @@ export default function EditPerfumePage() {
 			const sizes = p.sizes || []
 			form.reset({
 				name: p.nombre || "",
-				slug: p.slug || "",
 				subtitle: p.subtitulo || "",
-				brand: undefined,
 				gender: (p.genero as any) || "HOMBRE",
-				description: p.descripcion || "",
 				price: Number(p.precio) || 0,
-				discountPrice: p.precioDescuento || undefined,
 				mainImage: p.imagenPrincipal || "",
-				gallery: (p.imagenes || []).slice(1).join(", "),
 				stock: p.stock || 0,
 				highlight: !!p.destacado,
 				active: !!p.activo,
 				volumen: p.volumen || "",
-				notas: (p.notas || []).join(", "),
 				size30: sizes.includes(30),
 				size50: sizes.includes(50),
 				size100: sizes.includes(100),
+				usoPorDefecto: (p.usoPorDefecto as "DIA" | "NOCHE") || "DIA",
 			})
 			} catch (error: any) {
 				console.error("Error al cargar perfume:", error)
@@ -92,36 +82,39 @@ export default function EditPerfumePage() {
 	const preview: Product = useMemo(() => {
 		const v = form.getValues()
 		const sizes: Product["sizes"] = [v.size30 && 30, v.size50 && 50, v.size100 && 100].filter(Boolean) as any
-		const images = [v.mainImage, ...(v.gallery ? v.gallery.split(",").map((s) => s.trim()) : [])].filter(Boolean) as string[]
 		return {
-			id: v.slug || "edit",
+			id: "edit",
 			name: (v.name || "").toUpperCase(),
 			subtitle: v.subtitle || undefined, // Si está vacío (NADA), no mostrar subtítulo
-			brand: v.brand || "Parma",
+			brand: "Parma",
 			gender: v.gender,
-			images: images.length ? images : [v.mainImage],
+			images: [v.mainImage],
 			sizes: sizes.length ? sizes : [30, 50, 100],
 		}
 	}, [form.watch()])
+	
+	const formValues = form.watch()
+	const defaultUse = formValues.usoPorDefecto || "DIA"
 
 	async function onSubmit(data: FormT) {
-		const payload = {
+		// Obtener el slug del perfume actual para no perderlo
+		const currentPerfume = await fetch(`/api/perfumes/${params.id}`).then(r => r.json()).catch(() => null)
+		const payload: any = {
 			name: data.name,
-			slug: data.slug,
-			description: data.description,
+			slug: currentPerfume?.slug || data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
 			precio: data.price,
-			precioDescuento: data.discountPrice,
 			imagenPrincipal: data.mainImage,
-			imagenes: [data.mainImage, ...(data.gallery ? data.gallery.split(",").map((s) => s.trim()) : [])],
+			imagenes: [data.mainImage],
 			stock: data.stock,
 			destacado: !!data.highlight,
 			activo: !!data.active,
 			genero: data.gender,
-			subtitulo: data.subtitle || null, // Guardar el subtítulo
+			subtitulo: data.subtitle || null,
 			volumen: data.volumen,
-			notas: data.notas ? data.notas.split(",").map((s) => s.trim()) : [],
 			sizes: [data.size30 && 30, data.size50 && 50, data.size100 && 100].filter(Boolean),
 		}
+		// Solo agregar usoPorDefecto si está definido (no lo guardaremos si la columna no existe)
+		// El backend manejará si la columna existe o no
 		const res = await fetch(`/api/perfumes/${params.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
@@ -137,8 +130,6 @@ export default function EditPerfumePage() {
 				<h1 className="text-2xl font-bold">Editar perfume</h1>
 				<label className="block text-sm font-medium">Nombre</label>
 				<Input {...form.register("name")} />
-				<label className="block text-sm font-medium">Slug</label>
-				<Input {...form.register("slug")} />
 				<label className="block text-sm font-medium">Subtítulo/Tipo</label>
 				<select className="border rounded-md h-10 px-3 w-full" {...form.register("subtitle")}>
 					<option value="">NADA</option>
@@ -146,35 +137,19 @@ export default function EditPerfumePage() {
 					<option value="EAU DE TOILETTE">EAU DE TOILETTE</option>
 					<option value="EAU DE COLOGNE">EAU DE COLOGNE</option>
 				</select>
-				<label className="block text-sm font-medium">Marca</label>
-				<Input {...form.register("brand")} />
 				<label className="block text-sm font-medium">Género</label>
 				<select className="border rounded-md h-10 px-3" {...form.register("gender")}>
 					<option value="HOMBRE">HOMBRE</option>
 					<option value="MUJER">MUJER</option>
 					<option value="UNISEX">UNISEX</option>
 				</select>
-				<label className="block text-sm font-medium">Descripción</label>
-				<textarea className="border rounded-md w-full p-2" rows={4} {...form.register("description")} />
-				<div className="grid grid-cols-2 gap-4">
-					<div>
-						<label className="block text-sm font-medium">Precio</label>
-						<Input type="number" step="0.01" {...form.register("price")} />
-					</div>
-					<div>
-						<label className="block text-sm font-medium">Precio descuento</label>
-						<Input type="number" step="0.01" {...form.register("discountPrice")} />
-					</div>
+				<div>
+					<label className="block text-sm font-medium">Precio</label>
+					<Input type="number" step="0.01" {...form.register("price")} />
 				</div>
-				<div className="grid grid-cols-2 gap-4">
-					<div>
-						<label className="block text-sm font-medium">Imagen principal (URL)</label>
-						<Input {...form.register("mainImage")} />
-					</div>
-					<div>
-						<label className="block text-sm font-medium">Galería (URLs separadas por coma)</label>
-						<Input {...form.register("gallery")} />
-					</div>
+				<div>
+					<label className="block text-sm font-medium">Imagen principal (URL)</label>
+					<Input {...form.register("mainImage")} />
 				</div>
 				<div className="grid grid-cols-3 gap-3">
 					<label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("size30")} /> 30 ML</label>
@@ -189,10 +164,14 @@ export default function EditPerfumePage() {
 					<label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" {...form.register("highlight")} /> Destacado</label>
 					<label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" {...form.register("active")} /> Activo</label>
 				</div>
-				<div className="grid grid-cols-2 gap-4">
+				<div className="space-y-4 border-t pt-4">
+					<h3 className="text-sm font-semibold">Configuración de Uso (DIA/NOCHE)</h3>
 					<div>
-						<label className="block text-sm font-medium">Notas (coma)</label>
-						<Input {...form.register("notas")} />
+						<label className="block text-sm font-medium mb-2">Uso por Defecto</label>
+						<select className="border rounded-md h-10 px-3 w-full" {...form.register("usoPorDefecto")}>
+							<option value="DIA">DIA</option>
+							<option value="NOCHE">NOCHE</option>
+						</select>
 					</div>
 				</div>
 				<div className="pt-2"><Button type="submit">Guardar cambios</Button></div>
@@ -200,7 +179,7 @@ export default function EditPerfumePage() {
 			<div>
 				<h2 className="text-sm font-medium mb-2">Vista previa</h2>
 				<div className="max-w-sm mx-auto w-full">
-					<ProductCard product={preview} />
+					<ProductCard product={preview} defaultUse={defaultUse} />
 				</div>
 			</div>
 		</div>

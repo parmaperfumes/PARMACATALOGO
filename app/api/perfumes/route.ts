@@ -6,14 +6,52 @@ export async function GET() {
 		return NextResponse.json([])
 	}
 	try {
-		const perfumes = await prisma.perfume.findMany({
-			where: {
-				activo: true, // Solo mostrar perfumes activos
-			},
-			orderBy: { createdAt: "desc" },
-		})
+		// Usar SQL raw para evitar errores si los campos nuevos no existen
+		let perfumes: any[]
+		try {
+			// Intentar leer con los nuevos campos primero
+			perfumes = await prisma.$queryRaw<Array<any>>`
+				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
+				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
+				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
+				       "usoPorDefecto", "fijarUso"
+				FROM "Perfume"
+				WHERE activo = true
+				ORDER BY "createdAt" DESC
+			`
+		} catch (e: any) {
+			// Si los campos nuevos no existen, leer sin ellos
+			if (e.message?.includes("usoPorDefecto") || e.message?.includes("fijarUso") || e.message?.includes("column") || e.message?.includes("does not exist")) {
+				perfumes = await prisma.$queryRaw<Array<any>>`
+					SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
+					       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
+					       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt"
+					FROM "Perfume"
+					WHERE activo = true
+					ORDER BY "createdAt" DESC
+				`
+				// Agregar valores por defecto para los campos que no existen
+				perfumes = perfumes.map(p => ({
+					...p,
+					usoPorDefecto: null,
+					fijarUso: false
+				}))
+			} else {
+				throw e
+			}
+		}
+		
+		// Asegurar que los arrays estén en formato correcto
+		perfumes = perfumes.map(p => ({
+			...p,
+			imagenes: Array.isArray(p.imagenes) ? p.imagenes : [],
+			notas: Array.isArray(p.notas) ? p.notas : [],
+			sizes: Array.isArray(p.sizes) ? p.sizes : [],
+		}))
+		
 		return NextResponse.json(perfumes)
 	} catch (e: any) {
+		console.error("Error al listar perfumes:", e)
 		return new NextResponse(e?.message || "Error al listar", { status: 500 })
 	}
 }
@@ -29,7 +67,7 @@ export async function POST(req: NextRequest) {
 	}
 
 	try {
-		// Construir el objeto de datos base
+		// Construir el objeto de datos base (sin los campos nuevos que pueden no existir)
 		const perfumeData: any = {
 			nombre: data.name,
 			slug: data.slug,
@@ -54,9 +92,38 @@ export async function POST(req: NextRequest) {
 			perfumeData.subtitulo = data.subtitulo
 		}
 
-		const perfume = await prisma.perfume.create({
-			data: perfumeData,
-		})
+		// Intentar crear con Prisma, pero si falla por campos que no existen, usar SQL raw
+		let perfume
+		try {
+			perfume = await prisma.perfume.create({
+				data: perfumeData,
+			})
+		} catch (e: any) {
+			// Si falla por campos que no existen, usar SQL raw
+			if (e.message?.includes("column") || e.message?.includes("does not exist") || e.message?.includes("Unknown arg")) {
+				// Construir la consulta SQL manualmente
+				const columns: string[] = []
+				const values: any[] = []
+				let paramIndex = 1
+				
+				Object.keys(perfumeData).forEach(key => {
+					if (perfumeData[key] !== undefined) {
+						columns.push(`"${key}"`)
+						values.push(perfumeData[key])
+						paramIndex++
+					}
+				})
+				
+				const placeholders = values.map((_, i) => `$${i + 1}`).join(", ")
+				const result = await prisma.$queryRawUnsafe<Array<any>>(
+					`INSERT INTO "Perfume" (${columns.join(", ")}) VALUES (${placeholders}) RETURNING id`,
+					...values
+				)
+				perfume = { id: result[0].id }
+			} else {
+				throw e
+			}
+		}
 		return NextResponse.json({ id: perfume.id })
 	} catch (e: any) {
 		console.error("Error al guardar perfume:", e)
