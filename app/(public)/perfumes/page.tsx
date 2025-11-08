@@ -20,6 +20,7 @@ export default function PerfumesPage() {
 	const [perfumes, setPerfumes] = useState<Product[]>([])
 	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
 	const [loading, setLoading] = useState(true)
+	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("TODOS")
 
 	useEffect(() => {
 		async function fetchPerfumes() {
@@ -60,17 +61,89 @@ export default function PerfumesPage() {
 		)
 	}
 
+	// Filtrar perfumes según el género seleccionado
+	const filteredPerfumes = perfumes.filter((perfume, index) => {
+		if (selectedFilter === "TODOS") return true
+		const perfumeData = perfumesData[index]
+		const genero = perfumeData?.genero
+		if (selectedFilter === "HOMBRES") {
+			return genero === "HOMBRE" || genero === "UNISEX"
+		}
+		if (selectedFilter === "MUJERES") {
+			return genero === "MUJER" || genero === "UNISEX"
+		}
+		return true
+	})
+
+	// Obtener los índices filtrados para acceder a perfumesData
+	const filteredIndices = perfumes
+		.map((_, index) => {
+			if (selectedFilter === "TODOS") return index
+			const perfumeData = perfumesData[index]
+			const genero = perfumeData?.genero
+			if (selectedFilter === "HOMBRES") {
+				return (genero === "HOMBRE" || genero === "UNISEX") ? index : null
+			}
+			if (selectedFilter === "MUJERES") {
+				return (genero === "MUJER" || genero === "UNISEX") ? index : null
+			}
+			return index
+		})
+		.filter((idx): idx is number => idx !== null)
+
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<h1 className="text-3xl font-bold mb-6">Catálogo de Perfumes</h1>
-			{perfumes.length === 0 ? (
+			
+			{/* Filtros de Género */}
+			<div className="flex justify-center mb-8">
+				<div className="flex gap-2 bg-white/80 backdrop-blur-sm p-1 rounded-full border border-gray-200 shadow-sm">
+					<button
+						onClick={() => setSelectedFilter("TODOS")}
+						className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+							selectedFilter === "TODOS"
+								? "bg-[#2c2f43] text-white shadow-md"
+								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+						}`}
+					>
+						TODOS
+					</button>
+					<button
+						onClick={() => setSelectedFilter("HOMBRES")}
+						className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+							selectedFilter === "HOMBRES"
+								? "bg-[#2c2f43] text-white shadow-md"
+								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+						}`}
+					>
+						HOMBRES
+					</button>
+					<button
+						onClick={() => setSelectedFilter("MUJERES")}
+						className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+							selectedFilter === "MUJERES"
+								? "bg-[#2c2f43] text-white shadow-md"
+								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+						}`}
+					>
+						MUJERES
+					</button>
+				</div>
+			</div>
+
+			{filteredPerfumes.length === 0 ? (
 				<div className="text-center py-12">
-					<p className="text-gray-600">No hay perfumes disponibles en este momento.</p>
+					<p className="text-gray-600">
+						{selectedFilter === "TODOS" 
+							? "No hay perfumes disponibles en este momento."
+							: `No hay perfumes de ${selectedFilter.toLowerCase()} disponibles.`}
+					</p>
 				</div>
 			) : (
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-					{perfumes.map((perfume, index) => {
-						const perfumeData = perfumesData[index]
+					{filteredPerfumes.map((perfume, filteredIndex) => {
+						const originalIndex = filteredIndices[filteredIndex]
+						const perfumeData = perfumesData[originalIndex]
 						const defaultUse = (perfumeData?.usoPorDefecto as "DIA" | "NOCHE") || "DIA"
 						// En el catálogo público, SIEMPRE fijar el uso (no permitir cambios)
 						const fixedUse = true
