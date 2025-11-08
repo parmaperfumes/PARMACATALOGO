@@ -199,7 +199,9 @@ export default function EditPerfumePage() {
 			</form>
 			<div>
 				<h2 className="text-sm font-medium mb-2">Vista previa</h2>
-				<ProductCard product={preview} />
+				<div className="max-w-sm mx-auto w-full">
+					<ProductCard product={preview} />
+				</div>
 			</div>
 		</div>
 	)

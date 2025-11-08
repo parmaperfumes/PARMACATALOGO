@@ -404,7 +404,7 @@ export default function AdminNewPerfumePage() {
 			<div className="sticky top-4">
 				<h2 className="text-lg font-semibold mb-4">Vista Previa</h2>
 				<div className="bg-gray-50 p-4 rounded-lg">
-					<div className="max-w-sm mx-auto">
+					<div className="max-w-sm mx-auto w-full">
 						<ProductCard product={preview} />
 					</div>
 				</div>
