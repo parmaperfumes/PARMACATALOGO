@@ -66,7 +66,9 @@ export default function PerfumesPage() {
 			) : (
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 					{perfumes.map((perfume) => (
-						<ProductCard key={perfume.id} product={perfume} />
+						<div key={perfume.id} className="max-w-sm mx-auto w-full">
+							<ProductCard product={perfume} />
+						</div>
 					))}
 				</div>
 			)}
