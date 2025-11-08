@@ -45,3 +45,4 @@ Si prefieres no usar el Service Role Key, puedes crear el bucket manualmente:
 
 Después de crear el bucket manualmente, el sistema funcionará sin necesidad del Service Role Key.
 
+

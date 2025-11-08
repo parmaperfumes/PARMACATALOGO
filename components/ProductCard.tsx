@@ -27,13 +27,23 @@ export function ProductCard({ product, onAdd, className }: ProductCardProps) {
 
 	return (
 		<div className={`rounded-2xl overflow-hidden border bg-white ${className ?? ""}`}>
-			{/* Header visual sin imágenes */}
-			<div className="relative bg-[#2c2f43] text-white p-4 h-24 flex items-start">
-				{product.brand ? (
-					<div className="text-sm opacity-90 flex items-center gap-2">
-						<span className="font-semibold">{product.brand}</span>
+			{/* Header visual con imagen */}
+			<div className="relative bg-[#2c2f43] text-white min-h-[300px] flex items-center justify-center overflow-hidden">
+				{product.images && product.images.length > 0 && product.images[0] ? (
+					<img
+						src={product.images[0]}
+						alt={product.name}
+						className="max-w-full max-h-full w-auto h-auto object-contain"
+						onError={(e) => {
+							// Si la imagen falla al cargar, mostrar fondo sólido
+							e.currentTarget.style.display = 'none'
+						}}
+					/>
+				) : (
+					<div className="w-full h-full flex items-center justify-center">
+						<div className="text-gray-400 text-sm">Sin imagen</div>
 					</div>
-				) : null}
+				)}
 			</div>
 
 			{/* Info y controles */}

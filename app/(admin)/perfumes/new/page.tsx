@@ -137,6 +137,8 @@ export default function AdminNewPerfumePage() {
 		form.setValue("mainImage", "")
 	}
 
+	const formValues = form.watch()
+	
 	const preview: Product = useMemo(() => {
 		const values = form.getValues()
 		const sizes: Product["sizes"] = [
@@ -145,6 +147,7 @@ export default function AdminNewPerfumePage() {
 			values.size100 ? 100 : undefined,
 		].filter(Boolean) as Product["sizes"]
 
+		// Priorizar la imagen subida sobre la URL del formulario
 		const imageUrl = uploadedImageUrl || values.mainImage || ""
 		const images = imageUrl ? [imageUrl] : []
 
@@ -157,10 +160,10 @@ export default function AdminNewPerfumePage() {
 			subtitle: values.subtitle || "EAU DE PARFUM",
 			brand: "Parma", // Marca fija
 			gender: values.gender,
-			images: images.length ? images : ["https://via.placeholder.com/400"],
+			images: images, // Usar array vacío si no hay imagen, el ProductCard lo manejará
 			sizes: sizes.length ? sizes : [30, 50, 100],
 		}
-	}, [form.watch(), uploadedImageUrl])
+	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.size100, formValues.mainImage, uploadedImageUrl])
 
 	async function onSubmit(data: PerfumeForm) {
 		// Generar slug automáticamente desde el nombre
@@ -395,7 +398,9 @@ export default function AdminNewPerfumePage() {
 			<div className="sticky top-4">
 				<h2 className="text-lg font-semibold mb-4">Vista Previa</h2>
 				<div className="bg-gray-50 p-4 rounded-lg">
-					<ProductCard product={preview} />
+					<div className="max-w-sm mx-auto">
+						<ProductCard product={preview} />
+					</div>
 				</div>
 			</div>
 		</div>

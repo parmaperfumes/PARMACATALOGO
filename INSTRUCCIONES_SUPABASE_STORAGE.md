@@ -71,3 +71,4 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJz
 - Verifica que `NEXT_PUBLIC_SUPABASE_ANON_KEY` esté correctamente configurada en `.env.local`
 - Reinicia el servidor después de actualizar las variables de entorno
 
+

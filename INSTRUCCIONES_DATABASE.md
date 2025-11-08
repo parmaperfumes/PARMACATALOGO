@@ -69,3 +69,4 @@ npx prisma studio
 Esto abrirá una interfaz visual para ver y editar los datos en tu base de datos.
 
 
+

@@ -106,3 +106,4 @@ Después de crear las 4 políticas, deberías verlas listadas en la pestaña **P
 - **Storage Buckets**: https://supabase.com/dashboard/project/vwmdppmlczmdbfmqbzcr/storage/buckets
 - **Bucket perfumes**: https://supabase.com/dashboard/project/vwmdppmlczmdbfmqbzcr/storage/buckets/perfumes
 
+
