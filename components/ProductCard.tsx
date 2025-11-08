@@ -53,16 +53,20 @@ export function ProductCard({ product, onAdd, className }: ProductCardProps) {
 						{product.name}
 					</h3>
 				</div>
-				<div className="flex items-center gap-2">
-					<p className="text-sm tracking-wide text-gray-600 uppercase">
-						{product.subtitle || "EAU DE PARFUM"}
-					</p>
-					{product.gender ? (
-						<span className="text-[10px] font-bold uppercase bg-red-500 text-white px-2 py-1 rounded-md">
-							{product.gender}
-						</span>
-					) : null}
-				</div>
+				{(product.subtitle || product.gender) && (
+					<div className="flex items-center gap-2">
+						{product.subtitle && (
+							<p className="text-sm tracking-wide text-gray-600 uppercase">
+								{product.subtitle}
+							</p>
+						)}
+						{product.gender ? (
+							<span className="text-[10px] font-bold uppercase bg-red-500 text-white px-2 py-1 rounded-md">
+								{product.gender}
+							</span>
+						) : null}
+					</div>
+				)}
 
 				{/* Uso: Día/Noche */}
 				<div className="flex items-center gap-3 text-xs font-semibold">
@@ -97,7 +101,7 @@ export function ProductCard({ product, onAdd, className }: ProductCardProps) {
 				<div className="pt-1">
 					<Button
 						onClick={() => onAdd?.({ productId: product.id, size: selectedSize, use: selectedUse })}
-						className="w-full h-11 rounded-xl text-base"
+						className="w-full h-11 rounded-xl text-base bg-green-600 hover:bg-green-700 text-white"
 					>
 						AGREGAR
 					</Button>

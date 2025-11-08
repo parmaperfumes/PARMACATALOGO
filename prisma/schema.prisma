@@ -109,6 +109,7 @@ model Perfume {
   
   // Características
   genero          String?    // HOMBRE, MUJER, UNISEX
+  subtitulo       String?    // EAU DE PARFUM, EAU DE TOILETTE, etc.
   volumen         String?    // 50ml, 100ml, etc.
   notas           String[]   // Notas olfativas
   sizes           Int[]      // [30, 50, 100] - Tamaños disponibles

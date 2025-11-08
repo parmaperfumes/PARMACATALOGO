@@ -40,7 +40,7 @@ export default function AdminNewPerfumePage() {
 		resolver: zodResolver(perfumeSchema),
 		defaultValues: {
 			name: "BLEU DE CHANEL",
-			subtitle: "EAU DE PARFUM",
+			subtitle: "",
 			gender: "HOMBRE",
 			price: 99.9,
 			mainImage: "",
@@ -157,7 +157,7 @@ export default function AdminNewPerfumePage() {
 		return {
 			id: slug,
 			name: values.name.toUpperCase(),
-			subtitle: values.subtitle || "EAU DE PARFUM",
+			subtitle: values.subtitle || undefined, // Si está vacío (NADA), no mostrar subtítulo
 			brand: "Parma", // Marca fija
 			gender: values.gender,
 			images: images, // Usar array vacío si no hay imagen, el ProductCard lo manejará
@@ -179,6 +179,7 @@ export default function AdminNewPerfumePage() {
 			destacado: !!data.highlight,
 			activo: !!data.active,
 			genero: data.gender,
+			subtitulo: data.subtitle || null, // Guardar el subtítulo
 			volumen: data.volumen,
 			notas: data.notas ? data.notas.split(",").map(s => s.trim()) : [],
 			categoriaId: data.categoria || undefined,
@@ -193,11 +194,11 @@ export default function AdminNewPerfumePage() {
 		})
 
 		if (res.ok) {
-			alert("Perfume guardado exitosamente")
-			window.location.href = "/admin"
+			alert("✅ Perfume guardado exitosamente en la base de datos. Se mostrará en el catálogo.")
+			router.push("/perfumes") // Redirigir al catálogo para ver el perfume guardado
 		} else {
 			const msg = await res.text()
-			alert(`Error: ${msg}`)
+			alert(`❌ Error al guardar: ${msg}`)
 		}
 	}
 
@@ -220,7 +221,12 @@ export default function AdminNewPerfumePage() {
 
 					<div>
 						<label className="block text-sm font-medium mb-1">Subtítulo/Tipo</label>
-						<Input {...form.register("subtitle")} placeholder="Ej: EAU DE PARFUM" />
+						<select className="border rounded-md h-10 px-3 w-full" {...form.register("subtitle")}>
+							<option value="">NADA</option>
+							<option value="EAU DE PARFUM">EAU DE PARFUM</option>
+							<option value="EAU DE TOILETTE">EAU DE TOILETTE</option>
+							<option value="EAU DE COLOGNE">EAU DE COLOGNE</option>
+						</select>
 					</div>
 				</div>
 
@@ -383,7 +389,7 @@ export default function AdminNewPerfumePage() {
 				<div className="flex gap-4 pt-4">
 					<Button 
 						type="submit" 
-						className="flex-1"
+						className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
 						disabled={uploading || (!form.watch("mainImage") && !uploadedImageUrl)}
 					>
 						{uploading ? "Subiendo..." : "Guardar Perfume"}
