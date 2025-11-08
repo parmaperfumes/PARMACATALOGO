@@ -49,6 +49,7 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
+  passwordHash  String?   @db.Text
   role          Role      @default(PUBLIC)
   accounts      Account[]
   sessions      Session[]
@@ -91,25 +92,26 @@ model Perfume {
   id              String     @id @default(cuid())
   nombre          String
   slug            String     @unique
-  descripcion     String     @db.Text
+  descripcion     String?    @db.Text
   precio          Float
   precioDescuento Float?
   imagenPrincipal String
-  imagenes        String[]   // Array de URLs de Cloudinary
+  imagenes        String[]   // Array de URLs
   stock           Int        @default(0)
   destacado       Boolean    @default(false)
   activo          Boolean    @default(true)
   
-  // Relaciones
-  categoriaId     String
-  categoria       Categoria  @relation(fields: [categoriaId], references: [id])
-  marcaId         String
-  marca           Marca      @relation(fields: [marcaId], references: [id])
+  // Relaciones - Opcionales
+  categoriaId     String?
+  categoria       Categoria? @relation(fields: [categoriaId], references: [id])
+  marcaId         String?
+  marca           Marca?     @relation(fields: [marcaId], references: [id])
   
   // Características
-  genero          String?    // Masculino, Femenino, Unisex
+  genero          String?    // HOMBRE, MUJER, UNISEX
   volumen         String?    // 50ml, 100ml, etc.
   notas           String[]   // Notas olfativas
+  sizes           Int[]      // [30, 50, 100] - Tamaños disponibles
   
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt

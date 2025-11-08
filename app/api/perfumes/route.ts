@@ -30,23 +30,25 @@ export async function POST(req: NextRequest) {
 			data: {
 				nombre: data.name,
 				slug: data.slug,
-				descripcion: data.description || "",
+				descripcion: data.description || null,
 				precio: Number(data.precio),
 				precioDescuento: data.precioDescuento ? Number(data.precioDescuento) : null,
 				imagenPrincipal: data.imagenPrincipal,
-				imagenes: data.imagenes ?? [],
+				imagenes: data.imagenes && data.imagenes.length > 0 ? data.imagenes : [data.imagenPrincipal],
 				stock: data.stock ?? 0,
 				destacado: !!data.destacado,
 				activo: !!data.activo,
-				categoriaId: data.categoriaId ?? undefined,
-				marcaId: data.marcaId ?? undefined,
-				genero: data.genero ?? null,
-				volumen: data.volumen ?? null,
-				notas: data.notas ?? [],
+				categoriaId: data.categoriaId || null,
+				marcaId: data.marcaId || null,
+				genero: data.genero || null,
+				volumen: data.volumen || null,
+				notas: data.notas && Array.isArray(data.notas) ? data.notas : [],
+				sizes: data.sizes && Array.isArray(data.sizes) ? data.sizes : [],
 			},
 		})
 		return NextResponse.json({ id: perfume.id })
 	} catch (e: any) {
+		console.error("Error al guardar perfume:", e)
 		return new NextResponse(e?.message || "Error al guardar", { status: 500 })
 	}
 }

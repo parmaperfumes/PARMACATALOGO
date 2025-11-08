@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ProductCard, type Product } from "@/components/ProductCard"
 import { Input } from "@/components/ui/input"
@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Upload, X } from "lucide-react"
 
 const perfumeSchema = z.object({
 	name: z.string().min(2, "El nombre es requerido"),
 	subtitle: z.string().optional(),
 	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]).default("HOMBRE"),
 	price: z.coerce.number().positive("El precio debe ser mayor a 0"),
-	mainImage: z.string().url("URL de imagen válida requerida"),
+	mainImage: z.string().min(1, "La imagen es requerida"),
 	stock: z.coerce.number().int().nonnegative().default(0),
 	highlight: z.boolean().optional(),
 	active: z.boolean().default(true),
@@ -31,6 +32,10 @@ type PerfumeForm = z.infer<typeof perfumeSchema>
 
 export default function AdminNewPerfumePage() {
 	const router = useRouter()
+	const [uploading, setUploading] = useState(false)
+	const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
+	const [imageFile, setImageFile] = useState<File | null>(null)
+	
 	const form = useForm<PerfumeForm>({
 		resolver: zodResolver(perfumeSchema),
 		defaultValues: {
@@ -38,8 +43,7 @@ export default function AdminNewPerfumePage() {
 			subtitle: "EAU DE PARFUM",
 			gender: "HOMBRE",
 			price: 99.9,
-			mainImage:
-				"https://images.unsplash.com/photo-1530639832026-05bafb67fb58?q=80&w=800&auto=format&fit=crop",
+			mainImage: "",
 			stock: 0,
 			highlight: false,
 			active: true,
@@ -49,6 +53,90 @@ export default function AdminNewPerfumePage() {
 		},
 	})
 
+	async function handleFileUpload(file: File) {
+		setUploading(true)
+		setImageFile(file)
+		
+		try {
+			const formData = new FormData()
+			formData.append("file", file)
+
+			const res = await fetch("/api/upload", {
+				method: "POST",
+				body: formData,
+			})
+
+			if (!res.ok) {
+				const errorText = await res.text()
+				let errorData
+				try {
+					errorData = JSON.parse(errorText)
+				} catch {
+					errorData = { message: errorText }
+				}
+
+				// Si hay error de RLS o políticas
+				if (errorData.needsManualSetup || errorText.includes("row-level security") || errorText.includes("policy") || errorText.includes("RLS")) {
+					alert(`Error de políticas de seguridad.\n\nPor favor, ejecuta el archivo 'supabase-storage-policies.sql' en Supabase Dashboard > SQL Editor.\n\nO ve a CONFIGURAR_POLITICAS_STORAGE.md para instrucciones detalladas.`)
+					throw new Error("Políticas de seguridad no configuradas")
+				}
+				
+				// Si el bucket no existe, intentar crearlo
+				if (errorData.needsSetup || errorText.includes("bucket") || errorText.includes("Bucket")) {
+					const setupRes = await fetch("/api/setup-bucket", {
+						method: "POST",
+					})
+					
+					const setupData = await setupRes.json()
+					
+					if (setupRes.ok && setupData.success) {
+						// Reintentar la subida
+						const retryRes = await fetch("/api/upload", {
+							method: "POST",
+							body: formData,
+						})
+						
+						if (retryRes.ok) {
+							const retryData = await retryRes.json()
+							setUploadedImageUrl(retryData.url)
+							form.setValue("mainImage", retryData.url)
+							return
+						} else {
+							const retryError = await retryRes.text()
+							throw new Error(`Error después de crear el bucket: ${retryError}`)
+						}
+					} else {
+						throw new Error(setupData.message || "No se pudo crear el bucket. Por favor, créalo manualmente desde el dashboard de Supabase.")
+					}
+				} else {
+					throw new Error(errorData.message || errorText || "Error al subir la imagen")
+				}
+			}
+
+			const data = await res.json()
+			setUploadedImageUrl(data.url)
+			form.setValue("mainImage", data.url)
+		} catch (error: any) {
+			alert(`Error al subir imagen: ${error.message}`)
+			setImageFile(null)
+		} finally {
+			setUploading(false)
+		}
+	}
+
+	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0]
+		if (file) {
+			handleFileUpload(file)
+		}
+	}
+
+	function clearImage() {
+		setImageFile(null)
+		setUploadedImageUrl(null)
+		form.setValue("mainImage", "")
+	}
+
 	const preview: Product = useMemo(() => {
 		const values = form.getValues()
 		const sizes: Product["sizes"] = [
@@ -57,7 +145,8 @@ export default function AdminNewPerfumePage() {
 			values.size100 ? 100 : undefined,
 		].filter(Boolean) as Product["sizes"]
 
-		const images = [values.mainImage].filter(Boolean) as string[]
+		const imageUrl = uploadedImageUrl || values.mainImage || ""
+		const images = imageUrl ? [imageUrl] : []
 
 		// Generar slug automáticamente desde el nombre
 		const slug = values.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
@@ -68,10 +157,10 @@ export default function AdminNewPerfumePage() {
 			subtitle: values.subtitle || "EAU DE PARFUM",
 			brand: "Parma", // Marca fija
 			gender: values.gender,
-			images: images.length ? images : [values.mainImage],
+			images: images.length ? images : ["https://via.placeholder.com/400"],
 			sizes: sizes.length ? sizes : [30, 50, 100],
 		}
-	}, [form.watch()])
+	}, [form.watch(), uploadedImageUrl])
 
 	async function onSubmit(data: PerfumeForm) {
 		// Generar slug automáticamente desde el nombre
@@ -161,11 +250,76 @@ export default function AdminNewPerfumePage() {
 				<div className="space-y-4 border-b pb-6">
 					<h2 className="text-lg font-semibold">Imagen</h2>
 					
+					{/* Opción 1: Subir archivo */}
 					<div>
-						<label className="block text-sm font-medium mb-1">URL de la Imagen *</label>
-						<Input {...form.register("mainImage")} placeholder="URL de la imagen" />
+						<label className="block text-sm font-medium mb-2">Subir Imagen *</label>
+						{!uploadedImageUrl ? (
+							<div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+								<input
+									type="file"
+									accept="image/jpeg,image/jpg,image/png,image/webp"
+									onChange={handleFileChange}
+									disabled={uploading}
+									className="hidden"
+									id="image-upload"
+								/>
+								<label
+									htmlFor="image-upload"
+									className="cursor-pointer flex flex-col items-center gap-2"
+								>
+									<Upload className="h-8 w-8 text-gray-400" />
+									<span className="text-sm text-gray-600">
+										{uploading ? "Subiendo..." : "Haz clic para subir una imagen"}
+									</span>
+									<span className="text-xs text-gray-500">
+										JPEG, PNG o WEBP (máx. 5MB)
+									</span>
+								</label>
+							</div>
+						) : (
+							<div className="relative">
+								<div className="relative w-full h-48 rounded-lg overflow-hidden border">
+									<img
+										src={uploadedImageUrl}
+										alt="Vista previa"
+										className="w-full h-full object-cover"
+									/>
+									<button
+										type="button"
+										onClick={clearImage}
+										className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+										aria-label="Eliminar imagen"
+									>
+										<X className="h-4 w-4" />
+									</button>
+								</div>
+								<p className="text-xs text-gray-500 mt-2">Imagen subida correctamente</p>
+							</div>
+						)}
+					</div>
+
+					{/* Opción 2: URL (alternativa) */}
+					<div>
+						<label className="block text-sm font-medium mb-1">
+							O usar URL de imagen
+						</label>
+						<Input
+							{...form.register("mainImage")}
+							placeholder="https://ejemplo.com/imagen.jpg"
+							disabled={!!uploadedImageUrl}
+							onChange={(e) => {
+								if (!uploadedImageUrl) {
+									form.setValue("mainImage", e.target.value)
+								}
+							}}
+						/>
 						{form.formState.errors.mainImage && (
 							<p className="text-xs text-red-500 mt-1">{form.formState.errors.mainImage.message}</p>
+						)}
+						{uploadedImageUrl && (
+							<p className="text-xs text-gray-500 mt-1">
+								Desactiva la imagen subida para usar una URL
+							</p>
 						)}
 					</div>
 				</div>
@@ -224,7 +378,13 @@ export default function AdminNewPerfumePage() {
 
 				{/* Botones */}
 				<div className="flex gap-4 pt-4">
-					<Button type="submit" className="flex-1">Guardar Perfume</Button>
+					<Button 
+						type="submit" 
+						className="flex-1"
+						disabled={uploading || (!form.watch("mainImage") && !uploadedImageUrl)}
+					>
+						{uploading ? "Subiendo..." : "Guardar Perfume"}
+					</Button>
 					<Button type="button" variant="outline" onClick={() => router.push("/admin")}>
 						Cancelar
 					</Button>
