@@ -32,10 +32,9 @@ export default function EditPerfumePage() {
 	const router = useRouter()
 	const form = useForm<FormT>({ 
 		resolver: zodResolver(schema),
-		mode: "onChange",
 		defaultValues: {
 			name: "",
-			gender: "HOMBRE" as const,
+			gender: "HOMBRE",
 			mainImage: "",
 			stock: 0,
 			active: true,
