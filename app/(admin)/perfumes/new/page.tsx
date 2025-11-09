@@ -129,6 +129,18 @@ export default function AdminNewPerfumePage() {
 		}
 	}
 
+	function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+		e.preventDefault()
+		const file = e.dataTransfer.files?.[0]
+		if (file && file.type.startsWith("image/")) {
+			handleFileUpload(file)
+		}
+	}
+
+	function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+		e.preventDefault()
+	}
+
 	function clearImage() {
 		setImageFile(null)
 		setUploadedImageUrl(null)
@@ -261,7 +273,11 @@ export default function AdminNewPerfumePage() {
 					<div>
 						<label className="block text-sm font-medium mb-2">Subir Imagen *</label>
 						{!uploadedImageUrl ? (
-							<div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+							<div 
+								className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
+								onDrop={handleDrop}
+								onDragOver={handleDragOver}
+							>
 								<input
 									type="file"
 									accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -276,7 +292,7 @@ export default function AdminNewPerfumePage() {
 								>
 									<Upload className="h-8 w-8 text-gray-400" />
 									<span className="text-sm text-gray-600">
-										{uploading ? "Subiendo..." : "Haz clic para subir una imagen"}
+										{uploading ? "Subiendo..." : "Arrastra una imagen aquí o haz clic para seleccionar"}
 									</span>
 									<span className="text-xs text-gray-500">
 										JPEG, PNG o WEBP (máx. 5MB)
