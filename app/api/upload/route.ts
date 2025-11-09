@@ -50,52 +50,56 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer()
     let buffer = Buffer.from(arrayBuffer)
 
-    // Procesar imagen para eliminar fondo blanco automáticamente
-    if (file.type === "image/png" || file.type === "image/jpeg" || file.type === "image/jpg") {
-      try {
-        const image = sharp(buffer)
-        
-        // Convertir a RGBA para poder manipular la transparencia
-        const { data, info } = await image
-          .ensureAlpha() // Asegurar canal alfa
-          .raw()
-          .toBuffer({ resolveWithObject: true })
-        
-        // Procesar píxeles: hacer transparentes los que son blancos o casi blancos
-        const pixelData = Buffer.from(data)
-        for (let i = 0; i < pixelData.length; i += 4) {
-          const r = pixelData[i]
-          const g = pixelData[i + 1]
-          const b = pixelData[i + 2]
-          
-          // Detectar píxeles blancos o casi blancos (umbral: 245 en cada canal RGB)
-          // Esto elimina fondos blancos puros y casi blancos
-          if (r >= 245 && g >= 245 && b >= 245) {
-            pixelData[i + 3] = 0 // Hacer completamente transparente
-          }
-        }
-        
-        // Reconstruir la imagen con el fondo eliminado
-        buffer = await sharp(pixelData, {
-          raw: {
-            width: info.width,
-            height: info.height,
-            channels: 4
-          }
-        })
-        .png() // Guardar como PNG para mantener transparencia
-        .toBuffer()
-        
-        // Actualizar extensión y tipo de contenido a PNG
-        fileExt = "png"
-        fileName = `perfumes/${timestamp}-${randomString}.${fileExt}`
-        contentType = "image/png"
-      } catch (processError) {
-        // Si falla el procesamiento, continuar con la imagen original
-        console.warn("No se pudo procesar la imagen para eliminar fondo:", processError)
-        buffer = Buffer.from(arrayBuffer)
-      }
-    }
+    // NOTA: Procesamiento automático de eliminación de fondo desactivado temporalmente
+    // para evitar problemas con las imágenes. Las imágenes se suben sin modificación.
+    // Si necesitas eliminar el fondo, hazlo manualmente antes de subir la imagen.
+    
+    // Procesar imagen para eliminar fondo blanco automáticamente (DESACTIVADO)
+    // if (file.type === "image/png" || file.type === "image/jpeg" || file.type === "image/jpg") {
+    //   try {
+    //     const image = sharp(buffer)
+    //     
+    //     // Convertir a RGBA para poder manipular la transparencia
+    //     const { data, info } = await image
+    //       .ensureAlpha() // Asegurar canal alfa
+    //       .raw()
+    //       .toBuffer({ resolveWithObject: true })
+    //     
+    //     // Procesar píxeles: hacer transparentes los que son blancos o casi blancos
+    //     const pixelData = Buffer.from(data)
+    //     for (let i = 0; i < pixelData.length; i += 4) {
+    //       const r = pixelData[i]
+    //       const g = pixelData[i + 1]
+    //       const b = pixelData[i + 2]
+    //       
+    //       // Detectar píxeles blancos o casi blancos (umbral: 245 en cada canal RGB)
+    //       // Esto elimina fondos blancos puros y casi blancos
+    //       if (r >= 245 && g >= 245 && b >= 245) {
+    //         pixelData[i + 3] = 0 // Hacer completamente transparente
+    //       }
+    //     }
+    //     
+    //     // Reconstruir la imagen con el fondo eliminado
+    //     buffer = await sharp(pixelData, {
+    //       raw: {
+    //         width: info.width,
+    //         height: info.height,
+    //         channels: 4
+    //       }
+    //     })
+    //     .png() // Guardar como PNG para mantener transparencia
+    //     .toBuffer()
+    //     
+    //     // Actualizar extensión y tipo de contenido a PNG
+    //     fileExt = "png"
+    //     fileName = `perfumes/${timestamp}-${randomString}.${fileExt}`
+    //     contentType = "image/png"
+    //   } catch (processError) {
+    //     // Si falla el procesamiento, continuar con la imagen original
+    //     console.warn("No se pudo procesar la imagen para eliminar fondo:", processError)
+    //     buffer = Buffer.from(arrayBuffer)
+    //   }
+    // }
 
     // Subir a Supabase Storage
     const { data, error } = await client.storage

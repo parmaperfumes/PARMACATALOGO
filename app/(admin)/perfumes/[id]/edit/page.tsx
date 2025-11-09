@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ProductCard, type Product } from "@/components/ProductCard"
+import { Upload } from "lucide-react"
 
 const schema = z.object({
 	name: z.string().min(2),
@@ -30,6 +31,9 @@ export default function EditPerfumePage() {
 	const params = useParams<{ id: string }>()
 	const router = useRouter()
 	const form = useForm<FormT>({ resolver: zodResolver(schema) })
+	const [uploading, setUploading] = useState(false)
+	const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
+	const [imageFile, setImageFile] = useState<File | null>(null)
 
 	useEffect(() => {
 		async function load() {
@@ -77,19 +81,111 @@ export default function EditPerfumePage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [params.id])
 
+	async function handleFileUpload(file: File) {
+		setUploading(true)
+		setImageFile(file)
+		
+		try {
+			const formData = new FormData()
+			formData.append("file", file)
+
+			const res = await fetch("/api/upload", {
+				method: "POST",
+				body: formData,
+			})
+
+			if (!res.ok) {
+				const errorText = await res.text()
+				let errorData
+				try {
+					errorData = JSON.parse(errorText)
+				} catch {
+					errorData = { message: errorText }
+				}
+
+				// Si hay error de RLS o políticas
+				if (errorData.needsManualSetup || errorText.includes("row-level security") || errorText.includes("policy") || errorText.includes("RLS")) {
+					alert(`Error de políticas de seguridad.\n\nPor favor, ejecuta el archivo 'supabase-storage-policies.sql' en Supabase Dashboard > SQL Editor.`)
+					throw new Error("Políticas de seguridad no configuradas")
+				}
+				
+				// Si el bucket no existe, intentar crearlo
+				if (errorData.needsSetup || errorText.includes("bucket") || errorText.includes("Bucket")) {
+					const setupRes = await fetch("/api/setup-bucket", {
+						method: "POST",
+					})
+					
+					const setupData = await setupRes.json()
+					
+					if (setupRes.ok && setupData.success) {
+						// Reintentar la subida
+						const retryRes = await fetch("/api/upload", {
+							method: "POST",
+							body: formData,
+						})
+						
+						if (retryRes.ok) {
+							const retryData = await retryRes.json()
+							setUploadedImageUrl(retryData.url)
+							form.setValue("mainImage", retryData.url)
+							return
+						} else {
+							const retryError = await retryRes.text()
+							throw new Error(`Error después de crear el bucket: ${retryError}`)
+						}
+					} else {
+						throw new Error(setupData.message || "No se pudo crear el bucket. Por favor, créalo manualmente desde el dashboard de Supabase.")
+					}
+				} else {
+					throw new Error(errorData.message || errorText || "Error al subir la imagen")
+				}
+			}
+
+			const data = await res.json()
+			setUploadedImageUrl(data.url)
+			form.setValue("mainImage", data.url)
+		} catch (error: any) {
+			alert(`Error al subir imagen: ${error.message}`)
+			setImageFile(null)
+		} finally {
+			setUploading(false)
+		}
+	}
+
+	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0]
+		if (file) {
+			handleFileUpload(file)
+		}
+	}
+
+	function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+		e.preventDefault()
+		const file = e.dataTransfer.files?.[0]
+		if (file && file.type.startsWith("image/")) {
+			handleFileUpload(file)
+		}
+	}
+
+	function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+		e.preventDefault()
+	}
+
 	const preview: Product = useMemo(() => {
 		const v = form.getValues()
 		const sizes: Product["sizes"] = [v.size30 && 30, v.size50 && 50, v.size100 && 100].filter(Boolean) as any
+		// Priorizar la imagen subida sobre la URL del formulario
+		const imageUrl = uploadedImageUrl || v.mainImage || ""
 		return {
 			id: "edit",
 			name: (v.name || "").toUpperCase(),
 			subtitle: v.subtitle || undefined, // Si está vacío (NADA), no mostrar subtítulo
 			brand: "Parma",
 			gender: v.gender,
-			images: [v.mainImage],
+			images: imageUrl ? [imageUrl] : [],
 			sizes: sizes.length ? sizes : [30, 50, 100],
 		}
-	}, [form.watch()])
+	}, [form.watch(), uploadedImageUrl])
 	
 	const formValues = form.watch()
 	const defaultUse = formValues.usoPorDefecto || "DIA"
@@ -141,8 +237,46 @@ export default function EditPerfumePage() {
 					<option value="UNISEX">UNISEX</option>
 				</select>
 				<div>
-					<label className="block text-sm font-medium">Imagen principal (URL)</label>
-					<Input {...form.register("mainImage")} />
+					<label className="block text-sm font-medium mb-2">Imagen Principal</label>
+					
+					{/* Opción de subir archivo */}
+					<div 
+						className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4 hover:border-gray-400 transition-colors"
+						onDrop={handleDrop}
+						onDragOver={handleDragOver}
+					>
+						<Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+						<p className="text-sm text-gray-600 mb-2">
+							Arrastra una imagen aquí o haz clic para seleccionar
+						</p>
+						<label className="inline-block px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer">
+							{uploading ? "Subiendo..." : "Seleccionar archivo"}
+							<input
+								type="file"
+								accept="image/*"
+								onChange={handleFileChange}
+								className="hidden"
+								disabled={uploading}
+							/>
+						</label>
+						{imageFile && (
+							<p className="text-xs text-gray-500 mt-2">Archivo: {imageFile.name}</p>
+						)}
+					</div>
+
+					{/* O URL de imagen */}
+					<div>
+						<label className="block text-sm font-medium mb-1">O URL de imagen</label>
+						<Input {...form.register("mainImage")} placeholder="https://..." />
+						{form.formState.errors.mainImage && (
+							<p className="text-xs text-red-500 mt-1">{form.formState.errors.mainImage.message}</p>
+						)}
+						{(uploadedImageUrl || form.getValues("mainImage")) && (
+							<p className="text-xs text-gray-500 mt-1">
+								La imagen subida tiene prioridad sobre la URL
+							</p>
+						)}
+					</div>
 				</div>
 				<div className="grid grid-cols-3 gap-3">
 					<label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("size30")} /> 30 ML</label>
