@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin, supabase } from "@/lib/supabase"
+import sharp from "sharp"
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,18 +42,66 @@ export async function POST(req: NextRequest) {
     // Generar nombre único para el archivo
     const timestamp = Date.now()
     const randomString = Math.random().toString(36).substring(2, 15)
-    const fileExt = file.name.split(".").pop()
-    const fileName = `perfumes/${timestamp}-${randomString}.${fileExt}`
+    let fileExt = file.name.split(".").pop()
+    let fileName = `perfumes/${timestamp}-${randomString}.${fileExt}`
+    let contentType = file.type
 
     // Convertir File a Buffer
     const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    let buffer = Buffer.from(arrayBuffer)
+
+    // Procesar imagen para eliminar fondo blanco automáticamente
+    if (file.type === "image/png" || file.type === "image/jpeg" || file.type === "image/jpg") {
+      try {
+        const image = sharp(buffer)
+        
+        // Convertir a RGBA para poder manipular la transparencia
+        const { data, info } = await image
+          .ensureAlpha() // Asegurar canal alfa
+          .raw()
+          .toBuffer({ resolveWithObject: true })
+        
+        // Procesar píxeles: hacer transparentes los que son blancos o casi blancos
+        const pixelData = Buffer.from(data)
+        for (let i = 0; i < pixelData.length; i += 4) {
+          const r = pixelData[i]
+          const g = pixelData[i + 1]
+          const b = pixelData[i + 2]
+          
+          // Detectar píxeles blancos o casi blancos (umbral: 245 en cada canal RGB)
+          // Esto elimina fondos blancos puros y casi blancos
+          if (r >= 245 && g >= 245 && b >= 245) {
+            pixelData[i + 3] = 0 // Hacer completamente transparente
+          }
+        }
+        
+        // Reconstruir la imagen con el fondo eliminado
+        buffer = await sharp(pixelData, {
+          raw: {
+            width: info.width,
+            height: info.height,
+            channels: 4
+          }
+        })
+        .png() // Guardar como PNG para mantener transparencia
+        .toBuffer()
+        
+        // Actualizar extensión y tipo de contenido a PNG
+        fileExt = "png"
+        fileName = `perfumes/${timestamp}-${randomString}.${fileExt}`
+        contentType = "image/png"
+      } catch (processError) {
+        // Si falla el procesamiento, continuar con la imagen original
+        console.warn("No se pudo procesar la imagen para eliminar fondo:", processError)
+        buffer = Buffer.from(arrayBuffer)
+      }
+    }
 
     // Subir a Supabase Storage
     const { data, error } = await client.storage
       .from("perfumes")
       .upload(fileName, buffer, {
-        contentType: file.type,
+        contentType: contentType,
         upsert: false,
       })
 

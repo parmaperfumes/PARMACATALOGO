@@ -53,7 +53,6 @@ export default function PerfumesPage() {
 	if (loading) {
 		return (
 			<div className="container mx-auto px-4 py-8">
-				<h1 className="text-3xl font-bold mb-6">Catálogo de Perfumes</h1>
 				<div className="text-center py-12">
 					<p className="text-gray-600">Cargando perfumes...</p>
 				</div>
@@ -93,8 +92,6 @@ export default function PerfumesPage() {
 
 	return (
 		<div className="container mx-auto px-4 py-8">
-			<h1 className="text-3xl font-bold mb-6">Catálogo de Perfumes</h1>
-			
 			{/* Filtros de Género */}
 			<div className="flex justify-center mb-8">
 				<div className="flex gap-2 bg-white/80 backdrop-blur-sm p-1 rounded-full border border-gray-200 shadow-sm">

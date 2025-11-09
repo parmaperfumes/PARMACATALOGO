@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { LogoutButton } from "@/components/LogoutButton"
+import Link from "next/link"
 
 export default async function AdminLayout({
 	children,
@@ -15,7 +16,12 @@ export default async function AdminLayout({
 		<div className="min-h-screen">
 			<nav className="border-b bg-card">
 				<div className="container mx-auto px-4 py-4 flex items-center justify-between">
-					<h1 className="text-xl font-bold">Panel Administrativo</h1>
+					<div className="flex items-center gap-4">
+						<h1 className="text-xl font-bold">Panel Administrativo</h1>
+						<Link href="/header" className="text-sm text-gray-600 hover:text-gray-900 underline">
+							Editar Header
+						</Link>
+					</div>
 					<LogoutButton />
 				</div>
 			</nav>
