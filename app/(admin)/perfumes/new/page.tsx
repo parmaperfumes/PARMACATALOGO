@@ -207,8 +207,12 @@ export default function AdminNewPerfumePage() {
 		})
 
 		if (res.ok) {
-			alert("✅ Perfume guardado exitosamente en la base de datos. Se mostrará en el catálogo.")
-			router.push("/perfumes") // Redirigir al catálogo para ver el perfume guardado
+			alert("✅ Perfume guardado exitosamente en la base de datos.")
+			// Limpiar el formulario y redirigir a la misma página para crear otro perfume
+			form.reset()
+			setUploadedImageUrl(null)
+			setImageFile(null)
+			router.push("/perfumes/new")
 		} else {
 			const msg = await res.text()
 			alert(`❌ Error al guardar: ${msg}`)
