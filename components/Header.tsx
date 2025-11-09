@@ -48,7 +48,7 @@ export function Header() {
 			<div className="header-container">
 				<div className="header-content">
 					{/* Logo - Izquierda */}
-					<Link href="/" className="header-logo">
+					<Link href="/perfumes" className="header-logo">
 						{config.logoImage ? (
 							<Image
 								src={config.logoImage}

@@ -13,15 +13,15 @@ import { Upload } from "lucide-react"
 const schema = z.object({
 	name: z.string().min(2),
 	subtitle: z.string().optional(),
-	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]).default("HOMBRE"),
+	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]),
 	mainImage: z.string().url(),
-	stock: z.coerce.number().int().nonnegative().default(0),
+	stock: z.coerce.number().int().nonnegative(),
 	highlight: z.boolean().optional(),
-	active: z.boolean().default(true),
+	active: z.boolean(),
 	volumen: z.string().optional(),
-	size30: z.boolean().default(true),
-	size50: z.boolean().default(true),
-	size100: z.boolean().default(true),
+	size30: z.boolean(),
+	size50: z.boolean(),
+	size100: z.boolean(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
 })
 
@@ -30,7 +30,19 @@ type FormT = z.infer<typeof schema>
 export default function EditPerfumePage() {
 	const params = useParams<{ id: string }>()
 	const router = useRouter()
-	const form = useForm<FormT>({ resolver: zodResolver(schema) })
+	const form = useForm<FormT>({ 
+		resolver: zodResolver(schema),
+		defaultValues: {
+			name: "",
+			gender: "HOMBRE",
+			mainImage: "",
+			stock: 0,
+			active: true,
+			size30: true,
+			size50: true,
+			size100: true,
+		}
+	})
 	const [uploading, setUploading] = useState(false)
 	const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
 	const [imageFile, setImageFile] = useState<File | null>(null)
