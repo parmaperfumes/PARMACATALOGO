@@ -14,21 +14,25 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 
 	if (!isOpen) return null
 
-	// Reemplaza con tu número de WhatsApp
-	const phoneNumber = "1234567890"
+	// Número de WhatsApp: +1 (849) 471-4762
+	const phoneNumber = "18494714762"
 	
 	const buildMessage = () => {
 		if (items.length === 0) {
-			return "Hola! Me gustaría consultar sobre sus perfumes."
+			return "Buenas 👋, me gustaria ordenar este perfume:"
 		}
 		
-		let message = "Hola! Me interesan los siguientes perfumes:\n\n"
-		items.forEach((item, index) => {
-			message += `${index + 1}. *${item.name}*\n`
-			message += `   Tamaño: ${item.size} ML\n`
-			message += `   Uso: ${item.use}\n\n`
+		// Si es un solo perfume
+		if (items.length === 1) {
+			const item = items[0]
+			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${item.name} - ${item.size} ML`
+		}
+		
+		// Si son varios perfumes
+		let message = "Buenas 👋, me gustaria ordenar estos perfumes:\n\n"
+		items.forEach((item) => {
+			message += `${item.name} - ${item.size} ML\n`
 		})
-		message += "¿Tienen disponibilidad?"
 		return message
 	}
 	
