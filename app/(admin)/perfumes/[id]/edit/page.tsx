@@ -25,16 +25,29 @@ const schema = z.object({
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
 })
 
-type FormT = z.infer<typeof schema>
+type FormT = {
+	name: string
+	subtitle?: string
+	gender: "HOMBRE" | "MUJER" | "UNISEX"
+	mainImage: string
+	stock: number
+	highlight?: boolean
+	active: boolean
+	volumen?: string
+	size30: boolean
+	size50: boolean
+	size100: boolean
+	usoPorDefecto?: "DIA" | "NOCHE" | "AMBOS"
+}
 
 export default function EditPerfumePage() {
 	const params = useParams<{ id: string }>()
 	const router = useRouter()
 	const form = useForm<FormT>({ 
-		resolver: zodResolver(schema),
+		resolver: zodResolver(schema) as any,
 		defaultValues: {
 			name: "",
-			gender: "HOMBRE",
+			gender: "HOMBRE" as const,
 			mainImage: "",
 			stock: 0,
 			active: true,

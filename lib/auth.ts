@@ -1,4 +1,3 @@
-import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
@@ -22,7 +21,7 @@ type AppRole = "ADMIN" | "EDITOR" | "PUBLIC"
 // No configurar adapter en el nivel superior para evitar errores
 // Se configurará dinámicamente si es necesario
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   adapter: undefined, // No usar adapter si no hay DB configurada
   trustHost: true,
   providers: [
@@ -31,7 +30,7 @@ export const authOptions: NextAuthOptions = {
       credentials: { email: { label: "Email", type: "email" }, password: { label: "Password", type: "password" } },
       async authorize(credentials) {
         const email = credentials?.email?.toString().toLowerCase()
-        const password = credentials?.password || ""
+        const password = (credentials?.password as string) || ""
         if (!email || !password) return null
 
         const prisma = await getPrisma()
@@ -39,7 +38,7 @@ export const authOptions: NextAuthOptions = {
           try {
             const user: any = await prisma.user.findUnique({ where: { email } })
             if (user?.passwordHash) {
-              const ok = await bcrypt.compare(password, user.passwordHash)
+              const ok = await bcrypt.compare(password, String(user.passwordHash))
               if (ok) return { id: user.id, name: user.name, email: user.email, role: (user.role as AppRole) || "PUBLIC" }
             }
           } catch {}
@@ -103,7 +102,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: { signIn: '/login' },
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt' as const },
   secret: process.env.NEXTAUTH_SECRET,
 }
 

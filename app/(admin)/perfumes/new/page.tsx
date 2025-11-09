@@ -37,7 +37,7 @@ export default function AdminNewPerfumePage() {
 	const [imageFile, setImageFile] = useState<File | null>(null)
 	
 	const form = useForm<PerfumeForm>({
-		resolver: zodResolver(perfumeSchema),
+		resolver: zodResolver(perfumeSchema) as any,
 		defaultValues: {
 			name: "BLEU DE CHANEL",
 			subtitle: "",
