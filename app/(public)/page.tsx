@@ -1,3 +1,4 @@
+// Version: 2024-01-16 - Force Vercel rebuild - Landing page
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
