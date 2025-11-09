@@ -25,6 +25,7 @@ const perfumeSchema = z.object({
 	size100: z.boolean().default(true),
 	categoria: z.string().optional(),
 	marca: z.string().optional(),
+	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
 })
 
 type PerfumeForm = z.infer<typeof perfumeSchema>
@@ -48,6 +49,7 @@ export default function AdminNewPerfumePage() {
 			size30: true,
 			size50: true,
 			size100: true,
+			usoPorDefecto: "DIA",
 		},
 	})
 
@@ -195,6 +197,7 @@ export default function AdminNewPerfumePage() {
 			categoriaId: data.categoria || undefined,
 			marcaId: data.marca || undefined,
 			sizes: [data.size30 && 30, data.size50 && 50, data.size100 && 100].filter(Boolean),
+			usoPorDefecto: data.usoPorDefecto || null,
 		}
 
 		const res = await fetch("/api/perfumes", {
@@ -376,6 +379,19 @@ export default function AdminNewPerfumePage() {
 					</div>
 				</div>
 
+				{/* Configuración de Uso (DIA/NOCHE) */}
+				<div className="space-y-4 border-b pb-6">
+					<h2 className="text-lg font-semibold">Configuración de Uso (DIA/NOCHE)</h2>
+					<div>
+						<label className="block text-sm font-medium mb-2">Uso por Defecto</label>
+						<select className="border rounded-md h-10 px-3 w-full" {...form.register("usoPorDefecto")}>
+							<option value="DIA">DIA</option>
+							<option value="NOCHE">NOCHE</option>
+							<option value="AMBOS">AMBOS</option>
+						</select>
+					</div>
+				</div>
+
 				{/* Opciones Adicionales */}
 				<div className="space-y-4">
 					<h2 className="text-lg font-semibold">Opciones</h2>
@@ -411,7 +427,10 @@ export default function AdminNewPerfumePage() {
 				<h2 className="text-lg font-semibold mb-4">Vista Previa</h2>
 				<div className="bg-gray-50 p-4 rounded-lg">
 					<div className="max-w-sm mx-auto w-full">
-						<ProductCard product={preview} />
+						<ProductCard 
+							product={preview} 
+							defaultUse={formValues.usoPorDefecto as "DIA" | "NOCHE" | "AMBOS" || "DIA"} 
+						/>
 					</div>
 				</div>
 			</div>

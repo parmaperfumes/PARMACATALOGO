@@ -22,7 +22,7 @@ const schema = z.object({
 	size30: z.boolean().default(true),
 	size50: z.boolean().default(true),
 	size100: z.boolean().default(true),
-	usoPorDefecto: z.enum(["DIA", "NOCHE"]).optional(),
+	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
 })
 
 type FormT = z.infer<typeof schema>
@@ -298,6 +298,7 @@ export default function EditPerfumePage() {
 						<select className="border rounded-md h-10 px-3 w-full" {...form.register("usoPorDefecto")}>
 							<option value="DIA">DIA</option>
 							<option value="NOCHE">NOCHE</option>
+							<option value="AMBOS">AMBOS</option>
 						</select>
 					</div>
 				</div>

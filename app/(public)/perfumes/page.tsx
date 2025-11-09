@@ -141,7 +141,7 @@ export default function PerfumesPage() {
 					{filteredPerfumes.map((perfume, filteredIndex) => {
 						const originalIndex = filteredIndices[filteredIndex]
 						const perfumeData = perfumesData[originalIndex]
-						const defaultUse = (perfumeData?.usoPorDefecto as "DIA" | "NOCHE") || "DIA"
+						const defaultUse = (perfumeData?.usoPorDefecto as "DIA" | "NOCHE" | "AMBOS") || "DIA"
 						// En el catálogo público, SIEMPRE fijar el uso (no permitir cambios)
 						const fixedUse = true
 						return (

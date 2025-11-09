@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react"
 export type CartItem = {
 	name: string
 	size: number
-	use: "DIA" | "NOCHE"
+	use: "DIA" | "NOCHE" | "AMBOS"
 }
 
 type WhatsAppContextType = {
