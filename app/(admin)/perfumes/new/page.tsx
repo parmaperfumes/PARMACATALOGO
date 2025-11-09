@@ -14,7 +14,6 @@ const perfumeSchema = z.object({
 	name: z.string().min(2, "El nombre es requerido"),
 	subtitle: z.string().optional(),
 	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]).default("HOMBRE"),
-	price: z.coerce.number().positive("El precio debe ser mayor a 0"),
 	mainImage: z.string().min(1, "La imagen es requerida"),
 	stock: z.coerce.number().int().nonnegative().default(0),
 	highlight: z.boolean().optional(),
@@ -42,7 +41,6 @@ export default function AdminNewPerfumePage() {
 			name: "BLEU DE CHANEL",
 			subtitle: "",
 			gender: "HOMBRE",
-			price: 99.9,
 			mainImage: "",
 			stock: 0,
 			highlight: false,
@@ -172,7 +170,7 @@ export default function AdminNewPerfumePage() {
 		const payload = {
 			name: data.name,
 			slug: slug,
-			precio: data.price,
+			precio: 0, // Valor por defecto
 			imagenPrincipal: data.mainImage,
 			imagenes: [data.mainImage],
 			stock: data.stock,
@@ -333,18 +331,10 @@ export default function AdminNewPerfumePage() {
 					</div>
 				</div>
 
-				{/* Precio y Stock */}
+				{/* Stock */}
 				<div className="space-y-4 border-b pb-6">
-					<h2 className="text-lg font-semibold">Precio y Stock</h2>
+					<h2 className="text-lg font-semibold">Stock</h2>
 					
-					<div>
-						<label className="block text-sm font-medium mb-1">Precio *</label>
-						<Input type="number" step="0.01" {...form.register("price")} />
-						{form.formState.errors.price && (
-							<p className="text-xs text-red-500 mt-1">{form.formState.errors.price.message}</p>
-						)}
-					</div>
-
 					<div>
 						<label className="block text-sm font-medium mb-1">Stock</label>
 						<Input type="number" {...form.register("stock")} />

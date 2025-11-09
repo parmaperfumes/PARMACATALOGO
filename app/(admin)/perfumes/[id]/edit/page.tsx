@@ -13,7 +13,6 @@ const schema = z.object({
 	name: z.string().min(2),
 	subtitle: z.string().optional(),
 	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]).default("HOMBRE"),
-	price: z.coerce.number().positive(),
 	mainImage: z.string().url(),
 	stock: z.coerce.number().int().nonnegative().default(0),
 	highlight: z.boolean().optional(),
@@ -59,7 +58,6 @@ export default function EditPerfumePage() {
 				name: p.nombre || "",
 				subtitle: p.subtitulo || "",
 				gender: (p.genero as any) || "HOMBRE",
-				price: Number(p.precio) || 0,
 				mainImage: p.imagenPrincipal || "",
 				stock: p.stock || 0,
 				highlight: !!p.destacado,
@@ -102,7 +100,7 @@ export default function EditPerfumePage() {
 		const payload: any = {
 			name: data.name,
 			slug: currentPerfume?.slug || data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-			precio: data.price,
+			precio: currentPerfume?.precio || 0, // Mantener el precio existente o usar 0 por defecto
 			imagenPrincipal: data.mainImage,
 			imagenes: [data.mainImage],
 			stock: data.stock,
@@ -142,10 +140,6 @@ export default function EditPerfumePage() {
 					<option value="MUJER">MUJER</option>
 					<option value="UNISEX">UNISEX</option>
 				</select>
-				<div>
-					<label className="block text-sm font-medium">Precio</label>
-					<Input type="number" step="0.01" {...form.register("price")} />
-				</div>
 				<div>
 					<label className="block text-sm font-medium">Imagen principal (URL)</label>
 					<Input {...form.register("mainImage")} />

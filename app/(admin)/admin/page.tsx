@@ -29,25 +29,21 @@ export default function AdminDashboardPage() {
 					<thead className="bg-gray-50">
 						<tr>
 							<th className="px-4 py-2 text-left">Nombre</th>
-							<th className="px-4 py-2 text-left">Slug</th>
-							<th className="px-4 py-2 text-left">Precio</th>
 							<th className="px-4 py-2 text-left">Stock</th>
 							<th className="px-4 py-2"></th>
 						</tr>
 					</thead>
 					<tbody>
 						{isLoading ? (
-							<tr><td className="px-4 py-6" colSpan={5}>Cargando...</td></tr>
+							<tr><td className="px-4 py-6" colSpan={3}>Cargando...</td></tr>
 						) : error ? (
-							<tr><td className="px-4 py-6 text-red-500" colSpan={5}>Error al cargar</td></tr>
+							<tr><td className="px-4 py-6 text-red-500" colSpan={3}>Error al cargar</td></tr>
 						) : (data ?? []).length === 0 ? (
-							<tr><td className="px-4 py-6 text-muted-foreground" colSpan={5}>Sin datos (configura DATABASE_URL para persistir)</td></tr>
+							<tr><td className="px-4 py-6 text-muted-foreground" colSpan={3}>Sin datos (configura DATABASE_URL para persistir)</td></tr>
 						) : (
 							(data ?? []).map((p: any) => (
 								<tr key={p.id} className="border-t">
 									<td className="px-4 py-2">{p.nombre}</td>
-									<td className="px-4 py-2">{p.slug}</td>
-									<td className="px-4 py-2">${" "}{Number(p.precio).toFixed(2)}</td>
 									<td className="px-4 py-2">{p.stock}</td>
 									<td className="px-4 py-2 flex gap-2 justify-end">
 										<Link className="underline" href={`/perfumes/${p.id}/edit`}>Editar</Link>
