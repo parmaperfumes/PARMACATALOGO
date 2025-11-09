@@ -11,6 +11,7 @@ export type CartItem = {
 type WhatsAppContextType = {
 	items: CartItem[]
 	addItem: (item: CartItem) => void
+	removeItem: (item: CartItem) => void
 	clearItems: () => void
 }
 
@@ -23,12 +24,24 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
 		setItems((prev) => [...prev, item])
 	}
 
+	const removeItem = (itemToRemove: CartItem) => {
+		setItems((prev) => 
+			prev.filter(
+				item => !(
+					item.name === itemToRemove.name &&
+					item.size === itemToRemove.size &&
+					item.use === itemToRemove.use
+				)
+			)
+		)
+	}
+
 	const clearItems = () => {
 		setItems([])
 	}
 
 	return (
-		<WhatsAppContext.Provider value={{ items, addItem, clearItems }}>
+		<WhatsAppContext.Provider value={{ items, addItem, removeItem, clearItems }}>
 			{children}
 		</WhatsAppContext.Provider>
 	)
@@ -41,6 +54,7 @@ export function useWhatsApp() {
 		return {
 			items: [],
 			addItem: () => {},
+			removeItem: () => {},
 			clearItems: () => {},
 		}
 	}

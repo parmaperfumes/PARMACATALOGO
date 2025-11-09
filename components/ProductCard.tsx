@@ -31,7 +31,8 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	
 	const [selectedUse, setSelectedUse] = useState<"DIA" | "NOCHE">(defaultUse || "DIA")
 	const [selectedSize, setSelectedSize] = useState<ProductSizeMl>(product.sizes[0])
-	const { addItem } = useWhatsApp()
+	const [isAdded, setIsAdded] = useState(false)
+	const { addItem, removeItem, items } = useWhatsApp()
 
 	// Actualizar selectedUse cuando cambie defaultUse
 	useEffect(() => {
@@ -39,6 +40,16 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 			setSelectedUse(defaultUse)
 		}
 	}, [defaultUse])
+
+	// Verificar si el producto ya está agregado cuando cambian los items o las selecciones
+	useEffect(() => {
+		const isProductAdded = items.some(
+			item => item.name === product.name && 
+			item.size === selectedSize && 
+			item.use === selectedUse
+		)
+		setIsAdded(isProductAdded)
+	}, [items, product.name, selectedSize, selectedUse])
 
 	return (
 		<div className={`rounded-2xl overflow-hidden border bg-white ${className ?? ""}`}>
@@ -139,18 +150,40 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 				<div className="pt-1">
 					<Button
 						onClick={() => {
-							// Agregar el producto al carrito de WhatsApp
-							addItem({
+							const currentItem = {
 								name: product.name,
 								size: selectedSize,
 								use: selectedUse,
-							})
-							// Llamar al callback original si existe
-							onAdd?.({ productId: product.id, size: selectedSize, use: selectedUse })
+							}
+							
+							if (isAdded) {
+								// Remover el producto del carrito de WhatsApp
+								removeItem(currentItem)
+								setIsAdded(false)
+							} else {
+								// Agregar el producto al carrito de WhatsApp
+								addItem(currentItem)
+								setIsAdded(true)
+								// Llamar al callback original si existe
+								onAdd?.({ productId: product.id, size: selectedSize, use: selectedUse })
+							}
 						}}
-						className="w-full h-11 rounded-xl text-base bg-green-600 hover:bg-green-700 text-white"
+						className={`w-full h-11 rounded-xl text-base transition-all duration-200 border-2 ${
+							isAdded 
+								? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
+								: "bg-white hover:bg-green-50 text-green-600 border-green-600"
+						}`}
 					>
-						AGREGAR
+						{isAdded ? (
+							<span className="flex items-center justify-center gap-2">
+								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+								</svg>
+								AGREGADO
+							</span>
+						) : (
+							"AGREGAR"
+						)}
 					</Button>
 				</div>
 			</div>
