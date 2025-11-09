@@ -1,4 +1,5 @@
 "use client"
+// Version: 2024-01-15 - Latest update
 
 import { useEffect, useState } from "react"
 import { ProductCard, type Product } from "@/components/ProductCard"
