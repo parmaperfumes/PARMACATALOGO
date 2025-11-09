@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
+import { LogoutButton } from "@/components/LogoutButton"
 
 export default async function AdminLayout({
 	children,
@@ -15,9 +16,7 @@ export default async function AdminLayout({
 			<nav className="border-b bg-card">
 				<div className="container mx-auto px-4 py-4 flex items-center justify-between">
 					<h1 className="text-xl font-bold">Panel Administrativo</h1>
-					<form action="/api/auth/signout" method="post">
-						<button className="text-sm underline" formAction={"/api/auth/signout?callbackUrl=/"}>Salir</button>
-					</form>
+					<LogoutButton />
 				</div>
 			</nav>
 			<main>{children}</main>

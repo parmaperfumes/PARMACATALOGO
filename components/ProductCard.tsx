@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { useWhatsApp } from "@/context/WhatsAppContext"
 
 export type ProductSizeMl = 30 | 50 | 100
 
@@ -30,6 +31,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	
 	const [selectedUse, setSelectedUse] = useState<"DIA" | "NOCHE">(defaultUse || "DIA")
 	const [selectedSize, setSelectedSize] = useState<ProductSizeMl>(product.sizes[0])
+	const { addItem } = useWhatsApp()
 
 	// Actualizar selectedUse cuando cambie defaultUse
 	useEffect(() => {
@@ -136,7 +138,16 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 				{/* CTA */}
 				<div className="pt-1">
 					<Button
-						onClick={() => onAdd?.({ productId: product.id, size: selectedSize, use: selectedUse })}
+						onClick={() => {
+							// Agregar el producto al carrito de WhatsApp
+							addItem({
+								name: product.name,
+								size: selectedSize,
+								use: selectedUse,
+							})
+							// Llamar al callback original si existe
+							onAdd?.({ productId: product.id, size: selectedSize, use: selectedUse })
+						}}
 						className="w-full h-11 rounded-xl text-base bg-green-600 hover:bg-green-700 text-white"
 					>
 						AGREGAR
