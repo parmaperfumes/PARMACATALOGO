@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { ProductCard, type Product } from "@/components/ProductCard"
+import { useSearch } from "@/context/SearchContext"
 
 type PerfumeFromDB = {
 	id: string
@@ -17,6 +18,7 @@ type PerfumeFromDB = {
 }
 
 export default function PerfumesPage() {
+	const { searchQuery } = useSearch()
 	const [perfumes, setPerfumes] = useState<Product[]>([])
 	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
 	const [loading, setLoading] = useState(true)
@@ -60,8 +62,18 @@ export default function PerfumesPage() {
 		)
 	}
 
-	// Filtrar perfumes según el género seleccionado
+	// Filtrar perfumes según el género seleccionado y la búsqueda
 	const filteredPerfumes = perfumes.filter((perfume, index) => {
+		// Filtro por búsqueda (nombre)
+		if (searchQuery.trim() !== "") {
+			const searchLower = searchQuery.toLowerCase().trim()
+			const nombreLower = perfume.name.toLowerCase()
+			if (!nombreLower.includes(searchLower)) {
+				return false
+			}
+		}
+
+		// Filtro por género
 		if (selectedFilter === "TODOS") return true
 		const perfumeData = perfumesData[index]
 		const genero = perfumeData?.genero
@@ -76,7 +88,17 @@ export default function PerfumesPage() {
 
 	// Obtener los índices filtrados para acceder a perfumesData
 	const filteredIndices = perfumes
-		.map((_, index) => {
+		.map((perfume, index) => {
+			// Filtro por búsqueda
+			if (searchQuery.trim() !== "") {
+				const searchLower = searchQuery.toLowerCase().trim()
+				const nombreLower = perfume.name.toLowerCase()
+				if (!nombreLower.includes(searchLower)) {
+					return null
+				}
+			}
+
+			// Filtro por género
 			if (selectedFilter === "TODOS") return index
 			const perfumeData = perfumesData[index]
 			const genero = perfumeData?.genero
@@ -131,9 +153,11 @@ export default function PerfumesPage() {
 			{filteredPerfumes.length === 0 ? (
 				<div className="text-center py-12">
 					<p className="text-gray-600">
-						{selectedFilter === "TODOS" 
-							? "No hay perfumes disponibles en este momento."
-							: `No hay perfumes de ${selectedFilter.toLowerCase()} disponibles.`}
+						{searchQuery.trim() !== "" 
+							? `No se encontraron perfumes que coincidan con "${searchQuery}"`
+							: selectedFilter === "TODOS" 
+								? "No hay perfumes disponibles en este momento."
+								: `No hay perfumes de ${selectedFilter.toLowerCase()} disponibles.`}
 					</p>
 				</div>
 			) : (

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Search } from "lucide-react"
 import Image from "next/image"
+import { useSearch } from "@/context/SearchContext"
 
 type NavLink = {
 	label: string
@@ -17,6 +18,7 @@ type HeaderConfig = {
 }
 
 export function Header() {
+	const { searchQuery, setSearchQuery } = useSearch()
 	const [config, setConfig] = useState<HeaderConfig>({
 		logoText: "parma",
 		logoImage: null,
@@ -81,6 +83,8 @@ export function Header() {
 								type="search"
 								placeholder="Buscar perfumes..."
 								className="header-search-input"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
 							/>
 						</div>
 					</div>
