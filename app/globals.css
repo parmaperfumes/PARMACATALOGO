@@ -340,14 +340,14 @@ header {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
 }
 
 .mobile-nav-indicator {
   position: absolute;
   top: 50%;
   left: 0;
-  width: calc(100% / 3);
+  width: calc((100% - 24px) / 3);
   height: 48px;
   background: #0E1820;
   border-radius: 8px;

@@ -78,12 +78,12 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	return (
 		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full h-full ${className ?? ""}`}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full">
+			<div className="relative bg-[#2c2f43] text-white overflow-visible flex-shrink-0 flex items-center justify-center w-full">
 				{product.images && product.images.length > 0 && product.images[0] ? (
 					<img
 						src={product.images[0]}
 						alt={product.name}
-						className="w-full h-auto object-contain"
+						className="object-contain"
 						style={{
 							objectPosition: 'center center',
 							display: 'block',
