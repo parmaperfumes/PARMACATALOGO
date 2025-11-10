@@ -76,14 +76,18 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	}, [items, product.name, selectedSize, currentUse])
 
 	return (
-		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white h-full flex flex-col ${className ?? ""}`}>
+		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white h-full flex flex-col w-full max-w-[280px] lg:max-w-[300px] mx-auto ${className ?? ""}`}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white h-[180px] sm:h-[300px] flex items-center justify-center overflow-hidden flex-shrink-0">
+			<div className="relative bg-[#2c2f43] text-white h-[180px] sm:h-[250px] overflow-hidden flex-shrink-0 flex items-center justify-center">
 				{product.images && product.images.length > 0 && product.images[0] ? (
 					<img
 						src={product.images[0]}
 						alt={product.name}
-						className="max-w-full max-h-full w-auto h-auto object-contain"
+						className="max-w-full max-h-full w-auto h-auto object-contain sm:object-contain"
+						style={{
+							maxWidth: '100%',
+							maxHeight: '100%'
+						}}
 						loading="lazy"
 						decoding="async"
 						onError={(e) => {
@@ -99,16 +103,16 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 			</div>
 
 			{/* Info y controles */}
-			<div className="p-2.5 sm:p-4 flex flex-col flex-1 space-y-2 sm:space-y-3">
+			<div className="p-2.5 sm:p-4 flex flex-col flex-1">
 				{/* Título - Altura fija */}
-				<div className="h-[28px] sm:h-[32px] flex items-center">
+				<div className="h-[28px] sm:h-[32px] flex items-center mb-1 sm:mb-1.5">
 					<h3 className="text-base sm:text-xl font-extrabold leading-tight uppercase line-clamp-1">
 						{product.name}
 					</h3>
 				</div>
 				
 				{/* Subtítulo y género - Altura fija */}
-				<div className="h-[20px] sm:h-[24px] flex items-center gap-2">
+				<div className="h-[20px] sm:h-[24px] flex items-center gap-2 mb-1.5 sm:mb-2">
 					{product.subtitle ? (
 						<p className="text-xs sm:text-sm tracking-wide text-gray-600 uppercase line-clamp-1">
 							{product.subtitle}
@@ -122,7 +126,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 				</div>
 
 				{/* Uso: Día/Noche - Altura fija */}
-				<div className="h-[28px] sm:h-[32px] flex items-center gap-2 sm:gap-3">
+				<div className="h-[28px] sm:h-[32px] flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
 					{isFixed ? (
 						// Si está fijado, mostrar como elementos no interactivos (divs) - NO CLICABLES
 						<>
@@ -169,7 +173,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 				</div>
 
 				{/* Tamaños - Altura fija, todos en una fila */}
-				<div className="h-[32px] sm:h-[36px] flex items-center gap-1.5 sm:gap-2">
+				<div className="h-[32px] sm:h-[36px] flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
 					{product.sizes.map((s) => (
 						<button
 							key={s}
@@ -182,7 +186,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 				</div>
 
 				{/* CTA - Altura fija y siempre al final */}
-				<div className="mt-auto pt-1">
+				<div className="mt-auto">
 					<Button
 						onClick={() => {
 							const currentItem = {
