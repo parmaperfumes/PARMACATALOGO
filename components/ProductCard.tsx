@@ -76,9 +76,9 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	}, [items, product.name, selectedSize, currentUse])
 
 	return (
-		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full ${className ?? ""}`}>
+		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full h-full ${className ?? ""}`}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full">
+			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full" style={{ minHeight: '160px' }}>
 				{product.images && product.images.length > 0 && product.images[0] ? (
 					<img
 						src={product.images[0]}
@@ -86,7 +86,8 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 						className="w-full h-auto object-contain"
 						style={{
 							objectPosition: 'center center',
-							display: 'block'
+							display: 'block',
+							maxHeight: '200px'
 						}}
 						loading="lazy"
 						decoding="async"
@@ -96,48 +97,48 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 						}}
 					/>
 				) : (
-					<div className="w-full h-[180px] sm:h-[250px] lg:h-[280px] flex items-center justify-center">
+					<div className="w-full h-[160px] sm:h-[250px] lg:h-[280px] flex items-center justify-center">
 						<div className="text-gray-400 text-xs sm:text-sm">Sin imagen</div>
 					</div>
 				)}
 			</div>
 
 			{/* Info y controles */}
-			<div className="p-2.5 sm:p-4 flex flex-col flex-1">
+			<div className="p-2 sm:p-3 sm:p-4 flex flex-col flex-1 min-h-0">
 				{/* Título - Altura fija */}
-				<div className="h-[28px] sm:h-[32px] flex items-center mb-1 sm:mb-1.5">
-					<h3 className="text-base sm:text-xl font-extrabold leading-tight uppercase line-clamp-1">
+				<div className="h-[26px] sm:h-[32px] flex items-center mb-1 sm:mb-1.5">
+					<h3 className="text-sm sm:text-base lg:text-xl font-extrabold leading-tight uppercase line-clamp-1">
 						{product.name}
 					</h3>
 				</div>
 				
 				{/* Subtítulo y género - Altura fija */}
-				<div className="h-[20px] sm:h-[24px] flex items-center gap-2 mb-1.5 sm:mb-2">
+				<div className="h-[18px] sm:h-[24px] flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
 					{product.subtitle ? (
-						<p className="text-xs sm:text-sm tracking-wide text-gray-600 uppercase line-clamp-1">
+						<p className="text-[10px] sm:text-xs lg:text-sm tracking-wide text-gray-600 uppercase line-clamp-1">
 							{product.subtitle}
 						</p>
 					) : null}
 					{product.gender ? (
-						<span className="text-[10px] font-bold uppercase bg-red-500 text-white px-2 py-0.5 rounded-md flex-shrink-0">
+						<span className="text-[9px] sm:text-[10px] font-bold uppercase bg-red-500 text-white px-1.5 sm:px-2 py-0.5 rounded-md flex-shrink-0">
 							{product.gender}
 						</span>
 					) : null}
 				</div>
 
 				{/* Uso: Día/Noche - Altura fija */}
-				<div className="h-[28px] sm:h-[32px] flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+				<div className="h-[26px] sm:h-[32px] flex items-center gap-1.5 sm:gap-2 lg:gap-3 mb-1.5 sm:mb-2">
 					{isFixed ? (
 						// Si está fijado, mostrar como elementos no interactivos (divs) - NO CLICABLES
 						<>
 							<div
-								className={`px-2 sm:px-3 py-1 rounded-md text-xs font-semibold h-7 sm:h-8 flex items-center justify-center ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
+								className={`px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
 								style={{ userSelect: 'none' }}
 							>
 								DIA
 							</div>
 							<div
-								className={`px-2 sm:px-3 py-1 rounded-md text-xs font-semibold h-7 sm:h-8 flex items-center justify-center ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
+								className={`px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
 								style={{ userSelect: 'none' }}
 							>
 								NOCHE
@@ -153,7 +154,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 									setSelectedDia(!selectedDia)
 								}}
 								disabled={isAmbos}
-								className={`px-2 sm:px-3 py-1 rounded-md border text-xs font-semibold h-7 sm:h-8 flex items-center justify-center ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
+								className={`px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md border text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
 							>
 								DIA
 							</button>
@@ -164,7 +165,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 									setSelectedNoche(!selectedNoche)
 								}}
 								disabled={isAmbos}
-								className={`px-2 sm:px-3 py-1 rounded-md border text-xs font-semibold h-7 sm:h-8 flex items-center justify-center ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
+								className={`px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md border text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
 							>
 								NOCHE
 							</button>
@@ -173,12 +174,12 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 				</div>
 
 				{/* Tamaños - Altura fija, todos en una fila */}
-				<div className="h-[32px] sm:h-[36px] flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+				<div className="h-[30px] sm:h-[34px] lg:h-[36px] flex items-center gap-1 sm:gap-1.5 lg:gap-2 mb-2 sm:mb-3">
 					{product.sizes.map((s) => (
 						<button
 							key={s}
 							onClick={() => setSelectedSize(s)}
-							className={`h-7 sm:h-9 rounded-full border px-2 sm:px-3 text-[10px] sm:text-xs font-semibold flex items-center justify-center flex-1 min-w-0 ${selectedSize === s ? "bg-black text-white border-black" : "bg-white border-gray-300"}`}
+							className={`h-6 sm:h-7 lg:h-9 rounded-full border px-1.5 sm:px-2 lg:px-3 text-[9px] sm:text-[10px] lg:text-xs font-semibold flex items-center justify-center flex-1 min-w-0 touch-manipulation active:scale-95 ${selectedSize === s ? "bg-black text-white border-black" : "bg-white border-gray-300"}`}
 						>
 							{s} ML
 						</button>
@@ -207,15 +208,15 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 							}
 						}}
-						className={`w-full h-10 sm:h-11 rounded-lg sm:rounded-xl text-sm sm:text-base transition-all duration-200 border-2 flex items-center justify-center ${
+						className={`w-full h-9 sm:h-10 lg:h-11 rounded-lg sm:rounded-xl text-xs sm:text-sm lg:text-base transition-all duration-200 border-2 flex items-center justify-center touch-manipulation active:scale-95 ${
 							isAdded 
 								? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
 								: "bg-white hover:bg-green-50 text-green-600 border-green-600"
 						}`}
 					>
 						{isAdded ? (
-							<span className="flex items-center justify-center gap-2">
-								<svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<span className="flex items-center justify-center gap-1.5 sm:gap-2">
+								<svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
 								</svg>
 								AGREGADO

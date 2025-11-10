@@ -344,7 +344,7 @@ header {
   width: calc((100% - 8px) / 3);
   height: 48px;
   background: #0E1820;
-  border-radius: 24px;
+  border-radius: 8px;
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
   transform: translateY(-50%);
   z-index: 0;
@@ -426,7 +426,7 @@ header {
   
   .mobile-nav-indicator {
     height: 44px;
-    border-radius: 22px;
+    border-radius: 6px;
   }
 }
 
@@ -434,6 +434,10 @@ header {
   .mobile-nav-item-whatsapp.mobile-nav-item-active::before {
     width: calc(100% - 8px);
     height: 48px;
+    border-radius: 8px;
+  }
+  
+  .mobile-nav-indicator {
     border-radius: 8px;
   }
 }
@@ -447,7 +451,7 @@ header {
   
   .mobile-nav-indicator {
     height: 52px;
-    border-radius: 26px;
+    border-radius: 10px;
   }
 }
 
