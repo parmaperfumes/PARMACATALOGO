@@ -6,18 +6,33 @@ export async function PATCH(req: NextRequest) {
 		return new NextResponse("DATABASE_URL no configurada", { status: 501 })
 	}
 	try {
-		const { id, activo } = await req.json()
-		if (!id || typeof activo !== 'boolean') {
-			return new NextResponse("ID y activo son requeridos", { status: 400 })
+		const body = await req.json()
+		const { id, activo } = body
+		
+		if (!id) {
+			return new NextResponse("ID es requerido", { status: 400 })
 		}
 		
-		await prisma.$executeRawUnsafe(
-			`UPDATE "Perfume" SET activo = $1 WHERE id = $2`,
-			activo,
-			id
-		)
+		if (typeof activo !== 'boolean') {
+			return new NextResponse("activo debe ser un booleano", { status: 400 })
+		}
 		
-		return NextResponse.json({ success: true })
+		// Usar Prisma si es posible, sino usar SQL raw
+		try {
+			await prisma.perfume.update({
+				where: { id },
+				data: { activo }
+			})
+		} catch (prismaError: any) {
+			// Si falla con Prisma, usar SQL raw
+			await prisma.$executeRawUnsafe(
+				`UPDATE "Perfume" SET activo = $1 WHERE id = $2`,
+				activo,
+				id
+			)
+		}
+		
+		return NextResponse.json({ success: true, id, activo })
 	} catch (e: any) {
 		console.error("Error al actualizar estado del perfume:", e)
 		return new NextResponse(e?.message || "Error", { status: 500 })
@@ -70,12 +85,14 @@ export async function GET(req: NextRequest) {
 			}
 		}
 		
-		// Asegurar que los arrays estén en formato correcto
+		// Asegurar que los arrays estén en formato correcto y normalizar usoPorDefecto
 		perfumes = perfumes.map(p => ({
 			...p,
 			imagenes: Array.isArray(p.imagenes) ? p.imagenes : [],
 			notas: Array.isArray(p.notas) ? p.notas : [],
 			sizes: Array.isArray(p.sizes) ? p.sizes : [],
+			usoPorDefecto: p.usoPorDefecto ? String(p.usoPorDefecto).trim().toUpperCase() : null,
+			fijarUso: p.fijarUso !== undefined ? Boolean(p.fijarUso) : false
 		}))
 		
 		// Agregar headers de caché para optimizar rendimiento

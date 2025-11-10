@@ -171,7 +171,23 @@ export default function PerfumesPage() {
 					{filteredPerfumes.map((perfume, filteredIndex) => {
 						const originalIndex = filteredIndices[filteredIndex]
 						const perfumeData = perfumesData[originalIndex]
-						const defaultUse = (perfumeData?.usoPorDefecto as "DIA" | "NOCHE" | "AMBOS") || "DIA"
+						// Normalizar usoPorDefecto: el valor ya viene normalizado desde la API
+						let defaultUse: "DIA" | "NOCHE" | "AMBOS" | undefined = undefined
+						if (perfumeData?.usoPorDefecto) {
+							const usoNormalizado = String(perfumeData.usoPorDefecto).trim().toUpperCase()
+							// Validar que el valor sea uno de los permitidos
+							if (usoNormalizado === "DIA") {
+								defaultUse = "DIA"
+							} else if (usoNormalizado === "NOCHE") {
+								defaultUse = "NOCHE"
+							} else if (usoNormalizado === "AMBOS") {
+								defaultUse = "AMBOS"
+							}
+							// Debug: verificar valores
+							if (process.env.NODE_ENV === 'development') {
+								console.log(`Perfume: ${perfume.name}, usoPorDefecto: ${perfumeData.usoPorDefecto}, normalizado: ${usoNormalizado}, defaultUse: ${defaultUse}`)
+							}
+						}
 						// En el catálogo público, SIEMPRE fijar el uso (no permitir cambios)
 						const fixedUse = true
 						return (

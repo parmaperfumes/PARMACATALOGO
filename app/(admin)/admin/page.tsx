@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import useSWR from "swr"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -11,10 +11,22 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 export default function AdminDashboardPage() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [showHidden, setShowHidden] = useState(false)
+	const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
+	const [localData, setLocalData] = useState<any[] | null>(null)
 	const { data, mutate, isLoading, error } = useSWR(
 		`/api/perfumes?includeInactive=true`, 
 		fetcher
 	)
+	
+	// Sincronizar localData con data de SWR
+	useEffect(() => {
+		if (data) {
+			setLocalData(data)
+		}
+	}, [data])
+	
+	// Usar localData si está disponible, sino usar data
+	const displayData = localData ?? data ?? []
 
 	async function handleDelete(id: string) {
 		if (!confirm("¿Eliminar este perfume?")) return
@@ -24,20 +36,67 @@ export default function AdminDashboardPage() {
 	}
 
 	async function handleToggleActive(id: string, currentActive: boolean) {
-		const res = await fetch("/api/perfumes", {
+		// Prevenir múltiples clics
+		if (togglingIds.has(id)) return
+		
+		// Agregar ID a la lista de elementos que se están actualizando
+		setTogglingIds(prev => new Set(prev).add(id))
+		
+		// Actualizar el estado local INMEDIATAMENTE (sin esperar al servidor)
+		const newActive = !currentActive
+		setLocalData(prev => {
+			if (!prev) return prev
+			return prev.map((p: any) => 
+				p.id === id ? { ...p, activo: newActive } : p
+			)
+		})
+		
+		// Enviar la petición al servidor en segundo plano
+		fetch("/api/perfumes", {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ id, activo: !currentActive })
+			body: JSON.stringify({ id, activo: newActive })
 		})
-		if (res.ok) {
-			mutate()
-		} else {
-			alert("Error al cambiar el estado del perfume")
-		}
+		.then(async (res) => {
+			if (!res.ok) {
+				const errorText = await res.text()
+				console.error("Error en PATCH:", errorText)
+				// Si falla, revertir el cambio local
+				setLocalData(prev => {
+					if (!prev) return prev
+					return prev.map((p: any) => 
+						p.id === id ? { ...p, activo: currentActive } : p
+					)
+				})
+				alert(`Error al cambiar el estado del perfume: ${errorText}`)
+			} else {
+				// Si tiene éxito, revalidar los datos del servidor en segundo plano
+				mutate()
+			}
+		})
+		.catch((error: any) => {
+			console.error("Error al cambiar estado:", error)
+			// Si hay un error, revertir el cambio local
+			setLocalData(prev => {
+				if (!prev) return prev
+				return prev.map((p: any) => 
+					p.id === id ? { ...p, activo: currentActive } : p
+				)
+			})
+			alert(`Error al cambiar el estado del perfume: ${error?.message || "Error desconocido"}`)
+		})
+		.finally(() => {
+			// Remover el ID de la lista de elementos que se están actualizando
+			setTogglingIds(prev => {
+				const newSet = new Set(prev)
+				newSet.delete(id)
+				return newSet
+			})
+		})
 	}
 
 	// Filtrar perfumes según búsqueda y estado
-	const filteredPerfumes = (data ?? []).filter((p: any) => {
+	const filteredPerfumes = displayData.filter((p: any) => {
 		// Filtro por búsqueda
 		if (searchQuery.trim() !== "") {
 			const searchLower = searchQuery.toLowerCase().trim()
@@ -150,8 +209,11 @@ export default function AdminDashboardPage() {
 										<div className="flex gap-2 justify-end items-center">
 											<button
 												onClick={() => handleToggleActive(p.id, p.activo)}
+												disabled={togglingIds.has(p.id)}
 												className={`p-2 rounded transition-colors ${
-													p.activo
+													togglingIds.has(p.id)
+														? "opacity-50 cursor-not-allowed"
+														: p.activo
 														? "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
 														: "text-blue-600 hover:bg-blue-50 hover:text-blue-800"
 												}`}
