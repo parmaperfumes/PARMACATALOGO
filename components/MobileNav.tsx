@@ -45,7 +45,7 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 						className={`mobile-nav-indicator ${isIndicatorOnWhatsApp ? 'whatsapp-active' : ''}`}
 						style={{
 							left: activeIndex >= 0 
-								? `calc(${activeIndex} * ((100% - 16px) / 3 + 8px))` 
+								? `calc(${activeIndex} * (100% / 3))` 
 								: '0',
 							opacity: activeIndex >= 0 ? 1 : 0
 						}}
