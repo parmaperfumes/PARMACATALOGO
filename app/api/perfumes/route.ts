@@ -49,7 +49,15 @@ export async function GET() {
 			sizes: Array.isArray(p.sizes) ? p.sizes : [],
 		}))
 		
-		return NextResponse.json(perfumes)
+		// Agregar headers de caché para optimizar rendimiento
+		// s-maxage: 60 segundos en CDN, stale-while-revalidate: 5 minutos
+		return NextResponse.json(perfumes, {
+			headers: {
+				'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+				'CDN-Cache-Control': 'public, s-maxage=60',
+				'Vercel-CDN-Cache-Control': 'public, s-maxage=60'
+			}
+		})
 	} catch (e: any) {
 		console.error("Error al listar perfumes:", e)
 		return new NextResponse(e?.message || "Error al listar", { status: 500 })

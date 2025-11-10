@@ -28,7 +28,11 @@ export default function PerfumesPage() {
 	useEffect(() => {
 		async function fetchPerfumes() {
 			try {
-				const res = await fetch("/api/perfumes")
+				// Usar caché del navegador para mejorar rendimiento
+				// La API ya tiene headers de caché configurados
+				const res = await fetch("/api/perfumes", {
+					cache: 'default' // Permite usar caché del navegador
+				})
 				if (res.ok) {
 					const data: PerfumeFromDB[] = await res.json()
 					setPerfumesData(data) // Guardar los datos originales

@@ -84,6 +84,8 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 						src={product.images[0]}
 						alt={product.name}
 						className="max-w-full max-h-full w-auto h-auto object-contain"
+						loading="lazy"
+						decoding="async"
 						onError={(e) => {
 							// Si la imagen falla al cargar, mostrar fondo sólido
 							e.currentTarget.style.display = 'none'
