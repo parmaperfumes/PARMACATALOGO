@@ -39,18 +39,19 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 		<>
 			{/* Barra de navegación móvil fija en la parte inferior */}
 			<nav className="mobile-nav-bar">
-				{/* Indicador animado que se mueve al elemento activo */}
-				<div 
-					className={`mobile-nav-indicator ${isIndicatorOnWhatsApp ? 'whatsapp-active' : ''}`}
-					style={{
-						left: activeIndex >= 0 
-							? `calc(4px + ${activeIndex} * ((100% - 8px) / 3 + 4px))` 
-							: '4px',
-						opacity: activeIndex >= 0 ? 1 : 0
-					}}
-				/>
-				
-				<button
+				<div className="mobile-nav-container">
+					{/* Indicador animado que se mueve al elemento activo */}
+					<div 
+						className={`mobile-nav-indicator ${isIndicatorOnWhatsApp ? 'whatsapp-active' : ''}`}
+						style={{
+							left: activeIndex >= 0 
+								? `calc(${activeIndex} * (100% / 3))` 
+								: '0',
+							opacity: activeIndex >= 0 ? 1 : 0
+						}}
+					/>
+					
+					<button
 					onClick={() => {
 						if (currentFilter === "HOMBRES") {
 							onFilterChange("TODOS")
@@ -95,6 +96,7 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 					</div>
 					<span className="mobile-nav-label">WhatsApp</span>
 				</button>
+				</div>
 			</nav>
 
 			{/* Modal de WhatsApp */}
