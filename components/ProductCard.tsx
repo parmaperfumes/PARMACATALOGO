@@ -77,27 +77,25 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 	}, [items, product.name, selectedSize, currentUse])
 
 	return (
-		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full h-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
+		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full h-[160px] sm:h-[250px] lg:h-[280px]" style={{ willChange: 'contents', contain: 'layout style paint' }}>
+			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
 				{product.images && product.images.length > 0 && product.images[0] ? (
-					<Image
+					<img
 						src={product.images[0]}
 						alt={product.name}
-						fill
-						className="object-contain"
+						className="object-contain w-full h-auto max-w-full block"
 						style={{
 							objectPosition: 'center center',
 							willChange: 'transform',
 							transform: 'translateZ(0)',
+							display: 'block',
 						}}
 						loading="lazy"
-						sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-						quality={75}
-						priority={false}
+						decoding="async"
 					/>
 				) : (
-					<div className="w-full h-full flex items-center justify-center">
+					<div className="w-full h-[180px] sm:h-[250px] lg:h-[280px] flex items-center justify-center">
 						<div className="text-gray-400 text-xs sm:text-sm">Sin imagen</div>
 					</div>
 				)}
