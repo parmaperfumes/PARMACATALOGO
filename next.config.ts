@@ -36,7 +36,6 @@ const nextConfig: NextConfig = {
 	poweredByHeader: false,
 	compress: true,
 	// Optimizaciones de rendimiento
-	swcMinify: true,
 	reactStrictMode: true,
 	// Optimización de bundle
 	experimental: {
