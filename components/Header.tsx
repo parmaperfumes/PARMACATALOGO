@@ -90,8 +90,8 @@ export function Header() {
 						</div>
 					</div>
 
-					{/* Barra de búsqueda móvil */}
-					<div className="header-search-mobile">
+					{/* Barra de búsqueda móvil - Oculto en móvil */}
+					<div className="header-search-mobile hidden">
 						<button 
 							className="header-search-mobile-btn touch-manipulation" 
 							aria-label="Buscar"

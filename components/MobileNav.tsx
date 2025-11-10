@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, User, UserCircle, MessageCircle } from "lucide-react"
-import { useSearch } from "@/context/SearchContext"
+import { User, UserCircle, MessageCircle } from "lucide-react"
 import { useWhatsApp } from "@/context/WhatsAppContext"
 import { WhatsAppModal } from "./WhatsAppModal"
 
@@ -12,23 +11,45 @@ type MobileNavProps = {
 }
 
 export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
-	const { setSearchQuery } = useSearch()
 	const { items } = useWhatsApp()
-	const [isSearchOpen, setIsSearchOpen] = useState(false)
 	const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false)
-
-	const handleSearchClick = () => {
-		setIsSearchOpen(true)
-	}
 
 	const handleWhatsAppClick = () => {
 		setIsWhatsAppModalOpen(true)
 	}
 
+	// Determinar si WhatsApp está activo (tiene items o modal abierto)
+	const isWhatsAppActive = items.length > 0 || isWhatsAppModalOpen
+
+	// Determinar qué elemento está activo para la animación
+	// Priorizar el filtro activo, solo mover el indicador a WhatsApp si no hay filtro activo
+	const getActiveIndex = () => {
+		// Si hay un filtro activo, mantener el indicador ahí
+		if (currentFilter === "HOMBRES") return 0
+		if (currentFilter === "MUJERES") return 1
+		// Solo si no hay filtro activo y hay items, mostrar WhatsApp como activo
+		if (isWhatsAppActive) return 2
+		return -1
+	}
+
+	const activeIndex = getActiveIndex()
+	const isIndicatorOnWhatsApp = activeIndex === 2
+
 	return (
 		<>
 			{/* Barra de navegación móvil fija en la parte inferior */}
 			<nav className="mobile-nav-bar">
+				{/* Indicador animado que se mueve al elemento activo */}
+				<div 
+					className={`mobile-nav-indicator ${isIndicatorOnWhatsApp ? 'whatsapp-active' : ''}`}
+					style={{
+						left: activeIndex >= 0 
+							? `calc(4px + ${activeIndex} * ((100% - 8px) / 3 + 4px))` 
+							: '4px',
+						opacity: activeIndex >= 0 ? 1 : 0
+					}}
+				/>
+				
 				<button
 					onClick={() => {
 						if (currentFilter === "HOMBRES") {
@@ -60,17 +81,8 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 				</button>
 
 				<button
-					onClick={handleSearchClick}
-					className={`mobile-nav-item ${isSearchOpen ? "mobile-nav-item-active" : ""}`}
-					aria-label="Buscar perfumes"
-				>
-					<Search className="mobile-nav-icon" />
-					<span className="mobile-nav-label">Buscar</span>
-				</button>
-
-				<button
 					onClick={handleWhatsAppClick}
-					className={`mobile-nav-item mobile-nav-item-whatsapp ${isWhatsAppModalOpen ? "mobile-nav-item-active" : ""}`}
+					className={`mobile-nav-item mobile-nav-item-whatsapp ${isWhatsAppActive ? "mobile-nav-item-active" : ""}`}
 					aria-label="Contactar por WhatsApp"
 				>
 					<div className="relative">
@@ -84,32 +96,6 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 					<span className="mobile-nav-label">WhatsApp</span>
 				</button>
 			</nav>
-
-			{/* Modal de búsqueda móvil */}
-			{isSearchOpen && (
-				<div className="mobile-search-overlay">
-					<div className="mobile-search-backdrop" onClick={() => setIsSearchOpen(false)} />
-					<div className="mobile-search-container">
-						<div className="relative w-full">
-							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-							<input
-								type="text"
-								placeholder="Buscar perfumes..."
-								className="w-full h-12 pl-10 pr-12 bg-white border-2 border-gray-300 rounded-full text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-								autoFocus
-								onChange={(e) => setSearchQuery(e.target.value)}
-							/>
-							<button
-								onClick={() => setIsSearchOpen(false)}
-								className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors touch-manipulation px-2 text-xl"
-								aria-label="Cerrar búsqueda"
-							>
-								✕
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
 
 			{/* Modal de WhatsApp */}
 			<WhatsAppModal isOpen={isWhatsAppModalOpen} onClose={() => setIsWhatsAppModalOpen(false)} />
