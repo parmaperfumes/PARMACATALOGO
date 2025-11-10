@@ -96,12 +96,13 @@ export async function GET(req: NextRequest) {
 		}))
 		
 		// Agregar headers de caché para optimizar rendimiento
-		// s-maxage: 60 segundos en CDN, stale-while-revalidate: 5 minutos
+		// s-maxage: 300 segundos (5 min) en CDN, stale-while-revalidate: 1 hora
 		return NextResponse.json(perfumes, {
 			headers: {
-				'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-				'CDN-Cache-Control': 'public, s-maxage=60',
-				'Vercel-CDN-Cache-Control': 'public, s-maxage=60'
+				'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
+				'CDN-Cache-Control': 'public, s-maxage=300',
+				'Vercel-CDN-Cache-Control': 'public, s-maxage=300',
+				'X-Content-Type-Options': 'nosniff',
 			}
 		})
 	} catch (e: any) {

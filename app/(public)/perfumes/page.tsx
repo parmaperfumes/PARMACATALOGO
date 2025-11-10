@@ -24,15 +24,14 @@ export default function PerfumesPage() {
 	const [perfumes, setPerfumes] = useState<Product[]>([])
 	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
 	const [loading, setLoading] = useState(true)
-	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("TODOS")
+	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("HOMBRES")
 
 	useEffect(() => {
 		async function fetchPerfumes() {
 			try {
-				// Usar caché del navegador para mejorar rendimiento
-				// La API ya tiene headers de caché configurados
+				// Usar caché del navegador y revalidación para mejorar rendimiento
 				const res = await fetch("/api/perfumes", {
-					cache: 'default' // Permite usar caché del navegador
+					cache: 'force-cache' // Usar caché agresivamente
 				})
 				if (res.ok) {
 					const data: PerfumeFromDB[] = await res.json()
@@ -124,16 +123,6 @@ export default function PerfumesPage() {
 			<div className="hidden lg:flex justify-center mb-4 sm:mb-8">
 				<div className="flex gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm p-0.5 sm:p-1 rounded-full border border-gray-200 shadow-sm">
 					<button
-						onClick={() => setSelectedFilter("TODOS")}
-						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
-							selectedFilter === "TODOS"
-								? "bg-[#2c2f43] text-white shadow-md"
-								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-						}`}
-					>
-						TODOS
-					</button>
-					<button
 						onClick={() => setSelectedFilter("HOMBRES")}
 						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
 							selectedFilter === "HOMBRES"
@@ -167,7 +156,7 @@ export default function PerfumesPage() {
 					</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
+				<div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6" style={{ willChange: 'contents', contain: 'layout style paint' }}>
 					{filteredPerfumes.map((perfume, filteredIndex) => {
 						const originalIndex = filteredIndices[filteredIndex]
 						const perfumeData = perfumesData[originalIndex]

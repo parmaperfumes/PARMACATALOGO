@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, memo } from "react"
 import { Button } from "@/components/ui/button"
 import { useWhatsApp } from "@/context/WhatsAppContext"
+import Image from "next/image"
 
 export type ProductSizeMl = 30 | 50 | 100
 
@@ -24,7 +25,7 @@ export type ProductCardProps = {
 	fixedUse?: boolean // Si es true, los botones no se pueden cambiar
 }
 
-export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = false }: ProductCardProps) {
+const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse = false }: ProductCardProps) => {
 	// Si fixedUse es undefined o false, pero estamos en el catálogo público, forzar a true
 	// Para el catálogo público, siempre debe estar fijado
 	const isFixed = fixedUse === true
@@ -76,31 +77,27 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	}, [items, product.name, selectedSize, currentUse])
 
 	return (
-		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full h-full ${className ?? ""}`}>
+		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full h-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white overflow-visible flex-shrink-0 flex items-center justify-center w-full">
+			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full h-[160px] sm:h-[250px] lg:h-[280px]" style={{ willChange: 'contents', contain: 'layout style paint' }}>
 				{product.images && product.images.length > 0 && product.images[0] ? (
-					<img
+					<Image
 						src={product.images[0]}
 						alt={product.name}
+						fill
 						className="object-contain"
 						style={{
 							objectPosition: 'center center',
-							display: 'block',
-							maxWidth: '100%',
-							maxHeight: 'none',
-							width: 'auto',
-							height: 'auto'
+							willChange: 'transform',
+							transform: 'translateZ(0)',
 						}}
 						loading="lazy"
-						decoding="async"
-						onError={(e) => {
-							// Si la imagen falla al cargar, mostrar fondo sólido
-							e.currentTarget.style.display = 'none'
-						}}
+						sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+						quality={75}
+						priority={false}
 					/>
 				) : (
-					<div className="w-full h-[160px] sm:h-[250px] lg:h-[280px] flex items-center justify-center">
+					<div className="w-full h-full flex items-center justify-center">
 						<div className="text-gray-400 text-xs sm:text-sm">Sin imagen</div>
 					</div>
 				)}
@@ -283,7 +280,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 							}
 						}}
-						className={`w-full h-9 sm:h-10 lg:h-11 rounded-lg sm:rounded-xl text-xs sm:text-sm lg:text-base transition-all duration-200 border-2 flex items-center justify-center touch-manipulation active:scale-95 ${
+						className={`w-full h-9 sm:h-10 lg:h-11 rounded-lg sm:rounded-xl text-xs sm:text-sm lg:text-base transition-colors duration-150 border-2 flex items-center justify-center touch-manipulation active:scale-95 ${
 							isAdded 
 								? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
 								: "bg-white hover:bg-green-50 text-green-600 border-green-600"
@@ -308,3 +305,6 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 		</div>
 	)
 }
+
+// Memoizar el componente para evitar re-renders innecesarios
+export const ProductCard = memo(ProductCardComponent)

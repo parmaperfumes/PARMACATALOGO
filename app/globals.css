@@ -101,6 +101,7 @@ body::before {
 }
 
 /* Blobs adicionales con animación sutil para más profundidad */
+/* Optimizado para Android: deshabilitar animación y background-attachment fixed */
 body::after {
   content: "";
   position: fixed;
@@ -117,19 +118,29 @@ body::after {
     radial-gradient(ellipse 70% 75% at 60% 80%, rgba(152, 251, 152, 0.15), transparent 80%);
   filter: blur(120px);
   opacity: 0.8;
-  background-attachment: fixed;
-  animation: blobFloat 20s ease-in-out infinite;
+  /* Removido background-attachment: fixed para mejorar rendimiento en Android */
+  will-change: transform;
+  transform: translateZ(0); /* Aceleración de hardware */
+}
+
+/* Animación solo en dispositivos con buen rendimiento */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (transform: translateZ(0)) {
+    body::after {
+      animation: blobFloat 20s ease-in-out infinite;
+    }
+  }
 }
 
 @keyframes blobFloat {
   0%, 100% {
-    transform: translate(0, 0) scale(1);
+    transform: translateZ(0) translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(30px, -30px) scale(1.05);
+    transform: translateZ(0) translate(30px, -30px) scale(1.05);
   }
   66% {
-    transform: translate(-20px, 20px) scale(0.95);
+    transform: translateZ(0) translate(-20px, 20px) scale(0.95);
   }
 }
 
@@ -149,6 +160,8 @@ header {
   border-bottom: 1px solid rgba(229, 231, 235, 0.5);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  will-change: transform;
+  transform: translateZ(0); /* Aceleración de hardware para Android */
 }
 
 .header-content {
