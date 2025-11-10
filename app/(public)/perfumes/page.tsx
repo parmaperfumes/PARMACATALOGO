@@ -167,7 +167,7 @@ export default function PerfumesPage() {
 					</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6 lg:justify-items-center">
+				<div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
 					{filteredPerfumes.map((perfume, filteredIndex) => {
 						const originalIndex = filteredIndices[filteredIndex]
 						const perfumeData = perfumesData[originalIndex]
@@ -175,7 +175,7 @@ export default function PerfumesPage() {
 						// En el catálogo público, SIEMPRE fijar el uso (no permitir cambios)
 						const fixedUse = true
 						return (
-							<div key={perfume.id} className="w-full lg:w-auto">
+							<div key={perfume.id} className="w-full">
 								<ProductCard product={perfume} defaultUse={defaultUse} fixedUse={fixedUse} />
 							</div>
 						)

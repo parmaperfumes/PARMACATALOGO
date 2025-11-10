@@ -76,16 +76,16 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	}, [items, product.name, selectedSize, currentUse])
 
 	return (
-		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full max-w-[280px] lg:max-w-[380px] lg:w-full mx-auto ${className ?? ""}`}>
+		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full h-full ${className ?? ""}`}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white h-[180px] sm:h-[250px] overflow-hidden flex-shrink-0 flex items-center justify-center p-0 w-full">
+			<div className="relative bg-[#2c2f43] text-white h-[180px] sm:h-[250px] lg:h-[280px] overflow-hidden flex-shrink-0 flex items-center justify-center p-0 lg:p-0 w-full">
 				{product.images && product.images.length > 0 && product.images[0] ? (
 					<img
 						src={product.images[0]}
 						alt={product.name}
-						className="max-w-full max-h-full w-auto h-auto object-contain"
+						className="w-full h-full object-contain lg:w-full lg:h-full"
 						style={{
-							objectPosition: 'center'
+							objectPosition: 'center center'
 						}}
 						loading="lazy"
 						decoding="async"
