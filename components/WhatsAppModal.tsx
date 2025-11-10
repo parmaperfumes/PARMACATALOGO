@@ -25,13 +25,13 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 		// Si es un solo perfume
 		if (items.length === 1) {
 			const item = items[0]
-			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${item.name} - ${item.size} ML`
+			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${item.size} ML`
 		}
 		
 		// Si son varios perfumes
 		let message = "Buenas 👋, me gustaria ordenar estos perfumes:\n\n"
 		items.forEach((item) => {
-			message += `${item.name} - ${item.size} ML\n`
+			message += `${item.size} ML\n`
 		})
 		return message
 	}
@@ -81,7 +81,7 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 										<div className="flex-1 min-w-0">
 											<p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{item.name}</p>
 											<p className="text-[10px] sm:text-xs text-gray-500">
-												{item.size} ML • {item.use}
+												{item.size} ML
 											</p>
 										</div>
 									</div>
