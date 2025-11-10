@@ -76,16 +76,17 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	}, [items, product.name, selectedSize, currentUse])
 
 	return (
-		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full h-full ${className ?? ""}`}>
+		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full ${className ?? ""}`}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white h-[180px] sm:h-[250px] lg:h-[280px] overflow-hidden flex-shrink-0 flex items-center justify-center p-0 lg:p-0 w-full">
+			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full">
 				{product.images && product.images.length > 0 && product.images[0] ? (
 					<img
 						src={product.images[0]}
 						alt={product.name}
-						className="w-full h-full object-contain lg:w-full lg:h-full"
+						className="w-full h-auto object-contain"
 						style={{
-							objectPosition: 'center center'
+							objectPosition: 'center center',
+							display: 'block'
 						}}
 						loading="lazy"
 						decoding="async"
@@ -95,7 +96,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 						}}
 					/>
 				) : (
-					<div className="w-full h-full flex items-center justify-center">
+					<div className="w-full h-[180px] sm:h-[250px] lg:h-[280px] flex items-center justify-center">
 						<div className="text-gray-400 text-xs sm:text-sm">Sin imagen</div>
 					</div>
 				)}
