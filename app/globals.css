@@ -311,3 +311,165 @@ body::after {
   }
 }
 
+/* Mobile Navigation Bar */
+.mobile-nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 8px 4px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  gap: 4px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 20px;
+  position: relative;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.95);
+}
+
+.mobile-nav-item-active {
+  background: #0E1820;
+  color: #ffffff;
+}
+
+.mobile-nav-item-active .mobile-nav-icon {
+  color: #ffffff;
+  stroke-width: 2.5;
+}
+
+.mobile-nav-item-whatsapp {
+  color: #6b7280;
+}
+
+.mobile-nav-item-whatsapp.mobile-nav-item-active {
+  background: #0E1820;
+  color: #ffffff;
+}
+
+.mobile-nav-item-whatsapp.mobile-nav-item-active .mobile-nav-icon {
+  color: #ffffff;
+}
+
+.mobile-nav-icon {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.mobile-nav-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: inherit;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.mobile-nav-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid white;
+  z-index: 10;
+}
+
+/* Mobile Search Overlay */
+.mobile-search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.mobile-search-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.mobile-search-container {
+  position: relative;
+  z-index: 201;
+  width: 90%;
+  max-width: 400px;
+}
+
+/* Segmented Control para filtros móviles */
+.segmented-control {
+  display: flex;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.segmented-control-item {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.segmented-control-active {
+  background: #0E1820;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Ocultar en desktop */
+@media (min-width: 1024px) {
+  .mobile-nav-bar {
+    display: none;
+  }
+}
+

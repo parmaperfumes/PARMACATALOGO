@@ -22,7 +22,7 @@ export function WhatsAppButton() {
 					right: '20px',
 					zIndex: 1000,
 				}}
-				className="bg-[#25D366] hover:bg-[#20BA5A] active:bg-[#1DA851] text-white rounded-full w-14 h-14 sm:w-16 sm:h-16 shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center justify-center relative touch-manipulation"
+				className="hidden lg:flex bg-[#25D366] hover:bg-[#20BA5A] active:bg-[#1DA851] text-white rounded-full w-14 h-14 sm:w-16 sm:h-16 shadow-2xl hover:shadow-3xl transition-all duration-300 items-center justify-center relative touch-manipulation"
 				aria-label="Contactar por WhatsApp"
 			>
 			<svg

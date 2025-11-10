@@ -69,9 +69,6 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 
 				{/* Content */}
 				<div className="flex-1 overflow-y-auto p-4 sm:p-6">
-					{/* Intro Text */}
-					<p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Escríbenos y te los llevamos hoy mismo</p>
-
 					{/* Selected Items List */}
 					<div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
 						{items.length === 0 ? (

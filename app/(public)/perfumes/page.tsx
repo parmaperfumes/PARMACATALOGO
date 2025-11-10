@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react"
 import { ProductCard, type Product } from "@/components/ProductCard"
 import { useSearch } from "@/context/SearchContext"
+import { MobileNav } from "@/components/MobileNav"
 
 type PerfumeFromDB = {
 	id: string
@@ -118,9 +119,9 @@ export default function PerfumesPage() {
 		.filter((idx): idx is number => idx !== null)
 
 	return (
-		<div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-			{/* Filtros de Género */}
-			<div className="flex justify-center mb-4 sm:mb-8">
+		<div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-20 lg:pb-8">
+			{/* Filtros de Género - Solo visible en desktop */}
+			<div className="hidden lg:flex justify-center mb-4 sm:mb-8">
 				<div className="flex gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm p-0.5 sm:p-1 rounded-full border border-gray-200 shadow-sm">
 					<button
 						onClick={() => setSelectedFilter("TODOS")}
@@ -181,6 +182,12 @@ export default function PerfumesPage() {
 					})}
 				</div>
 			)}
+
+			{/* Navegación móvil */}
+			<MobileNav 
+				onFilterChange={setSelectedFilter}
+				currentFilter={selectedFilter}
+			/>
 		</div>
 	)
 }
