@@ -76,9 +76,9 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	}, [items, product.name, selectedSize, currentUse])
 
 	return (
-		<div className={`rounded-xl sm:rounded-2xl overflow-hidden border bg-white ${className ?? ""}`}>
+		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white h-full flex flex-col ${className ?? ""}`}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white min-h-[200px] sm:min-h-[300px] flex items-center justify-center overflow-hidden">
+			<div className="relative bg-[#2c2f43] text-white h-[180px] sm:h-[300px] flex items-center justify-center overflow-hidden flex-shrink-0">
 				{product.images && product.images.length > 0 && product.images[0] ? (
 					<img
 						src={product.images[0]}
@@ -99,40 +99,41 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 			</div>
 
 			{/* Info y controles */}
-			<div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
-				<div className="flex items-center gap-2">
-					<h3 className="text-lg sm:text-xl font-extrabold leading-tight uppercase">
+			<div className="p-2.5 sm:p-4 flex flex-col flex-1 space-y-2 sm:space-y-3">
+				{/* Título - Altura fija */}
+				<div className="h-[28px] sm:h-[32px] flex items-center">
+					<h3 className="text-base sm:text-xl font-extrabold leading-tight uppercase line-clamp-1">
 						{product.name}
 					</h3>
 				</div>
-				{(product.subtitle || product.gender) && (
-					<div className="flex items-center gap-2 flex-wrap">
-						{product.subtitle && (
-							<p className="text-xs sm:text-sm tracking-wide text-gray-600 uppercase">
-								{product.subtitle}
-							</p>
-						)}
-						{product.gender ? (
-							<span className="text-[10px] font-bold uppercase bg-red-500 text-white px-2 py-1 rounded-md">
-								{product.gender}
-							</span>
-						) : null}
-					</div>
-				)}
+				
+				{/* Subtítulo y género - Altura fija */}
+				<div className="h-[20px] sm:h-[24px] flex items-center gap-2">
+					{product.subtitle ? (
+						<p className="text-xs sm:text-sm tracking-wide text-gray-600 uppercase line-clamp-1">
+							{product.subtitle}
+						</p>
+					) : null}
+					{product.gender ? (
+						<span className="text-[10px] font-bold uppercase bg-red-500 text-white px-2 py-0.5 rounded-md flex-shrink-0">
+							{product.gender}
+						</span>
+					) : null}
+				</div>
 
-				{/* Uso: Día/Noche */}
-				<div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold">
+				{/* Uso: Día/Noche - Altura fija */}
+				<div className="h-[28px] sm:h-[32px] flex items-center gap-2 sm:gap-3">
 					{isFixed ? (
 						// Si está fijado, mostrar como elementos no interactivos (divs) - NO CLICABLES
 						<>
 							<div
-								className={`px-2 sm:px-3 py-1 rounded-md text-xs ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
+								className={`px-2 sm:px-3 py-1 rounded-md text-xs font-semibold h-7 sm:h-8 flex items-center justify-center ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
 								style={{ userSelect: 'none' }}
 							>
 								DIA
 							</div>
 							<div
-								className={`px-2 sm:px-3 py-1 rounded-md text-xs ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
+								className={`px-2 sm:px-3 py-1 rounded-md text-xs font-semibold h-7 sm:h-8 flex items-center justify-center ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
 								style={{ userSelect: 'none' }}
 							>
 								NOCHE
@@ -148,7 +149,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 									setSelectedDia(!selectedDia)
 								}}
 								disabled={isAmbos}
-								className={`px-2 sm:px-3 py-1 rounded-md border text-xs ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
+								className={`px-2 sm:px-3 py-1 rounded-md border text-xs font-semibold h-7 sm:h-8 flex items-center justify-center ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
 							>
 								DIA
 							</button>
@@ -159,7 +160,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 									setSelectedNoche(!selectedNoche)
 								}}
 								disabled={isAmbos}
-								className={`px-2 sm:px-3 py-1 rounded-md border text-xs ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
+								className={`px-2 sm:px-3 py-1 rounded-md border text-xs font-semibold h-7 sm:h-8 flex items-center justify-center ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
 							>
 								NOCHE
 							</button>
@@ -167,21 +168,21 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 					)}
 				</div>
 
-				{/* Tamaños */}
-				<div className="flex flex-wrap gap-2 sm:gap-3">
+				{/* Tamaños - Altura fija, todos en una fila */}
+				<div className="h-[32px] sm:h-[36px] flex items-center gap-1.5 sm:gap-2">
 					{product.sizes.map((s) => (
 						<button
 							key={s}
 							onClick={() => setSelectedSize(s)}
-							className={`h-9 sm:h-10 rounded-full border px-3 sm:px-4 text-xs sm:text-sm ${selectedSize === s ? "bg-black text-white" : "bg-white"}`}
+							className={`h-7 sm:h-9 rounded-full border px-2 sm:px-3 text-[10px] sm:text-xs font-semibold flex items-center justify-center flex-1 min-w-0 ${selectedSize === s ? "bg-black text-white border-black" : "bg-white border-gray-300"}`}
 						>
 							{s} ML
 						</button>
 					))}
 				</div>
 
-				{/* CTA */}
-				<div className="pt-1">
+				{/* CTA - Altura fija y siempre al final */}
+				<div className="mt-auto pt-1">
 					<Button
 						onClick={() => {
 							const currentItem = {
@@ -202,7 +203,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 							}
 						}}
-						className={`w-full h-10 sm:h-11 rounded-lg sm:rounded-xl text-sm sm:text-base transition-all duration-200 border-2 ${
+						className={`w-full h-10 sm:h-11 rounded-lg sm:rounded-xl text-sm sm:text-base transition-all duration-200 border-2 flex items-center justify-center ${
 							isAdded 
 								? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
 								: "bg-white hover:bg-green-50 text-green-600 border-green-600"
