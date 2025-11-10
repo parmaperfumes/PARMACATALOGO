@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
 import Image from "next/image"
 import { useSearch } from "@/context/SearchContext"
 
@@ -27,6 +27,7 @@ export function Header() {
 			{ label: "Garantía", href: "/garantia" },
 		],
 	})
+	const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
 	useEffect(() => {
 		async function loadConfig() {
@@ -91,11 +92,41 @@ export function Header() {
 
 					{/* Barra de búsqueda móvil */}
 					<div className="header-search-mobile">
-						<button className="header-search-mobile-btn" aria-label="Buscar">
+						<button 
+							className="header-search-mobile-btn touch-manipulation" 
+							aria-label="Buscar"
+							onClick={() => setIsMobileSearchOpen(true)}
+						>
 							<Search style={{ height: '20px', width: '20px' }} />
 						</button>
 					</div>
 				</div>
+				
+				{/* Dropdown de búsqueda móvil - Fuera del header-content para posicionamiento correcto */}
+				{isMobileSearchOpen && (
+					<div className="header-search-mobile-dropdown">
+						<div className="header-search-mobile-dropdown-content">
+							<div className="relative w-full">
+								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+								<input
+									type="search"
+									placeholder="Buscar perfumes..."
+									className="w-full h-10 pl-10 pr-10 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+									autoFocus
+								/>
+								<button
+									onClick={() => setIsMobileSearchOpen(false)}
+									className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors touch-manipulation"
+									aria-label="Cerrar búsqueda"
+								>
+									<X className="h-4 w-4" />
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 		</header>
 	)

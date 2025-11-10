@@ -1,35 +1,64 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET() {
+export async function PATCH(req: NextRequest) {
+	if (!process.env.DATABASE_URL) {
+		return new NextResponse("DATABASE_URL no configurada", { status: 501 })
+	}
+	try {
+		const { id, activo } = await req.json()
+		if (!id || typeof activo !== 'boolean') {
+			return new NextResponse("ID y activo son requeridos", { status: 400 })
+		}
+		
+		await prisma.$executeRawUnsafe(
+			`UPDATE "Perfume" SET activo = $1 WHERE id = $2`,
+			activo,
+			id
+		)
+		
+		return NextResponse.json({ success: true })
+	} catch (e: any) {
+		console.error("Error al actualizar estado del perfume:", e)
+		return new NextResponse(e?.message || "Error", { status: 500 })
+	}
+}
+
+export async function GET(req: NextRequest) {
 	if (!process.env.DATABASE_URL) {
 		return NextResponse.json([])
 	}
 	try {
+		// Verificar si es una petición del admin (incluir inactivos)
+		const url = new URL(req.url)
+		const includeInactive = url.searchParams.get('includeInactive') === 'true'
+		
 		// Usar SQL raw para evitar errores si los campos nuevos no existen
 		let perfumes: any[]
 		try {
 			// Intentar leer con los nuevos campos primero
-			perfumes = await prisma.$queryRaw<Array<any>>`
+			const whereClause = includeInactive ? '' : 'WHERE activo = true'
+			perfumes = await prisma.$queryRawUnsafe<Array<any>>(`
 				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
 				       "usoPorDefecto", "fijarUso"
 				FROM "Perfume"
-				WHERE activo = true
+				${whereClause}
 				ORDER BY "createdAt" DESC
-			`
+			`)
 		} catch (e: any) {
 			// Si los campos nuevos no existen, leer sin ellos
 			if (e.message?.includes("usoPorDefecto") || e.message?.includes("fijarUso") || e.message?.includes("column") || e.message?.includes("does not exist")) {
-				perfumes = await prisma.$queryRaw<Array<any>>`
+				const whereClause = includeInactive ? '' : 'WHERE activo = true'
+				perfumes = await prisma.$queryRawUnsafe<Array<any>>(`
 					SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 					       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 					       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt"
 					FROM "Perfume"
-					WHERE activo = true
+					${whereClause}
 					ORDER BY "createdAt" DESC
-				`
+				`)
 				// Agregar valores por defecto para los campos que no existen
 				perfumes = perfumes.map(p => ({
 					...p,

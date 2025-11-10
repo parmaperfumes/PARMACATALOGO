@@ -118,13 +118,13 @@ export default function PerfumesPage() {
 		.filter((idx): idx is number => idx !== null)
 
 	return (
-		<div className="container mx-auto px-4 py-8">
+		<div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
 			{/* Filtros de Género */}
-			<div className="flex justify-center mb-8">
-				<div className="flex gap-2 bg-white/80 backdrop-blur-sm p-1 rounded-full border border-gray-200 shadow-sm">
+			<div className="flex justify-center mb-4 sm:mb-8">
+				<div className="flex gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm p-0.5 sm:p-1 rounded-full border border-gray-200 shadow-sm">
 					<button
 						onClick={() => setSelectedFilter("TODOS")}
-						className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
 							selectedFilter === "TODOS"
 								? "bg-[#2c2f43] text-white shadow-md"
 								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -134,7 +134,7 @@ export default function PerfumesPage() {
 					</button>
 					<button
 						onClick={() => setSelectedFilter("HOMBRES")}
-						className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
 							selectedFilter === "HOMBRES"
 								? "bg-[#2c2f43] text-white shadow-md"
 								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -144,7 +144,7 @@ export default function PerfumesPage() {
 					</button>
 					<button
 						onClick={() => setSelectedFilter("MUJERES")}
-						className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
 							selectedFilter === "MUJERES"
 								? "bg-[#2c2f43] text-white shadow-md"
 								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -156,8 +156,8 @@ export default function PerfumesPage() {
 			</div>
 
 			{filteredPerfumes.length === 0 ? (
-				<div className="text-center py-12">
-					<p className="text-gray-600">
+				<div className="text-center py-8 sm:py-12">
+					<p className="text-gray-600 text-sm sm:text-base px-4">
 						{searchQuery.trim() !== "" 
 							? `No se encontraron perfumes que coincidan con "${searchQuery}"`
 							: selectedFilter === "TODOS" 
@@ -166,7 +166,7 @@ export default function PerfumesPage() {
 					</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 					{filteredPerfumes.map((perfume, filteredIndex) => {
 						const originalIndex = filteredIndices[filteredIndex]
 						const perfumeData = perfumesData[originalIndex]

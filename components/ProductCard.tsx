@@ -76,9 +76,9 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 	}, [items, product.name, selectedSize, currentUse])
 
 	return (
-		<div className={`rounded-2xl overflow-hidden border bg-white ${className ?? ""}`}>
+		<div className={`rounded-xl sm:rounded-2xl overflow-hidden border bg-white ${className ?? ""}`}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white min-h-[300px] flex items-center justify-center overflow-hidden">
+			<div className="relative bg-[#2c2f43] text-white min-h-[200px] sm:min-h-[300px] flex items-center justify-center overflow-hidden">
 				{product.images && product.images.length > 0 && product.images[0] ? (
 					<img
 						src={product.images[0]}
@@ -93,22 +93,22 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 					/>
 				) : (
 					<div className="w-full h-full flex items-center justify-center">
-						<div className="text-gray-400 text-sm">Sin imagen</div>
+						<div className="text-gray-400 text-xs sm:text-sm">Sin imagen</div>
 					</div>
 				)}
 			</div>
 
 			{/* Info y controles */}
-			<div className="p-4 space-y-3">
+			<div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
 				<div className="flex items-center gap-2">
-					<h3 className="text-xl font-extrabold leading-tight uppercase">
+					<h3 className="text-lg sm:text-xl font-extrabold leading-tight uppercase">
 						{product.name}
 					</h3>
 				</div>
 				{(product.subtitle || product.gender) && (
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 flex-wrap">
 						{product.subtitle && (
-							<p className="text-sm tracking-wide text-gray-600 uppercase">
+							<p className="text-xs sm:text-sm tracking-wide text-gray-600 uppercase">
 								{product.subtitle}
 							</p>
 						)}
@@ -121,18 +121,18 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 				)}
 
 				{/* Uso: Día/Noche */}
-				<div className="flex items-center gap-3 text-xs font-semibold">
+				<div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold">
 					{isFixed ? (
 						// Si está fijado, mostrar como elementos no interactivos (divs) - NO CLICABLES
 						<>
 							<div
-								className={`px-3 py-1 rounded-md ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
+								className={`px-2 sm:px-3 py-1 rounded-md text-xs ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
 								style={{ userSelect: 'none' }}
 							>
 								DIA
 							</div>
 							<div
-								className={`px-3 py-1 rounded-md ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
+								className={`px-2 sm:px-3 py-1 rounded-md text-xs ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} border cursor-default select-none pointer-events-none`}
 								style={{ userSelect: 'none' }}
 							>
 								NOCHE
@@ -148,7 +148,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 									setSelectedDia(!selectedDia)
 								}}
 								disabled={isAmbos}
-								className={`px-3 py-1 rounded-md border ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
+								className={`px-2 sm:px-3 py-1 rounded-md border text-xs ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
 							>
 								DIA
 							</button>
@@ -159,7 +159,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 									setSelectedNoche(!selectedNoche)
 								}}
 								disabled={isAmbos}
-								className={`px-3 py-1 rounded-md border ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
+								className={`px-2 sm:px-3 py-1 rounded-md border text-xs ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}`}
 							>
 								NOCHE
 							</button>
@@ -168,12 +168,12 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 				</div>
 
 				{/* Tamaños */}
-				<div className="flex flex-wrap gap-3">
+				<div className="flex flex-wrap gap-2 sm:gap-3">
 					{product.sizes.map((s) => (
 						<button
 							key={s}
 							onClick={() => setSelectedSize(s)}
-							className={`h-10 rounded-full border px-4 text-sm ${selectedSize === s ? "bg-black text-white" : "bg-white"}`}
+							className={`h-9 sm:h-10 rounded-full border px-3 sm:px-4 text-xs sm:text-sm ${selectedSize === s ? "bg-black text-white" : "bg-white"}`}
 						>
 							{s} ML
 						</button>
@@ -202,7 +202,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 							}
 						}}
-						className={`w-full h-11 rounded-xl text-base transition-all duration-200 border-2 ${
+						className={`w-full h-10 sm:h-11 rounded-lg sm:rounded-xl text-sm sm:text-base transition-all duration-200 border-2 ${
 							isAdded 
 								? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
 								: "bg-white hover:bg-green-50 text-green-600 border-green-600"
@@ -210,7 +210,7 @@ export function ProductCard({ product, onAdd, className, defaultUse, fixedUse = 
 					>
 						{isAdded ? (
 							<span className="flex items-center justify-center gap-2">
-								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
 								</svg>
 								AGREGADO

@@ -59,7 +59,7 @@
   }
 }
 
-/* Degradado difuso de fondo - Tono Parma (#0f1821) - Estilo suave y etéreo */
+/* Degradado moderno con blobs pastel difuminados */
 body::before {
   content: "";
   position: fixed;
@@ -70,17 +70,67 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    /* Fondo base blanco */
-    #ffffff,
-    /* Gradientes radiales suaves con variaciones sutiles del color Parma */
-    radial-gradient(ellipse 80% 50% at 0% 0%, rgba(15, 24, 33, 0.08), transparent 60%),
-    radial-gradient(ellipse 60% 80% at 100% 0%, rgba(20, 30, 40, 0.06), transparent 60%),
-    radial-gradient(ellipse 70% 60% at 0% 100%, rgba(25, 35, 45, 0.05), transparent 60%),
-    radial-gradient(ellipse 50% 70% at 100% 100%, rgba(15, 24, 33, 0.04), transparent 60%),
-    /* Gradiente central muy sutil */
-    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(30, 40, 50, 0.03), transparent 70%);
-  filter: blur(100px);
+    /* Degradado base: blanco → rosa suave → lila → verde menta */
+    linear-gradient(135deg, 
+      #ffffff 0%,
+      #fef7f0 20%,
+      #fce7f3 40%,
+      #f3e8ff 60%,
+      #e0f2fe 80%,
+      #d1fae5 100%
+    ),
+    /* Blob 1: Rosa suave - esquina superior derecha */
+    radial-gradient(ellipse 60% 50% at 85% 10%, rgba(255, 182, 193, 0.25), transparent 70%),
+    /* Blob 2: Lila suave - centro superior */
+    radial-gradient(ellipse 50% 60% at 50% 15%, rgba(221, 160, 221, 0.2), transparent 65%),
+    /* Blob 3: Amarillo/naranja suave - esquina superior izquierda */
+    radial-gradient(ellipse 55% 45% at 15% 8%, rgba(255, 218, 185, 0.3), transparent 70%),
+    /* Blob 4: Verde menta - centro izquierda */
+    radial-gradient(ellipse 50% 55% at 10% 50%, rgba(152, 251, 152, 0.2), transparent 65%),
+    /* Blob 5: Rosa pálido - centro */
+    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255, 192, 203, 0.15), transparent 75%),
+    /* Blob 6: Azul cielo suave - centro derecha */
+    radial-gradient(ellipse 55% 50% at 90% 60%, rgba(173, 216, 230, 0.2), transparent 70%),
+    /* Blob 7: Lila claro - esquina inferior izquierda */
+    radial-gradient(ellipse 60% 55% at 20% 90%, rgba(230, 230, 250, 0.25), transparent 70%),
+    /* Blob 8: Verde menta claro - esquina inferior derecha */
+    radial-gradient(ellipse 50% 60% at 80% 85%, rgba(144, 238, 144, 0.2), transparent 65%);
+  filter: blur(80px);
   opacity: 1;
+  background-attachment: fixed;
+}
+
+/* Blobs adicionales con animación sutil para más profundidad */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    /* Blobs adicionales más grandes y difuminados */
+    radial-gradient(ellipse 80% 70% at 70% 30%, rgba(255, 182, 193, 0.15), transparent 80%),
+    radial-gradient(ellipse 75% 65% at 30% 70%, rgba(221, 160, 221, 0.12), transparent 85%),
+    radial-gradient(ellipse 70% 75% at 60% 80%, rgba(152, 251, 152, 0.15), transparent 80%);
+  filter: blur(120px);
+  opacity: 0.8;
+  background-attachment: fixed;
+  animation: blobFloat 20s ease-in-out infinite;
+}
+
+@keyframes blobFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
 }
 
 /* Header Styles */
@@ -97,12 +147,20 @@ body::before {
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
-  height: 64px;
+  height: 56px;
   align-items: center;
   justify-content: space-between;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
   position: relative;
+}
+
+@media (min-width: 640px) {
+  .header-content {
+    height: 64px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
 .header-logo {
@@ -113,10 +171,16 @@ body::before {
 }
 
 .header-logo-text {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.025em;
   color: #111827;
+}
+
+@media (min-width: 640px) {
+  .header-logo-text {
+    font-size: 1.125rem;
+  }
 }
 
 .header-logo-dot {
@@ -187,6 +251,7 @@ body::before {
 .header-search-mobile {
   display: flex;
   flex-shrink: 0;
+  position: relative;
 }
 
 .header-search-mobile-btn {
@@ -195,10 +260,40 @@ body::before {
   background: none;
   border: none;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .header-search-mobile-btn:hover {
   color: #111827;
+}
+
+.header-search-mobile-btn:active {
+  color: #111827;
+}
+
+.header-search-mobile-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.header-search-mobile-dropdown-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .header-search-mobile-dropdown-content {
+    padding: 0.75rem 1.5rem;
+  }
 }
 
 @media (min-width: 768px) {

@@ -46,7 +46,7 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 	}
 
 	return (
-		<div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+		<div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
 			{/* Backdrop */}
 			<div 
 				className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -54,46 +54,46 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 			/>
 			
 			{/* Modal Panel */}
-			<div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
+			<div className="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
 				{/* Header */}
-				<div className="flex items-center justify-between p-6 border-b">
-					<h2 className="text-2xl font-bold text-gray-800">Perfumes Seleccionados</h2>
+				<div className="flex items-center justify-between p-4 sm:p-6 border-b">
+					<h2 className="text-lg sm:text-2xl font-bold text-gray-800">Perfumes Seleccionados</h2>
 					<button
 						onClick={onClose}
-						className="text-gray-500 hover:text-gray-700 transition-colors"
+						className="text-gray-500 hover:text-gray-700 active:text-gray-900 transition-colors p-1 touch-manipulation"
 						aria-label="Cerrar"
 					>
-						<X className="w-6 h-6" />
+						<X className="w-5 h-5 sm:w-6 sm:h-6" />
 					</button>
 				</div>
 
 				{/* Content */}
-				<div className="flex-1 overflow-y-auto p-6">
+				<div className="flex-1 overflow-y-auto p-4 sm:p-6">
 					{/* Intro Text */}
-					<p className="text-gray-600 mb-6">Escríbenos y te los llevamos hoy mismo</p>
+					<p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Escríbenos y te los llevamos hoy mismo</p>
 
 					{/* Selected Items List */}
-					<div className="space-y-3 mb-6">
+					<div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
 						{items.length === 0 ? (
-							<p className="text-gray-400 text-center py-8">No hay perfumes seleccionados</p>
+							<p className="text-gray-400 text-center py-6 sm:py-8 text-sm sm:text-base">No hay perfumes seleccionados</p>
 						) : (
 							items.map((item, index) => (
-								<div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-									<div className="flex items-center gap-3 flex-1">
-										<CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+								<div key={index} className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-lg">
+									<div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+										<CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
 										<div className="flex-1 min-w-0">
-											<p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
-											<p className="text-xs text-gray-500">
+											<p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{item.name}</p>
+											<p className="text-[10px] sm:text-xs text-gray-500">
 												{item.size} ML • {item.use}
 											</p>
 										</div>
 									</div>
 									<button
 										onClick={() => removeItem(item)}
-										className="text-red-500 hover:text-red-700 transition-colors ml-2 flex-shrink-0"
+										className="text-red-500 hover:text-red-700 active:text-red-800 transition-colors ml-2 flex-shrink-0 p-1 touch-manipulation"
 										aria-label="Eliminar"
 									>
-										<X className="w-5 h-5" />
+										<X className="w-4 h-4 sm:w-5 sm:h-5" />
 									</button>
 								</div>
 							))
@@ -101,42 +101,45 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 					</div>
 
 					{/* Service Options */}
-					<div className="space-y-3 mb-6">
-						<div className="flex items-center gap-3 text-sm text-gray-700">
-							<Truck className="w-5 h-5 text-green-600" />
+					<div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+						<div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700">
+							<Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
 							<span>Envío gratis (ZONA METROPOLITANA)</span>
 						</div>
-						<div className="flex items-center gap-3 text-sm text-gray-700">
-							<Wallet className="w-5 h-5 text-green-600" />
+						<div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700">
+							<Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
 							<span>Pago contra entrega</span>
 						</div>
-						<div className="flex items-center gap-3 text-sm text-gray-700">
-							<CheckCircle className="w-5 h-5 text-green-600" />
+						<div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700">
+							<CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
 							<span>Garantía de devolución de tu dinero</span>
 						</div>
 					</div>
 				</div>
 
 				{/* Footer */}
-				<div className="border-t p-6 bg-gray-50">
-					<div className="flex items-center justify-between mb-4">
+				<div className="border-t p-4 sm:p-6 bg-gray-50">
+					<div className="flex items-center justify-center mb-3 sm:mb-4">
 						<button
 							onClick={() => {
 								clearItems()
 								onClose()
 							}}
-							className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors"
+							className="text-red-600 hover:text-red-700 active:text-red-800 text-xs sm:text-sm font-medium transition-colors touch-manipulation flex items-center gap-1.5"
 						>
-							Vaciar selección
+							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+							</svg>
+							BORRAR TODO
 						</button>
 					</div>
 					<button
 						onClick={handleContinue}
 						disabled={items.length === 0}
-						className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+						className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-3.5 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base touch-manipulation"
 					>
 						Continuar con el pedido
-						<MessageCircle className="w-5 h-5" />
+						<MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
 					</button>
 				</div>
 			</div>
