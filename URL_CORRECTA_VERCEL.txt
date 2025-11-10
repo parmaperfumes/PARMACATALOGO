@@ -1,0 +1,11 @@
+URL CORRECTA PARA VERCEL - Session Pooler
+
+Reemplaza [YOUR-PASSWORD] con: parmacatalogo123
+
+URL CORRECTA:
+postgresql://postgres.vwmdppmlczmdbfmqbzcr:parmacatalogo123@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+
+CAMBIOS NECESARIOS:
+1. Cambiar puerto de 5432 → 6543
+2. Agregar ?pgbouncer=true al final
+

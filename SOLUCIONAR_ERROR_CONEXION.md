@@ -13,18 +13,25 @@ Este error significa que la aplicación no puede conectarse a Supabase. Sigue es
 
 ## ✅ Paso 2: Obtener la Connection String Correcta
 
+### Para Vercel (Producción) - Usar Session Pooler
+
 1. En Supabase Dashboard, ve a **Settings** (⚙️) > **Database**
-2. Busca la sección **Connection string** o **Connection pooling**
-3. Selecciona la pestaña **URI** (no Transaction Pooler)
-4. Verás algo como:
+2. Haz clic en **"Connect to your project"** o busca **"Connection string"**
+3. En el modal que aparece:
+   - Selecciona la pestaña **"Connection String"**
+   - En el dropdown **"Method"**, selecciona **"Session Pooler"** (NO "Direct connection")
+   - Copia la URL completa
+4. La URL debería verse así:
    ```
-   postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+   postgresql://postgres.vwmdppmlczmdbfmqbzcr:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true
    ```
-   
-   **O la versión directa:**
-   ```
-   postgresql://postgres:[PASSWORD]@db.vwmdppmlczmdbfmqbzcr.supabase.co:5432/postgres
-   ```
+   **⚠️ IMPORTANTE:** Debe usar puerto **6543** y incluir `?pgbouncer=true`
+
+### Para Desarrollo Local - Puedes usar conexión directa
+
+```
+postgresql://postgres:[PASSWORD]@db.vwmdppmlczmdbfmqbzcr.supabase.co:5432/postgres
+```
 
 ## ✅ Paso 3: Obtener o Resetear la Contraseña
 
@@ -100,8 +107,10 @@ Después de actualizar `.env.local`:
 
 ## ⚠️ Si Sigue Sin Funcionar
 
-1. Verifica que no haya espacios extra en `DATABASE_URL`
-2. Verifica que la contraseña esté correctamente codificada
-3. Verifica que el proyecto de Supabase esté activo (no pausado)
-4. Intenta usar la Connection Pooling URL en lugar de la directa
+1. **Para Vercel:** DEBES usar Session Pooler (puerto 6543), NO la conexión directa (puerto 5432)
+2. Verifica que no haya espacios extra en `DATABASE_URL`
+3. Verifica que la contraseña esté correctamente codificada
+4. Verifica que el proyecto de Supabase esté activo (no pausado)
+5. Verifica que la URL incluya `?pgbouncer=true` al final (para Session Pooler)
+6. Ver guía completa en: `CONFIGURAR_DATABASE_URL_VERCEL.md`
 

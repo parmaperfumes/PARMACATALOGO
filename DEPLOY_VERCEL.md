@@ -31,7 +31,12 @@
    Haz clic en "Environment Variables" y agrega las siguientes variables:
 
    ```
-   DATABASE_URL=postgresql://postgres:parmacatalogo123@db.vwmdppmlczmdbfmqbzcr.supabase.co:6543/postgres?pgbouncer=true
+   DATABASE_URL=postgresql://postgres.vwmdppmlczmdbfmqbzcr:parmacatalogo123@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+   
+   **⚠️ IMPORTANTE sobre DATABASE_URL:**
+   - Debes usar **Session Pooler** (puerto 6543) para Vercel, NO la conexión directa (puerto 5432)
+   - Obtén la URL correcta desde Supabase Dashboard → Settings → Database → "Connect to your project" → Method: "Session Pooler"
+   - Ver guía completa en: `CONFIGURAR_DATABASE_URL_VERCEL.md`
    
    NEXT_PUBLIC_SUPABASE_URL=https://vwmdppmlczmdbfmqbzcr.supabase.co
    
@@ -144,9 +149,11 @@ Puedes configurar variables diferentes para:
 - Asegúrate de que `prisma generate` se ejecute en `postinstall`
 
 ### Error de conexión a Supabase
-- Verifica que la URL de Supabase sea correcta
-- Asegúrate de usar el Session Pooler (puerto 6543) para producción
+- **IMPORTANTE:** Vercel requiere usar **Session Pooler** (puerto 6543), NO la conexión directa (puerto 5432)
+- Verifica que la URL de Supabase sea correcta y use el formato del Session Pooler
+- La URL debe incluir `?pgbouncer=true` al final
 - Verifica que el proyecto de Supabase no esté pausado
+- Ver guía detallada en: `CONFIGURAR_DATABASE_URL_VERCEL.md`
 
 ## 🔗 Enlaces Útiles
 
