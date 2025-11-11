@@ -29,27 +29,59 @@ export default function PerfumesPage() {
 	useEffect(() => {
 		async function fetchPerfumes() {
 			try {
-				// Fetch sin caché para asegurar datos actualizados
-				const res = await fetch("/api/perfumes", {
-					cache: 'no-store' // No usar caché para obtener datos frescos
+				// Fetch con timestamp para evitar caché en producción
+				const res = await fetch(`/api/perfumes?t=${Date.now()}`, {
+					method: 'GET',
+					headers: {
+						'Cache-Control': 'no-cache',
+					},
 				})
-				if (res.ok) {
-					const data: PerfumeFromDB[] = await res.json()
-					setPerfumesData(data) // Guardar los datos originales
-					// Convertir los perfumes de la BD al formato Product
-					const converted: Product[] = data.map((p) => ({
-						id: p.id,
-						name: p.nombre.toUpperCase(),
-						subtitle: p.subtitulo || undefined,
-						brand: "Parma",
-						gender: (p.genero as "HOMBRE" | "MUJER" | "UNISEX") || undefined,
-						images: p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.imagenPrincipal],
-						sizes: (p.sizes.length > 0 ? p.sizes : [30, 50, 100]) as Product["sizes"],
-					}))
-					setPerfumes(converted)
+				
+				if (!res.ok) {
+					console.error("Error en la respuesta de la API:", res.status, res.statusText)
+					const errorText = await res.text()
+					console.error("Detalles del error:", errorText)
+					return
 				}
+				
+				const responseData = await res.json()
+				
+				// Manejar respuesta de error
+				if (responseData.error) {
+					console.error("Error de la API:", responseData.error)
+					setPerfumesData([])
+					setPerfumes([])
+					return
+				}
+				
+				// La respuesta puede ser un array directamente o un objeto con perfumes
+				const data: PerfumeFromDB[] = Array.isArray(responseData) ? responseData : (responseData.perfumes || [])
+				console.log("Perfumes recibidos de la API:", data.length)
+				
+				if (!data || data.length === 0) {
+					console.warn("La API devolvió un array vacío. Verifica que DATABASE_URL esté configurada en Vercel.")
+					setPerfumesData([])
+					setPerfumes([])
+					return
+				}
+				
+				setPerfumesData(data) // Guardar los datos originales
+				// Convertir los perfumes de la BD al formato Product
+				const converted: Product[] = data.map((p) => ({
+					id: p.id,
+					name: p.nombre.toUpperCase(),
+					subtitle: p.subtitulo || undefined,
+					brand: "Parma",
+					gender: (p.genero as "HOMBRE" | "MUJER" | "UNISEX") || undefined,
+					images: p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.imagenPrincipal],
+					sizes: (p.sizes.length > 0 ? p.sizes : [30, 50, 100]) as Product["sizes"],
+				}))
+				setPerfumes(converted)
+				console.log("Perfumes convertidos:", converted.length)
 			} catch (error) {
 				console.error("Error al cargar perfumes:", error)
+				setPerfumesData([])
+				setPerfumes([])
 			} finally {
 				setLoading(false)
 			}

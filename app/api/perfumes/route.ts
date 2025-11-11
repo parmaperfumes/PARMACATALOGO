@@ -41,7 +41,11 @@ export async function PATCH(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
 	if (!process.env.DATABASE_URL) {
-		return NextResponse.json([])
+		console.error("DATABASE_URL no está configurada en las variables de entorno")
+		return NextResponse.json(
+			{ error: "DATABASE_URL no configurada", perfumes: [] },
+			{ status: 500 }
+		)
 	}
 	try {
 		// Verificar si es una petición del admin (incluir inactivos)
