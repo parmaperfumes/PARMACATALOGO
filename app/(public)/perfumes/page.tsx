@@ -29,9 +29,9 @@ export default function PerfumesPage() {
 	useEffect(() => {
 		async function fetchPerfumes() {
 			try {
-				// Usar caché del navegador y revalidación para mejorar rendimiento
+				// Fetch sin caché para asegurar datos actualizados
 				const res = await fetch("/api/perfumes", {
-					cache: 'force-cache' // Usar caché agresivamente
+					cache: 'no-store' // No usar caché para obtener datos frescos
 				})
 				if (res.ok) {
 					const data: PerfumeFromDB[] = await res.json()
@@ -68,54 +68,34 @@ export default function PerfumesPage() {
 	}
 
 	// Filtrar perfumes según el género seleccionado y la búsqueda
-	const filteredPerfumes = perfumes.filter((perfume, index) => {
-		// Filtro por búsqueda (nombre)
-		if (searchQuery.trim() !== "") {
-			const searchLower = searchQuery.toLowerCase().trim()
-			const nombreLower = perfume.name.toLowerCase()
-			if (!nombreLower.includes(searchLower)) {
-				return false
-			}
-		}
-
-		// Filtro por género
-		if (selectedFilter === "TODOS") return true
-		const perfumeData = perfumesData[index]
-		const genero = perfumeData?.genero
-		if (selectedFilter === "HOMBRES") {
-			return genero === "HOMBRE" || genero === "UNISEX"
-		}
-		if (selectedFilter === "MUJERES") {
-			return genero === "MUJER" || genero === "UNISEX"
-		}
-		return true
-	})
-
-	// Obtener los índices filtrados para acceder a perfumesData
-	const filteredIndices = perfumes
-		.map((perfume, index) => {
-			// Filtro por búsqueda
+	// Usar perfumesData como fuente de verdad y mapear a perfumes
+	const filteredData = perfumesData
+		.map((perfumeData, index) => ({ perfumeData, perfume: perfumes[index] }))
+		.filter(({ perfumeData, perfume }) => {
+			// Filtro por búsqueda (nombre)
 			if (searchQuery.trim() !== "") {
 				const searchLower = searchQuery.toLowerCase().trim()
 				const nombreLower = perfume.name.toLowerCase()
 				if (!nombreLower.includes(searchLower)) {
-					return null
+					return false
 				}
 			}
 
 			// Filtro por género
-			if (selectedFilter === "TODOS") return index
-			const perfumeData = perfumesData[index]
+			if (selectedFilter === "TODOS") return true
 			const genero = perfumeData?.genero
 			if (selectedFilter === "HOMBRES") {
-				return (genero === "HOMBRE" || genero === "UNISEX") ? index : null
+				return genero === "HOMBRE" || genero === "UNISEX"
 			}
 			if (selectedFilter === "MUJERES") {
-				return (genero === "MUJER" || genero === "UNISEX") ? index : null
+				return genero === "MUJER" || genero === "UNISEX"
 			}
-			return index
+			return true
 		})
-		.filter((idx): idx is number => idx !== null)
+
+	// Extraer los perfumes y datos filtrados
+	const filteredPerfumes = filteredData.map(({ perfume }) => perfume)
+	const filteredPerfumesData = filteredData.map(({ perfumeData }) => perfumeData)
 
 	return (
 		<div className="container mx-auto px-2 sm:px-4 py-2 sm:py-8 pb-20 lg:pb-8 max-w-6xl pt-20 sm:pt-24">
@@ -158,8 +138,7 @@ export default function PerfumesPage() {
 			) : (
 				<div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-6" style={{ willChange: 'contents', contain: 'layout style paint' }}>
 					{filteredPerfumes.map((perfume, filteredIndex) => {
-						const originalIndex = filteredIndices[filteredIndex]
-						const perfumeData = perfumesData[originalIndex]
+						const perfumeData = filteredPerfumesData[filteredIndex]
 						// Normalizar usoPorDefecto: el valor ya viene normalizado desde la API
 						let defaultUse: "DIA" | "NOCHE" | "AMBOS" | undefined = undefined
 						if (perfumeData?.usoPorDefecto) {
