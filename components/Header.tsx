@@ -19,14 +19,7 @@ type HeaderConfig = {
 
 export function Header() {
 	const { searchQuery, setSearchQuery } = useSearch()
-	const [config, setConfig] = useState<HeaderConfig>({
-		logoText: "parma",
-		logoImage: null,
-		navLinks: [
-			{ label: "Catálogo", href: "/perfumes" },
-			{ label: "Garantía", href: "/garantia" },
-		],
-	})
+	const [config, setConfig] = useState<HeaderConfig | null>(null)
 	const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
 	useEffect(() => {
@@ -36,9 +29,28 @@ export function Header() {
 				if (res.ok) {
 					const data = await res.json()
 					setConfig(data)
+				} else {
+					// Si falla, usar configuración por defecto
+					setConfig({
+						logoText: "parma",
+						logoImage: null,
+						navLinks: [
+							{ label: "Catálogo", href: "/perfumes" },
+							{ label: "Garantía", href: "/garantia" },
+						],
+					})
 				}
 			} catch (error) {
 				console.error("Error al cargar configuración del header:", error)
+				// Si hay error, usar configuración por defecto
+				setConfig({
+					logoText: "parma",
+					logoImage: null,
+					navLinks: [
+						{ label: "Catálogo", href: "/perfumes" },
+						{ label: "Garantía", href: "/garantia" },
+					],
+				})
 			}
 		}
 		loadConfig()
@@ -49,32 +61,37 @@ export function Header() {
 			<div className="header-container">
 				<div className="header-content">
 					{/* Logo - Izquierda */}
-					<Link href="/perfumes" className="header-logo">
-						{config.logoImage ? (
-							<Image
-								src={config.logoImage}
-								alt={config.logoText}
-								width={200}
-								height={80}
-								className="h-16 w-auto object-contain"
-								style={{ maxHeight: '80px' }}
-							/>
-						) : (
-							<span className="header-logo-text">
-								{config.logoText}
-								<span className="header-logo-dot">.</span>
-							</span>
-						)}
-					</Link>
+					{config && (
+						<Link href="/perfumes" className="header-logo">
+							{config.logoImage ? (
+								<Image
+									src={config.logoImage}
+									alt={config.logoText}
+									width={200}
+									height={80}
+									className="h-16 w-auto object-contain"
+									style={{ maxHeight: '80px' }}
+									priority
+								/>
+							) : (
+								<span className="header-logo-text">
+									{config.logoText}
+									<span className="header-logo-dot">.</span>
+								</span>
+							)}
+						</Link>
+					)}
 
 					{/* Navegación - Centro */}
-					<nav className="header-nav">
-						{config.navLinks.map((link, index) => (
-							<Link key={index} href={link.href} className="header-nav-link">
-								{link.label}
-							</Link>
-						))}
-					</nav>
+					{config && (
+						<nav className="header-nav">
+							{config.navLinks.map((link, index) => (
+								<Link key={index} href={link.href} className="header-nav-link">
+									{link.label}
+								</Link>
+							))}
+						</nav>
+					)}
 
 					{/* Barra de búsqueda - Derecha */}
 					<div className="header-search-desktop">
