@@ -8,10 +8,30 @@ export default async function AdminLayout({
 }: {
 	children: React.ReactNode
 }) {
+	// Verificación de autenticación CRÍTICA
 	const session = await auth()
-	if (!session) {
+	
+	console.log("🔒 AdminLayout - Verificando sesión:", {
+		hasSession: !!session,
+		user: session?.user?.email,
+		timestamp: new Date().toISOString()
+	})
+	
+	// BLOQUEO ABSOLUTO: Si no hay sesión, redirigir SIEMPRE
+	if (!session || !session.user) {
+		console.log("❌ AdminLayout - SIN SESIÓN - Redirigiendo a login")
 		redirect("/login")
 	}
+	
+	// Verificación adicional: el usuario debe tener rol ADMIN
+	const userRole = (session.user as any)?.role
+	if (!userRole || userRole === "PUBLIC") {
+		console.log("❌ AdminLayout - USUARIO SIN PERMISOS - Redirigiendo a login")
+		redirect("/login")
+	}
+	
+	console.log("✅ AdminLayout - Sesión válida - Permitiendo acceso")
+	
 	return (
 		<div className="min-h-screen">
 			<nav className="border-b bg-card">
