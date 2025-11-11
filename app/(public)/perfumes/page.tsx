@@ -24,18 +24,27 @@ export default function PerfumesPage() {
 	const [perfumes, setPerfumes] = useState<Product[]>([])
 	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
 	const [loading, setLoading] = useState(true)
+	const [refreshing, setRefreshing] = useState(false)
 	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("HOMBRES")
 
-	useEffect(() => {
-		async function fetchPerfumes() {
-			try {
-				// Fetch con timestamp para evitar caché en producción
-				const res = await fetch(`/api/perfumes?t=${Date.now()}`, {
-					method: 'GET',
-					headers: {
-						'Cache-Control': 'no-cache',
-					},
-				})
+	// Función para refrescar datos
+	const refreshPerfumes = async () => {
+		setRefreshing(true)
+		await fetchPerfumes()
+		setRefreshing(false)
+	}
+
+	async function fetchPerfumes() {
+		try {
+			// Fetch con timestamp para evitar caché en producción
+			const res = await fetch(`/api/perfumes?t=${Date.now()}`, {
+				method: 'GET',
+				headers: {
+					'Cache-Control': 'no-cache, no-store, must-revalidate',
+					'Pragma': 'no-cache',
+					'Expires': '0',
+				},
+			})
 				
 				if (!res.ok) {
 					console.error("Error en la respuesta de la API:", res.status, res.statusText)
@@ -82,10 +91,12 @@ export default function PerfumesPage() {
 				console.error("Error al cargar perfumes:", error)
 				setPerfumesData([])
 				setPerfumes([])
-			} finally {
-				setLoading(false)
-			}
+		} finally {
+			setLoading(false)
 		}
+	}
+
+	useEffect(() => {
 		fetchPerfumes()
 	}, [])
 
@@ -131,8 +142,27 @@ export default function PerfumesPage() {
 
 	return (
 		<div className="container mx-auto px-2 sm:px-4 py-2 sm:py-8 pb-20 lg:pb-8 max-w-6xl pt-20 sm:pt-24">
-			{/* Filtros de Género - Solo visible en desktop */}
-			<div className="hidden lg:flex justify-center mb-4 sm:mb-8">
+			{/* Botón Refrescar - Solo visible en móvil */}
+			<div className="lg:hidden flex justify-end mb-4">
+				<button
+					onClick={refreshPerfumes}
+					disabled={refreshing}
+					className="px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 shadow-sm active:bg-gray-50 transition-all duration-200 text-xs font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+					title="Refrescar perfumes"
+				>
+					<svg 
+						className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} 
+						fill="none" 
+						stroke="currentColor" 
+						viewBox="0 0 24 24"
+					>
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					</svg>
+					{refreshing ? 'Actualizando...' : 'Refrescar'}
+				</button>
+			</div>
+			{/* Filtros de Género y Botón Refrescar - Solo visible en desktop */}
+			<div className="hidden lg:flex justify-center items-center gap-4 mb-4 sm:mb-8">
 				<div className="flex gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm p-0.5 sm:p-1 rounded-full border border-gray-200 shadow-sm">
 					<button
 						onClick={() => setSelectedFilter("HOMBRES")}
@@ -155,6 +185,23 @@ export default function PerfumesPage() {
 						MUJERES
 					</button>
 				</div>
+				{/* Botón Refrescar */}
+				<button
+					onClick={refreshPerfumes}
+					disabled={refreshing}
+					className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 shadow-sm hover:bg-gray-50 transition-all duration-200 text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+					title="Refrescar perfumes"
+				>
+					<svg 
+						className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} 
+						fill="none" 
+						stroke="currentColor" 
+						viewBox="0 0 24 24"
+					>
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					</svg>
+					{refreshing ? 'Actualizando...' : 'Refrescar'}
+				</button>
 			</div>
 
 			{filteredPerfumes.length === 0 ? (
