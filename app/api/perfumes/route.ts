@@ -1,6 +1,202 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+// Datos de respaldo si la base de datos falla
+const FALLBACK_PERFUMES = [
+	{
+		id: "mock-1",
+		nombre: "INVICTUS",
+		slug: "invictus",
+		descripcion: "Fragancia deportiva y fresca",
+		precio: 45000,
+		precioDescuento: null,
+		imagenPrincipal: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&q=80",
+		imagenes: ["https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&q=80"],
+		stock: 10,
+		destacado: true,
+		activo: true,
+		categoriaId: null,
+		marcaId: null,
+		genero: "HOMBRE",
+		subtitulo: "EAU DE TOILETTE",
+		volumen: "100ml",
+		notas: ["Pomelo", "Laurel", "Guayaco"],
+		sizes: [50, 100],
+		usoPorDefecto: "DIA",
+		fijarUso: true,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	},
+	{
+		id: "mock-2",
+		nombre: "ONE MILLION",
+		slug: "one-million",
+		descripcion: "Fragancia intensa y seductora",
+		precio: 48000,
+		precioDescuento: 42000,
+		imagenPrincipal: "https://images.unsplash.com/photo-1588405748880-12d1d2a59c75?w=800&q=80",
+		imagenes: ["https://images.unsplash.com/photo-1588405748880-12d1d2a59c75?w=800&q=80"],
+		stock: 15,
+		destacado: true,
+		activo: true,
+		categoriaId: null,
+		marcaId: null,
+		genero: "HOMBRE",
+		subtitulo: "EAU DE TOILETTE",
+		volumen: "100ml",
+		notas: ["Pomelo", "Menta", "Canela"],
+		sizes: [50, 100],
+		usoPorDefecto: "NOCHE",
+		fijarUso: true,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	},
+	{
+		id: "mock-3",
+		nombre: "SAUVAGE",
+		slug: "sauvage",
+		descripcion: "Fragancia salvaje y magnética",
+		precio: 52000,
+		precioDescuento: null,
+		imagenPrincipal: "https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800&q=80",
+		imagenes: ["https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800&q=80"],
+		stock: 20,
+		destacado: true,
+		activo: true,
+		categoriaId: null,
+		marcaId: null,
+		genero: "HOMBRE",
+		subtitulo: "EAU DE PARFUM",
+		volumen: "100ml",
+		notas: ["Bergamota", "Pimienta", "Ámbar"],
+		sizes: [60, 100],
+		usoPorDefecto: "AMBOS",
+		fijarUso: false,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	},
+	{
+		id: "mock-4",
+		nombre: "ANGEL",
+		slug: "angel",
+		descripcion: "Fragancia dulce y gourmand",
+		precio: 50000,
+		precioDescuento: null,
+		imagenPrincipal: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&q=80",
+		imagenes: ["https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&q=80"],
+		stock: 12,
+		destacado: true,
+		activo: true,
+		categoriaId: null,
+		marcaId: null,
+		genero: "MUJER",
+		subtitulo: "EAU DE PARFUM",
+		volumen: "50ml",
+		notas: ["Vainilla", "Caramelo", "Pachulí"],
+		sizes: [30, 50, 100],
+		usoPorDefecto: "NOCHE",
+		fijarUso: true,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	},
+	{
+		id: "mock-5",
+		nombre: "COCO MADEMOISELLE",
+		slug: "coco-mademoiselle",
+		descripcion: "Fragancia elegante y sofisticada",
+		precio: 55000,
+		precioDescuento: 49000,
+		imagenPrincipal: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&q=80",
+		imagenes: ["https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&q=80"],
+		stock: 8,
+		destacado: true,
+		activo: true,
+		categoriaId: null,
+		marcaId: null,
+		genero: "MUJER",
+		subtitulo: "EAU DE PARFUM",
+		volumen: "100ml",
+		notas: ["Naranja", "Rosa", "Pachulí"],
+		sizes: [50, 100],
+		usoPorDefecto: "DIA",
+		fijarUso: true,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	},
+	{
+		id: "mock-6",
+		nombre: "LA VIE EST BELLE",
+		slug: "la-vie-est-belle",
+		descripcion: "Fragancia floral y femenina",
+		precio: 47000,
+		precioDescuento: null,
+		imagenPrincipal: "https://images.unsplash.com/photo-1563170351-be82bc888aa4?w=800&q=80",
+		imagenes: ["https://images.unsplash.com/photo-1563170351-be82bc888aa4?w=800&q=80"],
+		stock: 18,
+		destacado: false,
+		activo: true,
+		categoriaId: null,
+		marcaId: null,
+		genero: "MUJER",
+		subtitulo: "EAU DE PARFUM",
+		volumen: "75ml",
+		notas: ["Iris", "Jazmín", "Vainilla"],
+		sizes: [30, 75],
+		usoPorDefecto: "AMBOS",
+		fijarUso: false,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	},
+	{
+		id: "mock-7",
+		nombre: "BLEU DE CHANEL",
+		slug: "bleu-de-chanel",
+		descripcion: "Fragancia aromática y amaderada",
+		precio: 58000,
+		precioDescuento: null,
+		imagenPrincipal: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=800&q=80",
+		imagenes: ["https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=800&q=80"],
+		stock: 14,
+		destacado: true,
+		activo: true,
+		categoriaId: null,
+		marcaId: null,
+		genero: "HOMBRE",
+		subtitulo: "EAU DE PARFUM",
+		volumen: "100ml",
+		notas: ["Cítricos", "Incienso", "Sándalo"],
+		sizes: [50, 100, 150],
+		usoPorDefecto: "AMBOS",
+		fijarUso: false,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	},
+	{
+		id: "mock-8",
+		nombre: "GOOD GIRL",
+		slug: "good-girl",
+		descripcion: "Fragancia audaz y seductora",
+		precio: 51000,
+		precioDescuento: 46000,
+		imagenPrincipal: "https://images.unsplash.com/photo-1528912101095-e1e04e965ecb?w=800&q=80",
+		imagenes: ["https://images.unsplash.com/photo-1528912101095-e1e04e965ecb?w=800&q=80"],
+		stock: 10,
+		destacado: false,
+		activo: true,
+		categoriaId: null,
+		marcaId: null,
+		genero: "MUJER",
+		subtitulo: "EAU DE PARFUM",
+		volumen: "80ml",
+		notas: ["Almendra", "Café", "Vainilla"],
+		sizes: [30, 50, 80],
+		usoPorDefecto: "NOCHE",
+		fijarUso: true,
+		createdAt: new Date(),
+		updatedAt: new Date()
+	}
+]
+
 export async function PATCH(req: NextRequest) {
 	if (!process.env.DATABASE_URL) {
 		return new NextResponse("DATABASE_URL no configurada", { status: 501 })
@@ -40,18 +236,21 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+	const url = new URL(req.url)
+	const includeInactive = url.searchParams.get('includeInactive') === 'true'
+	
+	// Si no hay DATABASE_URL, usar datos de respaldo
 	if (!process.env.DATABASE_URL) {
-		console.error("DATABASE_URL no está configurada en las variables de entorno")
-		return NextResponse.json(
-			{ error: "DATABASE_URL no configurada", perfumes: [] },
-			{ status: 500 }
-		)
+		console.warn("⚠️ DATABASE_URL no configurada, usando datos de respaldo")
+		const fallbackData = includeInactive ? FALLBACK_PERFUMES : FALLBACK_PERFUMES.filter(p => p.activo)
+		return NextResponse.json(fallbackData, {
+			headers: {
+				'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+			}
+		})
 	}
+	
 	try {
-		// Verificar si es una petición del admin (incluir inactivos)
-		const url = new URL(req.url)
-		const includeInactive = url.searchParams.get('includeInactive') === 'true'
-		
 		// Usar SQL raw para evitar errores si los campos nuevos no existen
 		let perfumes: any[]
 		try {
@@ -110,8 +309,26 @@ export async function GET(req: NextRequest) {
 			}
 		})
 	} catch (e: any) {
-		console.error("Error al listar perfumes:", e)
-		return new NextResponse(e?.message || "Error al listar", { status: 500 })
+		// Si hay error de conexión a la DB, usar datos de respaldo
+		console.error("❌ Error al conectar con la base de datos, usando datos de respaldo:", e.message)
+		const fallbackData = includeInactive ? FALLBACK_PERFUMES : FALLBACK_PERFUMES.filter(p => p.activo)
+		
+		// Normalizar los datos de respaldo
+		const normalizedFallback = fallbackData.map(p => ({
+			...p,
+			imagenes: Array.isArray(p.imagenes) ? p.imagenes : [],
+			notas: Array.isArray(p.notas) ? p.notas : [],
+			sizes: Array.isArray(p.sizes) ? p.sizes : [],
+			usoPorDefecto: p.usoPorDefecto ? String(p.usoPorDefecto).trim().toUpperCase() : null,
+			fijarUso: p.fijarUso !== undefined ? Boolean(p.fijarUso) : false
+		}))
+		
+		return NextResponse.json(normalizedFallback, {
+			headers: {
+				'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+				'X-Data-Source': 'fallback', // Indicador de que son datos de respaldo
+			}
+		})
 	}
 }
 
