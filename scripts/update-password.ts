@@ -11,7 +11,7 @@ const prisma = new PrismaClient()
 
 async function updatePassword() {
 	const email = "parma01@gmail.com"
-	const newPassword = "parmacatalogo0405"
+	const newPassword = "parma0405"
 	
 	if (!process.env.DATABASE_URL) {
 		console.error("❌ Error: DATABASE_URL no está configurada en las variables de entorno")

@@ -1,6 +1,6 @@
 -- Script SQL para actualizar la contraseña del usuario parma01@gmail.com
--- Contraseña: parmacatalogo0405
--- Hash generado: $2b$10$fqxEqwPNqA/cl1DxcdwhaO3ZTDjQvXRu3T69G5Bp1tjY5JVlHFNQa
+-- Contraseña: parma0405
+-- Hash generado: $2b$10$hLDPkVCzi6vgCKIAVun7oeKY49q1sZMdUaxbUltRnPOoz2e3105.a
 -- 
 -- INSTRUCCIONES:
 -- 1. Ve a Supabase Dashboard > SQL Editor
@@ -20,7 +20,7 @@ BEGIN
     IF user_exists THEN
         -- Actualizar la contraseña del usuario existente
         UPDATE "User" 
-        SET "passwordHash" = '$2b$10$fqxEqwPNqA/cl1DxcdwhaO3ZTDjQvXRu3T69G5Bp1tjY5JVlHFNQa',
+        SET "passwordHash" = '$2b$10$hLDPkVCzi6vgCKIAVun7oeKY49q1sZMdUaxbUltRnPOoz2e3105.a',
             "updatedAt" = NOW()
         WHERE email = 'parma01@gmail.com';
         
@@ -33,7 +33,7 @@ BEGIN
             gen_random_uuid(),
             'parma01@gmail.com',
             'Admin',
-            '$2b$10$fqxEqwPNqA/cl1DxcdwhaO3ZTDjQvXRu3T69G5Bp1tjY5JVlHFNQa',
+            '$2b$10$hLDPkVCzi6vgCKIAVun7oeKY49q1sZMdUaxbUltRnPOoz2e3105.a',
             'ADMIN',
             NOW(),
             NOW()

@@ -11,7 +11,7 @@
 7. Haz clic en **Run** o presiona Ctrl+Enter
 8. Verás un mensaje de éxito ✅
 
-**El script ya incluye el hash de la contraseña `parmacatalogo0405`, así que solo necesitas copiarlo y ejecutarlo.**
+**El script ya incluye el hash de la contraseña `parma0405`, así que solo necesitas copiarlo y ejecutarlo.**
 
 ---
 
@@ -31,7 +31,7 @@ fetch('/api/admin/update-password', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     email: 'parma01@gmail.com',
-    password: 'parmacatalogo0405'
+    password: 'parma0405'
   })
 })
 .then(r => r.json())
@@ -44,7 +44,7 @@ fetch('/api/admin/update-password', {
 ```bash
 curl -X POST http://localhost:3000/api/admin/update-password \
   -H "Content-Type: application/json" \
-  -d '{"email":"parma01@gmail.com","password":"parmacatalogo0405"}'
+  -d '{"email":"parma01@gmail.com","password":"parma0405"}'
 ```
 
 ---
@@ -64,4 +64,4 @@ npm run update-password
 ## Credenciales
 
 - **Email:** parma01@gmail.com
-- **Contraseña:** parmacatalogo0405
+- **Contraseña:** parma0405
