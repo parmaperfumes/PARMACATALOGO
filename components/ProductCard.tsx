@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useWhatsApp } from "@/context/WhatsAppContext"
 import Image from "next/image"
 
-export type ProductSizeMl = 30 | 50 | 100
+export type ProductSizeMl = 30 | 50
 
 export type Product = {
 	id: string
@@ -42,7 +42,10 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		if (defaultUse === "NOCHE") return true
 		return false
 	})
-	const [selectedSize, setSelectedSize] = useState<ProductSizeMl>(product.sizes[0])
+	const [selectedSize, setSelectedSize] = useState<ProductSizeMl>(() => {
+		const validSizes = product.sizes.filter(s => s === 30 || s === 50)
+		return validSizes[0] || 30
+	})
 	const [isAdded, setIsAdded] = useState(false)
 	const { addItem, removeItem, items } = useWhatsApp()
 
@@ -231,15 +234,14 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 					)}
 				</div>
 
-				{/* Tamaños - Altura fija, todos en una fila */}
-				<div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2 mb-2 sm:mb-3">
-					{product.sizes.map((s) => {
+			{/* Tamaños - Altura fija, todos en una fila */}
+			<div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2 mb-2 sm:mb-3">
+				{product.sizes.filter(s => s === 30 || s === 50).map((s) => {
 						// Función para obtener el precio según el tamaño
 						const getPrice = (size: ProductSizeMl): string => {
 							switch (size) {
 								case 30: return "850 RD"
 								case 50: return "1,350 RD"
-								case 100: return "1,750 RD"
 								default: return ""
 							}
 						}

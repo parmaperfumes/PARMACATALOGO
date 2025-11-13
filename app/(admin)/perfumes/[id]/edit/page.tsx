@@ -21,7 +21,6 @@ const schema = z.object({
 	volumen: z.string().optional(),
 	size30: z.boolean(),
 	size50: z.boolean(),
-	size100: z.boolean(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
 })
 
@@ -36,7 +35,6 @@ type FormT = {
 	volumen?: string
 	size30: boolean
 	size50: boolean
-	size100: boolean
 	usoPorDefecto?: "DIA" | "NOCHE" | "AMBOS"
 }
 
@@ -53,7 +51,6 @@ export default function EditPerfumePage() {
 			active: true,
 			size30: true,
 			size50: true,
-			size100: true,
 		}
 	})
 	const [uploading, setUploading] = useState(false)
@@ -94,7 +91,6 @@ export default function EditPerfumePage() {
 				volumen: p.volumen || "",
 				size30: sizes.includes(30),
 				size50: sizes.includes(50),
-				size100: sizes.includes(100),
 				usoPorDefecto: (p.usoPorDefecto as "DIA" | "NOCHE") || "DIA",
 			})
 			} catch (error: any) {
@@ -198,7 +194,7 @@ export default function EditPerfumePage() {
 
 	const preview: Product = useMemo(() => {
 		const v = form.getValues()
-		const sizes: Product["sizes"] = [v.size30 && 30, v.size50 && 50, v.size100 && 100].filter(Boolean) as any
+		const sizes: Product["sizes"] = [v.size30 && 30, v.size50 && 50].filter(Boolean) as any
 		// Priorizar la imagen subida sobre la URL del formulario
 		const imageUrl = uploadedImageUrl || v.mainImage || ""
 		return {
@@ -208,7 +204,7 @@ export default function EditPerfumePage() {
 			brand: "Parma",
 			gender: v.gender,
 			images: imageUrl ? [imageUrl] : [],
-			sizes: sizes.length ? sizes : [30, 50, 100],
+			sizes: sizes.length ? sizes : [30, 50],
 		}
 	}, [form.watch(), uploadedImageUrl])
 	
@@ -230,7 +226,7 @@ export default function EditPerfumePage() {
 			genero: data.gender,
 			subtitulo: data.subtitle || null,
 			volumen: data.volumen,
-			sizes: [data.size30 && 30, data.size50 && 50, data.size100 && 100].filter(Boolean),
+			sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
 			usoPorDefecto: data.usoPorDefecto || null,
 		}
 		const res = await fetch(`/api/perfumes/${params.id}`, {
@@ -303,10 +299,9 @@ export default function EditPerfumePage() {
 						)}
 					</div>
 				</div>
-				<div className="grid grid-cols-3 gap-3">
+				<div className="grid grid-cols-2 gap-3">
 					<label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("size30")} /> 30 ML</label>
 					<label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("size50")} /> 50 ML</label>
-					<label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("size100")} /> 100 ML</label>
 				</div>
 				<div className="grid grid-cols-3 gap-4">
 					<div>
@@ -332,7 +327,7 @@ export default function EditPerfumePage() {
 			<div>
 				<h2 className="text-sm font-medium mb-2">Vista previa</h2>
 				<div className="max-w-sm mx-auto w-full">
-					<ProductCard product={preview} defaultUse={defaultUse} />
+					<ProductCard product={preview} defaultUse={defaultUse} fixedUse={true} />
 				</div>
 			</div>
 		</div>

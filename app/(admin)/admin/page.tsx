@@ -116,7 +116,9 @@ export default function AdminDashboardPage() {
 	return (
 		<div className="container mx-auto px-4 py-8 space-y-4">
 			<div className="flex items-center justify-between">
-				<h1 className="text-2xl font-bold">Perfumes</h1>
+				<h1 className="text-2xl font-bold">
+					Perfumes {!isLoading && <span className="text-lg text-gray-500 font-normal">({filteredPerfumes.length})</span>}
+				</h1>
 				<Button asChild>
 					<Link href="/perfumes/new">Agregar perfume</Link>
 				</Button>

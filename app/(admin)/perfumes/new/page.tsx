@@ -22,7 +22,6 @@ const perfumeSchema = z.object({
 	notas: z.string().optional(), // comma separated
 	size30: z.boolean(),
 	size50: z.boolean(),
-	size100: z.boolean(),
 	categoria: z.string().optional(),
 	marca: z.string().optional(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
@@ -39,7 +38,7 @@ export default function AdminNewPerfumePage() {
 	const form = useForm<PerfumeForm>({
 		resolver: zodResolver(perfumeSchema) as any,
 		defaultValues: {
-			name: "BLEU DE CHANEL",
+			name: "",
 			subtitle: "",
 			gender: "HOMBRE",
 			mainImage: "",
@@ -48,7 +47,6 @@ export default function AdminNewPerfumePage() {
 			active: true,
 			size30: true,
 			size50: true,
-			size100: true,
 			usoPorDefecto: "DIA",
 		},
 	})
@@ -156,7 +154,6 @@ export default function AdminNewPerfumePage() {
 		const sizes: Product["sizes"] = [
 			values.size30 ? 30 : undefined,
 			values.size50 ? 50 : undefined,
-			values.size100 ? 100 : undefined,
 		].filter(Boolean) as Product["sizes"]
 
 		// Priorizar la imagen subida sobre la URL del formulario
@@ -173,9 +170,9 @@ export default function AdminNewPerfumePage() {
 			brand: "Parma", // Marca fija
 			gender: values.gender,
 			images: images, // Usar array vacío si no hay imagen, el ProductCard lo manejará
-			sizes: sizes.length ? sizes : [30, 50, 100],
+			sizes: sizes.length ? sizes : [30, 50],
 		}
-	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.size100, formValues.mainImage, uploadedImageUrl])
+	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.mainImage, uploadedImageUrl])
 
 	async function onSubmit(data: PerfumeForm) {
 		// Generar slug automáticamente desde el nombre
@@ -196,7 +193,7 @@ export default function AdminNewPerfumePage() {
 			notas: data.notas ? data.notas.split(",").map(s => s.trim()) : [],
 			categoriaId: data.categoria || undefined,
 			marcaId: data.marca || undefined,
-			sizes: [data.size30 && 30, data.size50 && 50, data.size100 && 100].filter(Boolean),
+			sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
 			usoPorDefecto: data.usoPorDefecto || null,
 		}
 
@@ -367,7 +364,7 @@ export default function AdminNewPerfumePage() {
 				{/* Tamaños Disponibles */}
 				<div className="space-y-4 border-b pb-6">
 					<h2 className="text-lg font-semibold">Tamaños Disponibles</h2>
-					<div className="grid grid-cols-3 gap-3">
+					<div className="grid grid-cols-2 gap-3">
 						<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
 							<input type="checkbox" {...form.register("size30")} />
 							<span className="text-sm font-medium">30 ML</span>
@@ -375,10 +372,6 @@ export default function AdminNewPerfumePage() {
 						<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
 							<input type="checkbox" {...form.register("size50")} />
 							<span className="text-sm font-medium">50 ML</span>
-						</label>
-						<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
-							<input type="checkbox" {...form.register("size100")} />
-							<span className="text-sm font-medium">100 ML</span>
 						</label>
 					</div>
 				</div>
@@ -434,6 +427,7 @@ export default function AdminNewPerfumePage() {
 						<ProductCard 
 							product={preview} 
 							defaultUse={formValues.usoPorDefecto as "DIA" | "NOCHE" | "AMBOS" || "DIA"} 
+							fixedUse={true}
 						/>
 					</div>
 				</div>

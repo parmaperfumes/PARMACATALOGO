@@ -75,7 +75,7 @@ export default function PerfumesPage() {
 					brand: "Parma",
 					gender: (p.genero as "HOMBRE" | "MUJER" | "UNISEX") || undefined,
 					images: p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.imagenPrincipal],
-					sizes: (p.sizes.length > 0 ? p.sizes : [30, 50, 100]) as Product["sizes"],
+					sizes: (p.sizes.length > 0 ? p.sizes : [30, 50]) as Product["sizes"],
 				}))
 				setPerfumes(converted)
 				console.log("Perfumes convertidos:", converted.length)
