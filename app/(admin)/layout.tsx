@@ -40,6 +40,9 @@ export default async function AdminLayout({
 						<Link href="/admin" className="text-xl font-bold hover:underline cursor-pointer">
 							Panel Administrativo
 						</Link>
+						<Link href="/estadisticas" className="text-sm text-gray-600 hover:text-gray-900 underline">
+							Estadísticas
+						</Link>
 						<Link href="/header" className="text-sm text-gray-600 hover:text-gray-900 underline">
 							Editar Header
 						</Link>

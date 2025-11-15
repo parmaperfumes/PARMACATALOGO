@@ -124,3 +124,19 @@ model Perfume {
   @@index([slug])
   @@index([activo, destacado])
 }
+
+model Visita {
+  id          String   @id @default(cuid())
+  path        String   // URL visitada ej: /perfumes, /perfumes/chanel-bleu
+  userAgent   String?  @db.Text // Información del navegador/dispositivo
+  referrer    String?  // De dónde vino el visitante
+  ip          String?  // IP del visitante (opcional)
+  pais        String?  // País del visitante
+  ciudad      String?  // Ciudad del visitante
+  dispositivo String?  // mobile, desktop, tablet
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+  @@index([dispositivo])
+}
