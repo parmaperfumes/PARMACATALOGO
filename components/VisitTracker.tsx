@@ -7,8 +7,9 @@ export function VisitTracker() {
 	const pathname = usePathname()
 
 	useEffect(() => {
-		// No registrar visitas en rutas de admin o API
-		if (pathname.startsWith("/admin") || pathname.startsWith("/api")) {
+		// SOLO registrar visitas en la página del catálogo de perfumes
+		// Excluir admin, api, login, estadísticas, etc.
+		if (pathname !== "/perfumes") {
 			return
 		}
 
