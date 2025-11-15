@@ -36,6 +36,12 @@ export default function EstadisticasPage() {
 			const response = await fetch(`/api/visitas?dias=${diasSeleccionados}`)
 			const data = await response.json()
 			
+			console.log("📈 DATOS RECIBIDOS DEL API:", {
+				totalVisitas: data.totalVisitas,
+				visitasPorDia: data.visitasPorDia,
+				diasConVisitas: Object.keys(data.visitasPorDia || {}).length,
+			})
+			
 			if (data.success) {
 				setEstadisticas(data)
 			} else {
@@ -43,6 +49,7 @@ export default function EstadisticasPage() {
 			}
 		} catch (err) {
 			setError("Error de conexión")
+			console.error("Error cargando estadísticas:", err)
 		} finally {
 			setIsLoading(false)
 		}
@@ -86,6 +93,35 @@ export default function EstadisticasPage() {
 			hour: "2-digit",
 			minute: "2-digit",
 		})
+	}
+
+	// Generar todos los días del período seleccionado
+	const generarTodosLosDias = () => {
+		const dias: Array<{ fecha: string; visitas: number }> = []
+		
+		// Usar fecha local en lugar de UTC para evitar problemas de zona horaria
+		for (let i = 0; i < diasSeleccionados; i++) {
+			const fecha = new Date()
+			fecha.setDate(fecha.getDate() - i)
+			fecha.setHours(0, 0, 0, 0) // Normalizar a medianoche
+			
+			const year = fecha.getFullYear()
+			const month = String(fecha.getMonth() + 1).padStart(2, '0')
+			const day = String(fecha.getDate()).padStart(2, '0')
+			const fechaStr = `${year}-${month}-${day}`
+			
+			const visitas = estadisticas.visitasPorDia[fechaStr] || 0
+			
+			dias.push({
+				fecha: fechaStr,
+				visitas: visitas,
+			})
+		}
+		
+		console.log("📅 DÍAS GENERADOS PARA EL GRÁFICO (primeros 5):", dias.slice(0, 5))
+		console.log("📊 DATOS DISPONIBLES:", estadisticas.visitasPorDia)
+		
+		return dias
 	}
 
 	return (
@@ -171,32 +207,107 @@ export default function EstadisticasPage() {
 
 			{/* Gráfico de visitas por día */}
 			<div className="bg-white border rounded-lg p-6 shadow-sm">
-				<h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+				<h2 className="text-lg font-semibold mb-6 flex items-center gap-2 text-blue-700">
 					<BarChart3 className="h-5 w-5" />
 					Visitas por Día
 				</h2>
-				<div className="space-y-2">
-					{Object.entries(estadisticas.visitasPorDia)
-						.sort(([a], [b]) => b.localeCompare(a))
-						.slice(0, 15)
-						.map(([fecha, visitas]) => {
-							const porcentaje = (visitas / estadisticas.totalVisitas) * 100
-							return (
-								<div key={fecha} className="flex items-center gap-3">
-									<span className="text-sm text-gray-600 w-24 flex-shrink-0">
-										{formatearFecha(fecha)}
-									</span>
-									<div className="flex-1 h-8 bg-gray-100 rounded-lg overflow-hidden">
-										<div
-											className="h-full bg-green-500 flex items-center justify-end pr-2"
-											style={{ width: `${Math.max(porcentaje, 5)}%` }}
-										>
-											<span className="text-white text-sm font-medium">{visitas}</span>
+				<div className="relative">
+					{(() => {
+						const todosLosDias = generarTodosLosDias()
+						const diasMostrar = todosLosDias.slice(0, 15).reverse()
+						const maxVisitas = Math.max(...diasMostrar.map(d => d.visitas), 1)
+						
+						// Calcular escala del eje Y (redondear hacia arriba)
+						const escalaY = Math.ceil(maxVisitas / 5) * 5
+						const lineasGrid = 6
+						
+						return (
+							<>
+								{/* Eje Y con cuadrícula */}
+								<div className="flex gap-4">
+									{/* Números del eje Y */}
+									<div className="flex flex-col-reverse justify-between h-80 py-4 text-xs text-gray-600 font-medium">
+										{Array.from({ length: lineasGrid }, (_, i) => {
+											const valor = Math.round((escalaY / (lineasGrid - 1)) * i)
+											return (
+												<div key={i} className="h-0 flex items-center">
+													{valor}
+												</div>
+											)
+										})}
+									</div>
+									
+									{/* Área del gráfico */}
+									<div className="flex-1 relative">
+										{/* Líneas de cuadrícula horizontal */}
+										<div className="absolute inset-0 flex flex-col justify-between py-4">
+											{Array.from({ length: lineasGrid }, (_, i) => (
+												<div key={i} className="border-t border-dotted border-gray-300" />
+											))}
 										</div>
+										
+										{/* Barras con fechas */}
+										<div className="relative h-80 flex items-end justify-between gap-1 px-2 py-4 pb-0">
+											{diasMostrar.map(({ fecha, visitas }) => {
+												const alturaPorcentaje = escalaY > 0 ? (visitas / escalaY) * 100 : 0
+												
+												// Parsear fecha manualmente para evitar problemas de zona horaria
+												const [year, month, day] = fecha.split('-')
+												const fechaCorta = `${parseInt(day)}/${parseInt(month)}`
+												
+												return (
+													<div key={fecha} className="flex-1 flex flex-col items-center h-full justify-end group">
+														{/* Número encima de la barra */}
+														{visitas > 0 && (
+															<span className="text-xs font-semibold text-gray-700 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+																{visitas}
+															</span>
+														)}
+														{/* Barra */}
+														<div
+															className="w-full bg-blue-600 hover:bg-blue-700 transition-all rounded-t shadow-sm"
+															style={{ 
+																height: `${alturaPorcentaje}%`,
+																minHeight: visitas > 0 ? '4px' : '0px'
+															}}
+														/>
+													</div>
+												)
+											})}
+										</div>
+										
+										{/* Eje X */}
+										<div className="border-t-2 border-gray-800" />
 									</div>
 								</div>
-							)
-						})}
+								
+								{/* Etiquetas del eje X - Una por cada barra */}
+								<div className="flex gap-4 mt-2">
+									<div className="w-8" /> {/* Espacio para alinear con eje Y */}
+									<div className="flex-1 flex justify-between gap-1 px-2">
+										{diasMostrar.map(({ fecha }) => {
+											// Parsear fecha manualmente para evitar problemas de zona horaria
+											const [year, month, day] = fecha.split('-')
+											const fechaCorta = `${parseInt(day)}/${parseInt(month)}`
+											
+											return (
+												<div key={fecha} className="flex-1 text-center">
+													<span className="text-xs text-gray-600 font-medium">
+														{fechaCorta}
+													</span>
+												</div>
+											)
+										})}
+									</div>
+								</div>
+								
+								{/* Etiqueta del eje X */}
+								<div className="text-center mt-3">
+									<span className="text-sm text-gray-500 font-medium">Fecha</span>
+								</div>
+							</>
+						)
+					})()}
 				</div>
 			</div>
 
