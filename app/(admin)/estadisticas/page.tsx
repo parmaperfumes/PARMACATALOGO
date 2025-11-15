@@ -256,20 +256,21 @@ export default function EstadisticasPage() {
 												const fechaCorta = `${parseInt(day)}/${parseInt(month)}`
 												
 												return (
-													<div key={fecha} className="flex-1 flex flex-col items-center h-full justify-end group">
-														{/* Número encima de la barra */}
+													<div key={fecha} className="flex-1 flex flex-col items-center h-full justify-end group relative">
+														{/* Número encima de la barra - Siempre visible en móvil, hover en desktop */}
 														{visitas > 0 && (
-															<span className="text-xs font-semibold text-gray-700 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+															<span className="text-[10px] sm:text-xs font-semibold text-gray-700 mb-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
 																{visitas}
 															</span>
 														)}
 														{/* Barra */}
 														<div
-															className="w-full bg-blue-600 hover:bg-blue-700 transition-all rounded-t shadow-sm"
+															className="w-full bg-blue-600 active:bg-blue-800 sm:hover:bg-blue-700 transition-all rounded-t shadow-sm cursor-pointer"
 															style={{ 
 																height: `${alturaPorcentaje}%`,
 																minHeight: visitas > 0 ? '4px' : '0px'
 															}}
+															title={`${visitas} visitas el ${fechaCorta}`}
 														/>
 													</div>
 												)
@@ -285,14 +286,17 @@ export default function EstadisticasPage() {
 								<div className="flex gap-4 mt-2">
 									<div className="w-8" /> {/* Espacio para alinear con eje Y */}
 									<div className="flex-1 flex justify-between gap-1 px-2">
-										{diasMostrar.map(({ fecha }) => {
+										{diasMostrar.map(({ fecha }, index) => {
 											// Parsear fecha manualmente para evitar problemas de zona horaria
 											const [year, month, day] = fecha.split('-')
 											const fechaCorta = `${parseInt(day)}/${parseInt(month)}`
 											
+											// Mostrar solo cada 2 fechas en móvil, todas en desktop
+											const mostrar = index % 2 === 0
+											
 											return (
 												<div key={fecha} className="flex-1 text-center">
-													<span className="text-xs text-gray-600 font-medium">
+													<span className={`text-[9px] sm:text-xs text-gray-600 font-medium block -rotate-45 sm:rotate-0 origin-center mt-2 sm:mt-0 ${!mostrar ? 'sm:inline hidden' : ''}`}>
 														{fechaCorta}
 													</span>
 												</div>
@@ -302,7 +306,7 @@ export default function EstadisticasPage() {
 								</div>
 								
 								{/* Etiqueta del eje X */}
-								<div className="text-center mt-3">
+								<div className="text-center mt-6 sm:mt-3">
 									<span className="text-sm text-gray-500 font-medium">Fecha</span>
 								</div>
 							</>
