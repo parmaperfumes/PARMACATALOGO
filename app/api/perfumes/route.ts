@@ -299,12 +299,12 @@ export async function GET(req: NextRequest) {
 		}))
 		
 		// Agregar headers de caché para optimizar rendimiento
-		// s-maxage: 300 segundos (5 min) en CDN, stale-while-revalidate: 1 hora
+		// s-maxage: 10 segundos en CDN para actualizaciones rápidas
 		return NextResponse.json(perfumes, {
 			headers: {
-				'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
-				'CDN-Cache-Control': 'public, s-maxage=300',
-				'Vercel-CDN-Cache-Control': 'public, s-maxage=300',
+				'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=60',
+				'CDN-Cache-Control': 'public, s-maxage=10',
+				'Vercel-CDN-Cache-Control': 'public, s-maxage=10',
 				'X-Content-Type-Options': 'nosniff',
 			}
 		})
@@ -366,6 +366,16 @@ export async function POST(req: NextRequest) {
 		// Solo agregar subtitulo si está presente (evita error si el campo no existe en la BD)
 		if (data.subtitulo !== undefined && data.subtitulo !== null && data.subtitulo !== "") {
 			perfumeData.subtitulo = data.subtitulo
+		}
+
+		// Agregar usoPorDefecto si está presente
+		if (data.usoPorDefecto) {
+			perfumeData.usoPorDefecto = data.usoPorDefecto
+		}
+
+		// Agregar fijarUso (por defecto true para el catálogo público)
+		if (data.fijarUso !== undefined) {
+			perfumeData.fijarUso = !!data.fijarUso
 		}
 
 		// Intentar crear con Prisma, pero si falla por campos que no existen, usar SQL raw

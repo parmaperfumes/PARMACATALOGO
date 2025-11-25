@@ -91,7 +91,7 @@ export default function EditPerfumePage() {
 				volumen: p.volumen || "",
 				size30: sizes.includes(30),
 				size50: sizes.includes(50),
-				usoPorDefecto: (p.usoPorDefecto as "DIA" | "NOCHE") || "DIA",
+				usoPorDefecto: (p.usoPorDefecto as "DIA" | "NOCHE" | "AMBOS") || "DIA",
 			})
 			} catch (error: any) {
 				console.error("Error al cargar perfume:", error)

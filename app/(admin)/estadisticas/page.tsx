@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BarChart3, Smartphone, Monitor, Globe, Calendar, Eye } from "lucide-react"
+import { BarChart3, Smartphone, Monitor, Globe, Calendar, Eye, ShoppingCart, XCircle, CheckCircle2 } from "lucide-react"
 
 interface Estadisticas {
 	totalVisitas: number
@@ -19,8 +19,18 @@ interface Estadisticas {
 	}>
 }
 
+interface EstadisticasCarrito {
+	totalClicksContinuar: number
+	totalCarritosAbandonados: number
+	itemsPromedioContinuar: string
+	itemsPromedioAbandonado: string
+	tasaConversion: string
+	eventosPorDia: Record<string, { click_continuar: number; carrito_abandonado: number }>
+}
+
 export default function EstadisticasPage() {
 	const [estadisticas, setEstadisticas] = useState<Estadisticas | null>(null)
+	const [estadisticasCarrito, setEstadisticasCarrito] = useState<EstadisticasCarrito | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState("")
 	const [diasSeleccionados, setDiasSeleccionados] = useState(30)
@@ -33,19 +43,33 @@ export default function EstadisticasPage() {
 		setIsLoading(true)
 		setError("")
 		try {
-			const response = await fetch(`/api/visitas?dias=${diasSeleccionados}`)
-			const data = await response.json()
+			// Cargar estadísticas de visitas y carrito en paralelo
+			const [responseVisitas, responseCarrito] = await Promise.all([
+				fetch(`/api/visitas?dias=${diasSeleccionados}`),
+				fetch(`/api/eventos-carrito?dias=${diasSeleccionados}`)
+			])
+			
+			const dataVisitas = await responseVisitas.json()
+			const dataCarrito = await responseCarrito.json()
 			
 			console.log("📈 DATOS RECIBIDOS DEL API:", {
-				totalVisitas: data.totalVisitas,
-				visitasPorDia: data.visitasPorDia,
-				diasConVisitas: Object.keys(data.visitasPorDia || {}).length,
+				totalVisitas: dataVisitas.totalVisitas,
+				visitasPorDia: dataVisitas.visitasPorDia,
+				diasConVisitas: Object.keys(dataVisitas.visitasPorDia || {}).length,
+				carritoClicksContinuar: dataCarrito.totalClicksContinuar,
+				carritoAbandonados: dataCarrito.totalCarritosAbandonados,
 			})
 			
-			if (data.success) {
-				setEstadisticas(data)
+			if (dataVisitas.success) {
+				setEstadisticas(dataVisitas)
 			} else {
-				setError("Error al cargar estadísticas")
+				setError("Error al cargar estadísticas de visitas")
+			}
+
+			if (dataCarrito.success) {
+				setEstadisticasCarrito(dataCarrito)
+			} else {
+				console.warn("Error al cargar estadísticas de carrito, continuando sin ellas")
 			}
 		} catch (err) {
 			setError("Error de conexión")
@@ -117,9 +141,6 @@ export default function EstadisticasPage() {
 				visitas: visitas,
 			})
 		}
-		
-		console.log("📅 DÍAS GENERADOS PARA EL GRÁFICO (primeros 5):", dias.slice(0, 5))
-		console.log("📊 DATOS DISPONIBLES:", estadisticas.visitasPorDia)
 		
 		return dias
 	}
@@ -204,6 +225,53 @@ export default function EstadisticasPage() {
 					</div>
 				</div>
 			</div>
+
+			{/* Tarjetas de estadísticas de carrito */}
+			{estadisticasCarrito && (
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+					{/* Clicks en continuar pedido */}
+					<div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-6 shadow-sm">
+						<div className="flex items-center justify-between">
+							<div>
+								<p className="text-sm text-green-700 font-medium mb-1">Pedidos Continuados</p>
+								<p className="text-3xl font-bold text-green-900">{estadisticasCarrito.totalClicksContinuar}</p>
+								<p className="text-xs text-green-600 mt-2">
+									Promedio: {estadisticasCarrito.itemsPromedioContinuar} items
+								</p>
+							</div>
+							<CheckCircle2 className="h-10 w-10 text-green-600" />
+						</div>
+					</div>
+
+					{/* Carritos abandonados */}
+					<div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-6 shadow-sm">
+						<div className="flex items-center justify-between">
+							<div>
+								<p className="text-sm text-red-700 font-medium mb-1">Carritos Abandonados</p>
+								<p className="text-3xl font-bold text-red-900">{estadisticasCarrito.totalCarritosAbandonados}</p>
+								<p className="text-xs text-red-600 mt-2">
+									Promedio: {estadisticasCarrito.itemsPromedioAbandonado} items
+								</p>
+							</div>
+							<XCircle className="h-10 w-10 text-red-600" />
+						</div>
+					</div>
+
+					{/* Tasa de conversión */}
+					<div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6 shadow-sm">
+						<div className="flex items-center justify-between">
+							<div>
+								<p className="text-sm text-blue-700 font-medium mb-1">Tasa de Conversión</p>
+								<p className="text-3xl font-bold text-blue-900">{estadisticasCarrito.tasaConversion}%</p>
+								<p className="text-xs text-blue-600 mt-2">
+									De carrito a pedido
+								</p>
+							</div>
+							<ShoppingCart className="h-10 w-10 text-blue-600" />
+						</div>
+					</div>
+				</div>
+			)}
 
 			{/* Gráfico de visitas por día */}
 			<div className="bg-white border rounded-lg p-6 shadow-sm">

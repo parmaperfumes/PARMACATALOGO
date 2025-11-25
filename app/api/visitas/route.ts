@@ -57,14 +57,6 @@ export async function POST(req: NextRequest) {
 		},
 	})
 
-	console.log("✅ NUEVA VISITA REGISTRADA:", {
-		id: visita.id,
-		path: visita.path,
-		createdAt: visita.createdAt,
-		dispositivo: visita.dispositivo,
-		pais: visita.pais,
-	})
-
 	return NextResponse.json({ success: true, id: visita.id }, { status: 201 })
 	} catch (error) {
 		console.error("Error registrando visita:", error)
@@ -103,10 +95,6 @@ export async function GET(req: NextRequest) {
 
 	// Estadísticas agregadas
 	const totalVisitas = visitas.length
-	
-	console.log("📊 DIAGNÓSTICO DE VISITAS:")
-	console.log(`Total de visitas encontradas: ${totalVisitas}`)
-	
 	const visitasPorDia = visitas.reduce((acc: any, visita) => {
 		// Usar fecha local en lugar de UTC para evitar problemas de zona horaria
 		const fecha = new Date(visita.createdAt)
@@ -115,13 +103,9 @@ export async function GET(req: NextRequest) {
 		const day = String(fecha.getDate()).padStart(2, '0')
 		const fechaStr = `${year}-${month}-${day}`
 		
-		console.log(`Visita: createdAt=${visita.createdAt}, fecha procesada=${fechaStr}`)
-		
 		acc[fechaStr] = (acc[fechaStr] || 0) + 1
 		return acc
 	}, {})
-	
-	console.log("Visitas por día:", visitasPorDia)
 
 		const visitasPorDispositivo = visitas.reduce((acc: any, visita) => {
 			acc[visita.dispositivo || "unknown"] = (acc[visita.dispositivo || "unknown"] || 0) + 1

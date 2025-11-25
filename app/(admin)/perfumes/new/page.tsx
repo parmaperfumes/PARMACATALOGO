@@ -175,44 +175,51 @@ export default function AdminNewPerfumePage() {
 	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.mainImage, uploadedImageUrl])
 
 	async function onSubmit(data: PerfumeForm) {
-		// Generar slug automáticamente desde el nombre
-		const slug = data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
-		
-		const payload = {
-			name: data.name,
-			slug: slug,
-			precio: 0, // Valor por defecto
-			imagenPrincipal: data.mainImage,
-			imagenes: [data.mainImage],
-			stock: data.stock,
-			destacado: !!data.highlight,
-			activo: !!data.active,
-			genero: data.gender,
-			subtitulo: data.subtitle || null, // Guardar el subtítulo
-			volumen: data.volumen,
-			notas: data.notas ? data.notas.split(",").map(s => s.trim()) : [],
-			categoriaId: data.categoria || undefined,
-			marcaId: data.marca || undefined,
-			sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
-			usoPorDefecto: data.usoPorDefecto || null,
-		}
+		try {
+			setUploading(true)
+			
+			// Generar slug automáticamente desde el nombre
+			const slug = data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+			
+			const payload = {
+				name: data.name,
+				slug: slug,
+				precio: 0, // Valor por defecto
+				imagenPrincipal: data.mainImage,
+				imagenes: [data.mainImage],
+				stock: data.stock,
+				destacado: !!data.highlight,
+				activo: !!data.active,
+				genero: data.gender,
+				subtitulo: data.subtitle || null, // Guardar el subtítulo
+				volumen: data.volumen,
+				notas: data.notas ? data.notas.split(",").map(s => s.trim()) : [],
+				categoriaId: data.categoria || undefined,
+				marcaId: data.marca || undefined,
+				sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
+				usoPorDefecto: data.usoPorDefecto || null,
+			}
 
-		const res = await fetch("/api/perfumes", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(payload),
-		})
+			const res = await fetch("/api/perfumes", {
+				method: "POST",
+				headers: { 
+					"Content-Type": "application/json",
+					"Cache-Control": "no-cache"
+				},
+				body: JSON.stringify(payload),
+			})
 
-		if (res.ok) {
-			alert("✅ Perfume guardado exitosamente en la base de datos.")
-			// Limpiar el formulario y redirigir a la misma página para crear otro perfume
-			form.reset()
-			setUploadedImageUrl(null)
-			setImageFile(null)
-			router.push("/perfumes/new")
-		} else {
-			const msg = await res.text()
-			alert(`❌ Error al guardar: ${msg}`)
+			if (res.ok) {
+				alert("✅ Perfume guardado exitosamente")
+				// Redirigir al panel admin para ver el perfume en la lista
+				router.push("/admin")
+				router.refresh() // Forzar recarga de datos
+			} else {
+				const msg = await res.text()
+				alert(`❌ Error al guardar: ${msg}`)
+			}
+		} finally {
+			setUploading(false)
 		}
 	}
 
@@ -411,9 +418,9 @@ export default function AdminNewPerfumePage() {
 						className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
 						disabled={uploading || (!form.watch("mainImage") && !uploadedImageUrl)}
 					>
-						{uploading ? "Subiendo..." : "Guardar Perfume"}
+						{uploading ? "Guardando..." : "Guardar Perfume"}
 					</Button>
-					<Button type="button" variant="outline" onClick={() => router.push("/admin")}>
+					<Button type="button" variant="outline" onClick={() => router.push("/admin")} disabled={uploading}>
 						Cancelar
 					</Button>
 				</div>

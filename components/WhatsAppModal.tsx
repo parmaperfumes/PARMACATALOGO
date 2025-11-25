@@ -3,14 +3,58 @@
 import { useWhatsApp } from "@/context/WhatsAppContext"
 import { X, Truck, Wallet, CheckCircle } from "lucide-react"
 import { MessageCircle } from "lucide-react"
+import { useRef, useEffect } from "react"
 
 type WhatsAppModalProps = {
 	isOpen: boolean
 	onClose: () => void
 }
 
+// Función para registrar eventos de carrito
+async function registrarEventoCarrito(tipo: "click_continuar" | "carrito_abandonado", items: any[]) {
+	try {
+		await fetch("/api/eventos-carrito", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				tipo,
+				cantidadItems: items.length,
+				items: items.map(item => ({
+					name: item.name,
+					size: item.size,
+					use: item.use,
+				})),
+			}),
+		})
+	} catch (error) {
+		console.error("Error al registrar evento de carrito:", error)
+	}
+}
+
 export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 	const { items, removeItem, clearItems } = useWhatsApp()
+	const clickContinuarRef = useRef(false)
+	const itemsAlAbrirRef = useRef(0)
+
+	// Guardar la cantidad de items cuando se abre el modal
+	useEffect(() => {
+		if (isOpen) {
+			clickContinuarRef.current = false
+			itemsAlAbrirRef.current = items.length
+		}
+	}, [isOpen, items.length])
+
+	// Detectar cuando se cierra el modal sin hacer clic en continuar
+	useEffect(() => {
+		return () => {
+			// Si el modal se está cerrando y había items pero NO se hizo clic en continuar
+			if (!isOpen && itemsAlAbrirRef.current > 0 && !clickContinuarRef.current) {
+				registrarEventoCarrito("carrito_abandonado", items)
+			}
+		}
+	}, [isOpen, items])
 
 	if (!isOpen) return null
 
@@ -39,9 +83,23 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 	const text = encodeURIComponent(buildMessage())
 	const whatsappUrl = `https://wa.me/${phoneNumber}?text=${text}`
 
-	const handleContinue = () => {
+	const handleContinue = async () => {
+		// Marcar que se hizo clic en continuar
+		clickContinuarRef.current = true
+		
+		// Registrar el evento de click en continuar
+		await registrarEventoCarrito("click_continuar", items)
+		
 		window.open(whatsappUrl, '_blank')
 		clearItems()
+		onClose()
+	}
+
+	const handleClose = () => {
+		// Si hay items y no se hizo clic en continuar, registrar abandono
+		if (items.length > 0 && !clickContinuarRef.current) {
+			registrarEventoCarrito("carrito_abandonado", items)
+		}
 		onClose()
 	}
 
@@ -50,7 +108,7 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 			{/* Backdrop */}
 			<div 
 				className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-				onClick={onClose}
+				onClick={handleClose}
 			/>
 			
 			{/* Modal Panel */}
@@ -59,7 +117,7 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 				<div className="flex items-center justify-between p-4 sm:p-6 border-b">
 					<h2 className="text-lg sm:text-2xl font-bold text-gray-800">Perfumes Seleccionados</h2>
 					<button
-						onClick={onClose}
+						onClick={handleClose}
 						className="text-gray-500 hover:text-gray-700 active:text-gray-900 transition-colors p-1 touch-manipulation"
 						aria-label="Cerrar"
 					>
@@ -120,7 +178,7 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 						<button
 							onClick={() => {
 								clearItems()
-								onClose()
+								handleClose()
 							}}
 							className="text-red-600 hover:text-red-700 active:text-red-800 text-xs sm:text-sm font-medium transition-colors touch-manipulation flex items-center gap-1.5"
 						>
