@@ -83,13 +83,16 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 	const text = encodeURIComponent(buildMessage())
 	const whatsappUrl = `https://wa.me/${phoneNumber}?text=${text}`
 
-	const handleContinue = async () => {
+	const handleContinue = () => {
 		// Marcar que se hizo clic en continuar
 		clickContinuarRef.current = true
 		
-		// Registrar el evento de click en continuar
-		await registrarEventoCarrito("click_continuar", items)
+		// Registrar el evento de click en continuar (sin bloquear el flujo)
+		registrarEventoCarrito("click_continuar", items).catch(err => {
+			console.error("Error al registrar evento (no crítico):", err)
+		})
 		
+		// Continuar con el pedido independientemente del resultado del registro
 		window.open(whatsappUrl, '_blank')
 		clearItems()
 		onClose()

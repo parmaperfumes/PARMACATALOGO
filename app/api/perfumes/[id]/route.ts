@@ -12,14 +12,14 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 		// Intentar leer con los nuevos campos primero
 		let result: Array<any>
 		try {
-			result = await prisma.$queryRaw<Array<any>>`
-				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
-				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
-				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
-				       "usoPorDefecto", "fijarUso"
-				FROM "Perfume"
-				WHERE id = ${id}
-			`
+		result = await prisma.$queryRaw<Array<any>>`
+			SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
+			       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
+			       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
+			       "usoPorDefecto", "fijarUso", "tipoLanzamiento"
+			FROM "Perfume"
+			WHERE id = ${id}
+		`
 		} catch (e: any) {
 			// Si los campos nuevos no existen, leer sin ellos
 			if (e.message?.includes("usoPorDefecto") || e.message?.includes("fijarUso") || e.message?.includes("column") || e.message?.includes("does not exist")) {
@@ -106,6 +106,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		}
 		if (data.fijarUso !== undefined) {
 			updateData.fijarUso = data.fijarUso ?? false
+		}
+		// Agregar tipoLanzamiento
+		if (data.tipoLanzamiento !== undefined) {
+			updateData.tipoLanzamiento = (data.tipoLanzamiento === "NINGUNO" || !data.tipoLanzamiento) ? null : data.tipoLanzamiento
 		}
 		
 		// Intentar actualizar usando Prisma

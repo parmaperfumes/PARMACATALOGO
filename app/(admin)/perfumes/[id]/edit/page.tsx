@@ -22,6 +22,7 @@ const schema = z.object({
 	size30: z.boolean(),
 	size50: z.boolean(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
+	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "NINGUNO"]).optional(),
 })
 
 type FormT = {
@@ -36,6 +37,7 @@ type FormT = {
 	size30: boolean
 	size50: boolean
 	usoPorDefecto?: "DIA" | "NOCHE" | "AMBOS"
+	tipoLanzamiento?: "NUEVO" | "RESTOCK" | "NINGUNO"
 }
 
 export default function EditPerfumePage() {
@@ -92,6 +94,7 @@ export default function EditPerfumePage() {
 				size30: sizes.includes(30),
 				size50: sizes.includes(50),
 				usoPorDefecto: (p.usoPorDefecto as "DIA" | "NOCHE" | "AMBOS") || "DIA",
+				tipoLanzamiento: (p.tipoLanzamiento as "NUEVO" | "RESTOCK") || "NINGUNO",
 			})
 			} catch (error: any) {
 				console.error("Error al cargar perfume:", error)
@@ -311,8 +314,9 @@ export default function EditPerfumePage() {
 					<label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" {...form.register("highlight")} /> Destacado</label>
 					<label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" {...form.register("active")} /> Activo</label>
 				</div>
-				<div className="space-y-4 border-t pt-4">
-					<h3 className="text-sm font-semibold">Configuración de Uso (DIA/NOCHE)</h3>
+			<div className="space-y-4 border-t pt-4">
+				<h3 className="text-sm font-semibold">Configuración de Uso y Lanzamiento</h3>
+				<div className="grid grid-cols-2 gap-4">
 					<div>
 						<label className="block text-sm font-medium mb-2">Uso por Defecto</label>
 						<select className="border rounded-md h-10 px-3 w-full" {...form.register("usoPorDefecto")}>
@@ -321,7 +325,16 @@ export default function EditPerfumePage() {
 							<option value="AMBOS">AMBOS</option>
 						</select>
 					</div>
+					<div>
+						<label className="block text-sm font-medium mb-2">Tipo de Lanzamiento</label>
+						<select className="border rounded-md h-10 px-3 w-full" {...form.register("tipoLanzamiento")}>
+							<option value="NINGUNO">Ninguno</option>
+							<option value="NUEVO">NUEVO 🆕</option>
+							<option value="RESTOCK">RE-STOCK 📦</option>
+						</select>
+					</div>
 				</div>
+			</div>
 				<div className="pt-2"><Button type="submit">Guardar cambios</Button></div>
 			</form>
 			<div>

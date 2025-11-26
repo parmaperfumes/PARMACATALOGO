@@ -115,6 +115,7 @@ model Perfume {
   sizes           Int[]      // [30, 50, 100] - Tamaños disponibles
   usoPorDefecto   String?    // DIA, NOCHE
   fijarUso        Boolean    @default(false) // Si es true, no se puede cambiar DIA/NOCHE
+  tipoLanzamiento String?    // NUEVO, RESTOCK, o null
   
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt

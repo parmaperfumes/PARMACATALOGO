@@ -17,6 +17,7 @@ type PerfumeFromDB = {
 	activo: boolean
 	usoPorDefecto?: string | null
 	fijarUso?: boolean
+	tipoLanzamiento?: string | null
 }
 
 export default function PerfumesPage() {
@@ -66,17 +67,18 @@ export default function PerfumesPage() {
 					return
 				}
 				
-				setPerfumesData(data) // Guardar los datos originales
-				// Convertir los perfumes de la BD al formato Product
-				const converted: Product[] = data.map((p) => ({
-					id: p.id,
-					name: p.nombre.toUpperCase(),
-					subtitle: p.subtitulo || undefined,
-					brand: "Parma",
-					gender: (p.genero as "HOMBRE" | "MUJER" | "UNISEX") || undefined,
-					images: p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.imagenPrincipal],
-					sizes: (p.sizes.length > 0 ? p.sizes : [30, 50]) as Product["sizes"],
-				}))
+			setPerfumesData(data) // Guardar los datos originales
+			// Convertir los perfumes de la BD al formato Product
+			const converted: Product[] = data.map((p) => ({
+				id: p.id,
+				name: p.nombre.toUpperCase(),
+				subtitle: p.subtitulo || undefined,
+				brand: "Parma",
+				gender: (p.genero as "HOMBRE" | "MUJER" | "UNISEX") || undefined,
+				images: p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.imagenPrincipal],
+				sizes: (p.sizes.length > 0 ? p.sizes : [30, 50]) as Product["sizes"],
+				tipoLanzamiento: p.tipoLanzamiento as "NUEVO" | "RESTOCK" | null || null,
+			}))
 				setPerfumes(converted)
 				console.log("Perfumes convertidos:", converted.length)
 			} catch (error) {

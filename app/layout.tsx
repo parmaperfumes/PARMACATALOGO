@@ -10,8 +10,13 @@ export const metadata: Metadata = {
   title: "Catálogo de Perfumes",
   description: "Descubre la mejor colección de perfumes",
   manifest: "/manifest.json",
+}
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: "#ffffff",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 }
 
 export default function RootLayout({

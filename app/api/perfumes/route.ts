@@ -260,7 +260,7 @@ export async function GET(req: NextRequest) {
 				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
-				       "usoPorDefecto", "fijarUso"
+				       "usoPorDefecto", "fijarUso", "tipoLanzamiento"
 				FROM "Perfume"
 				${whereClause}
 				ORDER BY "createdAt" DESC
@@ -376,6 +376,11 @@ export async function POST(req: NextRequest) {
 		// Agregar fijarUso (por defecto true para el catálogo público)
 		if (data.fijarUso !== undefined) {
 			perfumeData.fijarUso = !!data.fijarUso
+		}
+
+		// Agregar tipoLanzamiento si está presente
+		if (data.tipoLanzamiento) {
+			perfumeData.tipoLanzamiento = data.tipoLanzamiento
 		}
 
 		// Intentar crear con Prisma, pero si falla por campos que no existen, usar SQL raw

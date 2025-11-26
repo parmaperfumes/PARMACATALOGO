@@ -25,6 +25,7 @@ const perfumeSchema = z.object({
 	categoria: z.string().optional(),
 	marca: z.string().optional(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
+	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "NINGUNO"]).optional(),
 })
 
 type PerfumeForm = z.infer<typeof perfumeSchema>
@@ -198,6 +199,7 @@ export default function AdminNewPerfumePage() {
 				marcaId: data.marca || undefined,
 				sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
 				usoPorDefecto: data.usoPorDefecto || null,
+				tipoLanzamiento: data.tipoLanzamiento && data.tipoLanzamiento !== "NINGUNO" ? data.tipoLanzamiento : null,
 			}
 
 			const res = await fetch("/api/perfumes", {
@@ -383,16 +385,26 @@ export default function AdminNewPerfumePage() {
 					</div>
 				</div>
 
-				{/* Configuración de Uso (DIA/NOCHE) */}
+				{/* Configuración de Uso (DIA/NOCHE) y Tipo de Lanzamiento */}
 				<div className="space-y-4 border-b pb-6">
-					<h2 className="text-lg font-semibold">Configuración de Uso (DIA/NOCHE)</h2>
-					<div>
-						<label className="block text-sm font-medium mb-2">Uso por Defecto</label>
-						<select className="border rounded-md h-10 px-3 w-full" {...form.register("usoPorDefecto")}>
-							<option value="DIA">DIA</option>
-							<option value="NOCHE">NOCHE</option>
-							<option value="AMBOS">AMBOS</option>
-						</select>
+					<h2 className="text-lg font-semibold">Configuración de Uso y Lanzamiento</h2>
+					<div className="grid grid-cols-2 gap-4">
+						<div>
+							<label className="block text-sm font-medium mb-2">Uso por Defecto</label>
+							<select className="border rounded-md h-10 px-3 w-full" {...form.register("usoPorDefecto")}>
+								<option value="DIA">DIA</option>
+								<option value="NOCHE">NOCHE</option>
+								<option value="AMBOS">AMBOS</option>
+							</select>
+						</div>
+						<div>
+							<label className="block text-sm font-medium mb-2">Tipo de Lanzamiento</label>
+							<select className="border rounded-md h-10 px-3 w-full" {...form.register("tipoLanzamiento")}>
+								<option value="NINGUNO">Ninguno</option>
+								<option value="NUEVO">NUEVO 🆕</option>
+								<option value="RESTOCK">RE-STOCK 📦</option>
+							</select>
+						</div>
 					</div>
 				</div>
 
