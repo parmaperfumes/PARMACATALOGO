@@ -254,20 +254,29 @@ export async function GET(req: NextRequest) {
 		// Usar SQL raw para evitar errores si los campos nuevos no existen
 		let perfumes: any[]
 		try {
-			// Intentar leer con los nuevos campos primero
+			// Leer sin tipoLanzamiento (no existe en la BD)
 			const whereClause = includeInactive ? '' : 'WHERE activo = true'
 			perfumes = await prisma.$queryRawUnsafe<Array<any>>(`
 				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
-				       "usoPorDefecto", "fijarUso", "tipoLanzamiento"
+				       "usoPorDefecto", "fijarUso"
 				FROM "Perfume"
 				${whereClause}
 				ORDER BY "createdAt" DESC
 			`)
+			
+			// Agregar tipoLanzamiento como null
+			perfumes = perfumes.map(p => ({ ...p, tipoLanzamiento: null }))
+			
+			// Debug: verificar el primer perfume
+			console.log("✅ Consulta exitosa")
+			console.log("Primer perfume:", perfumes[0]?.nombre, "- usoPorDefecto:", perfumes[0]?.usoPorDefecto)
 		} catch (e: any) {
+			console.error("❌ Error en primera consulta:", e.message)
 			// Si los campos nuevos no existen, leer sin ellos
 			if (e.message?.includes("usoPorDefecto") || e.message?.includes("fijarUso") || e.message?.includes("column") || e.message?.includes("does not exist")) {
+				console.log("⚠️ Campos no existen, usando fallback")
 				const whereClause = includeInactive ? '' : 'WHERE activo = true'
 				perfumes = await prisma.$queryRawUnsafe<Array<any>>(`
 					SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 

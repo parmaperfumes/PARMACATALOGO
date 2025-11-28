@@ -188,11 +188,9 @@ export default function PerfumesPage() {
 							} else if (usoNormalizado === "AMBOS") {
 								defaultUse = "AMBOS"
 							}
-							// Debug: verificar valores
-							if (process.env.NODE_ENV === 'development') {
-								console.log(`Perfume: ${perfume.name}, usoPorDefecto: ${perfumeData.usoPorDefecto}, normalizado: ${usoNormalizado}, defaultUse: ${defaultUse}`)
-							}
 						}
+						// Debug SIEMPRE activo
+						console.log(`${perfume.name}: usoPorDefecto="${perfumeData?.usoPorDefecto}", defaultUse="${defaultUse}"`)
 						// En el catálogo público, SIEMPRE fijar el uso (no permitir cambios)
 						const fixedUse = true
 						return (
