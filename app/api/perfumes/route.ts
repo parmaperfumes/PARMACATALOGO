@@ -268,15 +268,9 @@ export async function GET(req: NextRequest) {
 			
 			// Agregar tipoLanzamiento como null
 			perfumes = perfumes.map(p => ({ ...p, tipoLanzamiento: null }))
-			
-			// Debug: verificar el primer perfume
-			console.log("✅ Consulta exitosa")
-			console.log("Primer perfume:", perfumes[0]?.nombre, "- usoPorDefecto:", perfumes[0]?.usoPorDefecto)
 		} catch (e: any) {
-			console.error("❌ Error en primera consulta:", e.message)
 			// Si los campos nuevos no existen, leer sin ellos
 			if (e.message?.includes("usoPorDefecto") || e.message?.includes("fijarUso") || e.message?.includes("column") || e.message?.includes("does not exist")) {
-				console.log("⚠️ Campos no existen, usando fallback")
 				const whereClause = includeInactive ? '' : 'WHERE activo = true'
 				perfumes = await prisma.$queryRawUnsafe<Array<any>>(`
 					SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
@@ -352,8 +346,14 @@ export async function POST(req: NextRequest) {
 	}
 
 	try {
+		// Generar ID único
+		const generarId = () => {
+			return 'perfume_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+		};
+		
 		// Construir el objeto de datos base (sin los campos nuevos que pueden no existir)
 		const perfumeData: any = {
+			id: generarId(),
 			nombre: data.name,
 			slug: data.slug,
 			descripcion: data.description || null,
@@ -387,10 +387,7 @@ export async function POST(req: NextRequest) {
 			perfumeData.fijarUso = !!data.fijarUso
 		}
 
-		// Agregar tipoLanzamiento si está presente
-		if (data.tipoLanzamiento) {
-			perfumeData.tipoLanzamiento = data.tipoLanzamiento
-		}
+		// NO agregar tipoLanzamiento - el campo no existe en la BD
 
 		// Intentar crear con Prisma, pero si falla por campos que no existen, usar SQL raw
 		let perfume
@@ -427,6 +424,8 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ id: perfume.id })
 	} catch (e: any) {
 		console.error("Error al guardar perfume:", e)
+		console.error("Mensaje completo:", e.message)
+		console.error("Stack:", e.stack)
 		
 		// Mensajes de error más descriptivos
 		let errorMessage = "Error al guardar el perfume"

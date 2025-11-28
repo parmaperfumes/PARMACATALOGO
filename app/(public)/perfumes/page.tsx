@@ -189,8 +189,6 @@ export default function PerfumesPage() {
 								defaultUse = "AMBOS"
 							}
 						}
-						// Debug SIEMPRE activo
-						console.log(`${perfume.name}: usoPorDefecto="${perfumeData?.usoPorDefecto}", defaultUse="${defaultUse}"`)
 						// En el catálogo público, SIEMPRE fijar el uso (no permitir cambios)
 						const fixedUse = true
 						return (
