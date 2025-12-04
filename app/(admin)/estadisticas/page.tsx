@@ -274,14 +274,15 @@ export default function EstadisticasPage() {
 			)}
 
 			{/* Gráfico de visitas por día */}
-			<div className="bg-white border rounded-lg p-6 shadow-sm">
-				<h2 className="text-lg font-semibold mb-6 flex items-center gap-2 text-blue-700">
+			<div className="bg-white border rounded-lg p-4 sm:p-6 shadow-sm">
+				<h2 className="text-lg font-semibold mb-4 sm:mb-6 flex items-center gap-2 text-blue-700">
 					<BarChart3 className="h-5 w-5" />
 					Visitas por Día
 				</h2>
-				<div className="relative">
+				<div className="relative overflow-x-auto">
 					{(() => {
 						const todosLosDias = generarTodosLosDias()
+						// Mostrar menos días en móvil para mejor visualización
 						const diasMostrar = todosLosDias.slice(0, 15).reverse()
 						const maxVisitas = Math.max(...diasMostrar.map(d => d.visitas), 1)
 						
@@ -290,15 +291,15 @@ export default function EstadisticasPage() {
 						const lineasGrid = 6
 						
 						return (
-							<>
+							<div className="min-w-[500px] sm:min-w-0">
 								{/* Eje Y con cuadrícula */}
-								<div className="flex gap-4">
+								<div className="flex gap-2 sm:gap-4">
 									{/* Números del eje Y */}
-									<div className="flex flex-col-reverse justify-between h-80 py-4 text-xs text-gray-600 font-medium">
+									<div className="flex flex-col-reverse justify-between h-60 sm:h-80 py-4 text-[10px] sm:text-xs text-gray-600 font-medium w-6 sm:w-8">
 										{Array.from({ length: lineasGrid }, (_, i) => {
 											const valor = Math.round((escalaY / (lineasGrid - 1)) * i)
 											return (
-												<div key={i} className="h-0 flex items-center">
+												<div key={i} className="h-0 flex items-center justify-end">
 													{valor}
 												</div>
 											)
@@ -315,7 +316,7 @@ export default function EstadisticasPage() {
 										</div>
 										
 										{/* Barras con fechas */}
-										<div className="relative h-80 flex items-end justify-between gap-1 px-2 py-4 pb-0">
+										<div className="relative h-60 sm:h-80 flex items-end justify-between gap-[2px] sm:gap-1 px-1 sm:px-2 py-4 pb-0">
 											{diasMostrar.map(({ fecha, visitas }) => {
 												const alturaPorcentaje = escalaY > 0 ? (visitas / escalaY) * 100 : 0
 												
@@ -324,16 +325,16 @@ export default function EstadisticasPage() {
 												const fechaCorta = `${parseInt(day)}/${parseInt(month)}`
 												
 												return (
-													<div key={fecha} className="flex-1 flex flex-col items-center h-full justify-end group relative">
-														{/* Número encima de la barra - Siempre visible en móvil, hover en desktop */}
+													<div key={fecha} className="flex-1 flex flex-col items-center h-full justify-end group relative min-w-[20px] sm:min-w-0">
+														{/* Número encima de la barra - Siempre visible */}
 														{visitas > 0 && (
-															<span className="text-[10px] sm:text-xs font-semibold text-gray-700 mb-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+															<span className="text-[8px] sm:text-xs font-semibold text-gray-700 mb-1">
 																{visitas}
 															</span>
 														)}
 														{/* Barra */}
 														<div
-															className="w-full bg-blue-600 active:bg-blue-800 sm:hover:bg-blue-700 transition-all rounded-t shadow-sm cursor-pointer"
+															className="w-full bg-blue-600 active:bg-blue-800 sm:hover:bg-blue-700 transition-all rounded-t shadow-sm cursor-pointer max-w-[30px] sm:max-w-none mx-auto"
 															style={{ 
 																height: `${alturaPorcentaje}%`,
 																minHeight: visitas > 0 ? '4px' : '0px'
@@ -350,21 +351,18 @@ export default function EstadisticasPage() {
 									</div>
 								</div>
 								
-								{/* Etiquetas del eje X - Una por cada barra */}
-								<div className="flex gap-4 mt-2">
-									<div className="w-8" /> {/* Espacio para alinear con eje Y */}
-									<div className="flex-1 flex justify-between gap-1 px-2">
-										{diasMostrar.map(({ fecha }, index) => {
+								{/* Etiquetas del eje X */}
+								<div className="flex gap-2 sm:gap-4 mt-1">
+									<div className="w-6 sm:w-8" /> {/* Espacio para alinear con eje Y */}
+									<div className="flex-1 flex justify-between gap-[2px] sm:gap-1 px-1 sm:px-2">
+										{diasMostrar.map(({ fecha }) => {
 											// Parsear fecha manualmente para evitar problemas de zona horaria
 											const [year, month, day] = fecha.split('-')
 											const fechaCorta = `${parseInt(day)}/${parseInt(month)}`
 											
-											// Mostrar solo cada 2 fechas en móvil, todas en desktop
-											const mostrar = index % 2 === 0
-											
 											return (
-												<div key={fecha} className="flex-1 text-center">
-													<span className={`text-[9px] sm:text-xs text-gray-600 font-medium block -rotate-45 sm:rotate-0 origin-center mt-2 sm:mt-0 ${!mostrar ? 'sm:inline hidden' : ''}`}>
+												<div key={fecha} className="flex-1 text-center min-w-[20px] sm:min-w-0">
+													<span className="text-[8px] sm:text-xs text-gray-600 font-medium whitespace-nowrap">
 														{fechaCorta}
 													</span>
 												</div>
@@ -374,10 +372,10 @@ export default function EstadisticasPage() {
 								</div>
 								
 								{/* Etiqueta del eje X */}
-								<div className="text-center mt-6 sm:mt-3">
-									<span className="text-sm text-gray-500 font-medium">Fecha</span>
+								<div className="text-center mt-3 sm:mt-3">
+									<span className="text-xs sm:text-sm text-gray-500 font-medium">Fecha</span>
 								</div>
-							</>
+							</div>
 						)
 					})()}
 				</div>

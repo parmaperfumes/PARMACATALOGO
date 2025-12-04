@@ -14,3 +14,5 @@ FROM information_schema.columns
 WHERE table_name = 'Perfume' AND column_name = 'tipoLanzamiento';
 
 
+
+
