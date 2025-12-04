@@ -46,6 +46,18 @@ model Perfume {
   @@index([slug], map: "idx_perfume_slug")
 }
 
+model User {
+  id           String    @id @default(cuid())
+  name         String?
+  email        String    @unique
+  passwordHash String?
+  role         String    @default("PUBLIC")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+}
+
 model Visita {
   id          String   @id @default(cuid())
   path        String
