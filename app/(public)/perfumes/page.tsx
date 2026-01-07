@@ -1,7 +1,7 @@
 "use client"
-// Version: 2024-01-16 - Force Vercel rebuild - Latest update
+// Version: 2025-01-07 - Fix loading state issue
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { ProductCard, type Product } from "@/components/ProductCard"
 import { useSearch } from "@/context/SearchContext"
 import { MobileNav } from "@/components/MobileNav"
@@ -26,10 +26,14 @@ export default function PerfumesPage() {
 	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
 	const [loading, setLoading] = useState(true)
 	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("HOMBRES")
+	const [mounted, setMounted] = useState(false)
 
-	async function fetchPerfumes() {
+	const fetchPerfumes = useCallback(async () => {
 		try {
 			// Fetch con timestamp para evitar caché en producción
+			const controller = new AbortController()
+			const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 segundos timeout
+			
 			const res = await fetch(`/api/perfumes?t=${Date.now()}`, {
 				method: 'GET',
 				headers: {
@@ -37,36 +41,41 @@ export default function PerfumesPage() {
 					'Pragma': 'no-cache',
 					'Expires': '0',
 				},
+				signal: controller.signal
 			})
+			
+			clearTimeout(timeoutId)
 				
-				if (!res.ok) {
-					console.error("Error en la respuesta de la API:", res.status, res.statusText)
-					const errorText = await res.text()
-					console.error("Detalles del error:", errorText)
-					return
-				}
-				
-				const responseData = await res.json()
-				
-				// Manejar respuesta de error
-				if (responseData.error) {
-					console.error("Error de la API:", responseData.error)
-					setPerfumesData([])
-					setPerfumes([])
-					return
-				}
-				
-				// La respuesta puede ser un array directamente o un objeto con perfumes
-				const data: PerfumeFromDB[] = Array.isArray(responseData) ? responseData : (responseData.perfumes || [])
-				console.log("Perfumes recibidos de la API:", data.length)
-				
-				if (!data || data.length === 0) {
-					console.warn("La API devolvió un array vacío. Verifica que DATABASE_URL esté configurada en Vercel.")
-					setPerfumesData([])
-					setPerfumes([])
-					return
-				}
-				
+			if (!res.ok) {
+				console.error("Error en la respuesta de la API:", res.status, res.statusText)
+				const errorText = await res.text()
+				console.error("Detalles del error:", errorText)
+				setLoading(false)
+				return
+			}
+			
+			const responseData = await res.json()
+			
+			// Manejar respuesta de error
+			if (responseData.error) {
+				console.error("Error de la API:", responseData.error)
+				setPerfumesData([])
+				setPerfumes([])
+				setLoading(false)
+				return
+			}
+			
+			// La respuesta puede ser un array directamente o un objeto con perfumes
+			const data: PerfumeFromDB[] = Array.isArray(responseData) ? responseData : (responseData.perfumes || [])
+			
+			if (!data || data.length === 0) {
+				console.warn("La API devolvió un array vacío. Verifica que DATABASE_URL esté configurada.")
+				setPerfumesData([])
+				setPerfumes([])
+				setLoading(false)
+				return
+			}
+			
 			setPerfumesData(data) // Guardar los datos originales
 			// Convertir los perfumes de la BD al formato Product
 			const converted: Product[] = data.map((p) => ({
@@ -79,20 +88,27 @@ export default function PerfumesPage() {
 				sizes: (p.sizes.length > 0 ? p.sizes : [30, 50]) as Product["sizes"],
 				tipoLanzamiento: p.tipoLanzamiento as "NUEVO" | "RESTOCK" | null || null,
 			}))
-				setPerfumes(converted)
-				console.log("Perfumes convertidos:", converted.length)
-			} catch (error) {
-				console.error("Error al cargar perfumes:", error)
-				setPerfumesData([])
-				setPerfumes([])
+			setPerfumes(converted)
+		} catch (error) {
+			console.error("Error al cargar perfumes:", error)
+			setPerfumesData([])
+			setPerfumes([])
 		} finally {
 			setLoading(false)
 		}
-	}
-
-	useEffect(() => {
-		fetchPerfumes()
 	}, [])
+
+	// Efecto para marcar que el componente está montado en el cliente
+	useEffect(() => {
+		setMounted(true)
+	}, [])
+
+	// Efecto para cargar los perfumes después de que el componente esté montado
+	useEffect(() => {
+		if (mounted) {
+			fetchPerfumes()
+		}
+	}, [mounted, fetchPerfumes])
 
 	if (loading) {
 		return (
