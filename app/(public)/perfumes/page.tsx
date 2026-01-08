@@ -1,7 +1,7 @@
 "use client"
-// Version: 2025-01-08 - Fix loading and cold start issues
+// Version: 2025-01-08 - Fix loading state and cold start handling
 
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { ProductCard, type Product } from "@/components/ProductCard"
 import { useSearch } from "@/context/SearchContext"
 import { MobileNav } from "@/components/MobileNav"
@@ -26,25 +26,20 @@ export default function PerfumesPage() {
 	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
 	const [loading, setLoading] = useState(true)
 	const [loadingMessage, setLoadingMessage] = useState("Cargando perfumes...")
-	const [retryCount, setRetryCount] = useState(0)
 	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("HOMBRES")
 	const [mounted, setMounted] = useState(false)
-	const fetchStartedRef = useRef(false)
 
-	const fetchPerfumes = useCallback(async (retry = 0) => {
+	const fetchPerfumes = useCallback(async () => {
 		try {
-			// Actualizar mensaje según el intento
-			if (retry === 0) {
-				setLoadingMessage("Cargando perfumes...")
-			} else {
-				setLoadingMessage(`Conectando con el servidor... (intento ${retry + 1})`)
-			}
-
-			// Fetch con timeout más largo para cold starts de Render
+			setLoadingMessage("Cargando perfumes...")
+			
+			// Timeout de 60 segundos para manejar cold starts de Render
 			const controller = new AbortController()
 			const timeoutId = setTimeout(() => {
-				controller.abort()
-			}, 60000) // 60 segundos timeout para cold starts
+				setLoadingMessage("El servidor está iniciando, por favor espera...")
+			}, 5000)
+			
+			const longTimeoutId = setTimeout(() => controller.abort(), 60000)
 			
 			const res = await fetch(`/api/perfumes?t=${Date.now()}`, {
 				method: 'GET',
@@ -57,15 +52,11 @@ export default function PerfumesPage() {
 			})
 			
 			clearTimeout(timeoutId)
+			clearTimeout(longTimeoutId)
 				
 			if (!res.ok) {
 				console.error("Error en la respuesta de la API:", res.status, res.statusText)
-				// Si hay error del servidor, reintentar
-				if (retry < 2 && (res.status >= 500 || res.status === 0)) {
-					setRetryCount(retry + 1)
-					setTimeout(() => fetchPerfumes(retry + 1), 2000)
-					return
-				}
+				setLoadingMessage("Error al cargar. Intenta recargar la página.")
 				setLoading(false)
 				return
 			}
@@ -105,52 +96,38 @@ export default function PerfumesPage() {
 				tipoLanzamiento: p.tipoLanzamiento as "NUEVO" | "RESTOCK" | null || null,
 			}))
 			setPerfumes(converted)
-			setLoading(false)
-		} catch (error: any) {
-			console.error("Error al cargar perfumes:", error)
-			
-			// Si es un timeout o error de red, reintentar
-			if (retry < 2 && (error.name === 'AbortError' || error.message?.includes('fetch'))) {
-				setLoadingMessage("El servidor está iniciando, por favor espera...")
-				setRetryCount(retry + 1)
-				setTimeout(() => fetchPerfumes(retry + 1), 3000)
-				return
+		} catch (error: unknown) {
+			if (error instanceof Error && error.name === 'AbortError') {
+				setLoadingMessage("La conexión tardó demasiado. Por favor recarga la página.")
+			} else {
+				console.error("Error al cargar perfumes:", error)
+				setLoadingMessage("Error al cargar. Intenta recargar la página.")
 			}
-			
 			setPerfumesData([])
 			setPerfumes([])
+		} finally {
 			setLoading(false)
 		}
 	}, [])
 
-	// Efecto para marcar que el componente está montado en el cliente
+	// Marcar componente como montado
 	useEffect(() => {
 		setMounted(true)
 	}, [])
 
-	// Efecto para cargar los perfumes después de que el componente esté montado
+	// Cargar perfumes solo después de montar
 	useEffect(() => {
-		if (mounted && !fetchStartedRef.current) {
-			fetchStartedRef.current = true
-			fetchPerfumes(0)
+		if (mounted) {
+			fetchPerfumes()
 		}
 	}, [mounted, fetchPerfumes])
 
 	if (loading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #fdf6f6 0%, #e8f4f8 50%, #f6f0fd 100%)' }}>
-				<div className="text-center p-8">
-					{/* Spinner animado */}
-					<div className="relative w-16 h-16 mx-auto mb-6">
-						<div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
-						<div className="absolute inset-0 border-4 border-transparent border-t-[#2c2f43] rounded-full animate-spin"></div>
-					</div>
-					<p className="text-gray-600 text-lg font-medium">{loadingMessage}</p>
-					{retryCount > 0 && (
-						<p className="text-gray-400 text-sm mt-2">
-							Esto puede tardar unos segundos la primera vez...
-						</p>
-					)}
+			<div className="container mx-auto px-4 py-8 pt-24">
+				<div className="text-center py-12">
+					<div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
+					<p className="text-gray-600">{loadingMessage}</p>
 				</div>
 			</div>
 		)
