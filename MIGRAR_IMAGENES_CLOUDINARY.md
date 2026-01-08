@@ -161,3 +161,4 @@ Agrega las variables de entorno en tu dashboard de Render:
 
 ¡Con esta configuración, tu hosting de imágenes será completamente gratuito!
 
+

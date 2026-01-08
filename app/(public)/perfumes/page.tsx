@@ -1,7 +1,7 @@
 "use client"
-// Version: 2025-01-07 - Fix loading state issue
+// Version: 2025-01-08 - Fix loading and cold start issues
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { ProductCard, type Product } from "@/components/ProductCard"
 import { useSearch } from "@/context/SearchContext"
 import { MobileNav } from "@/components/MobileNav"
@@ -25,14 +25,26 @@ export default function PerfumesPage() {
 	const [perfumes, setPerfumes] = useState<Product[]>([])
 	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
 	const [loading, setLoading] = useState(true)
+	const [loadingMessage, setLoadingMessage] = useState("Cargando perfumes...")
+	const [retryCount, setRetryCount] = useState(0)
 	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("HOMBRES")
 	const [mounted, setMounted] = useState(false)
+	const fetchStartedRef = useRef(false)
 
-	const fetchPerfumes = useCallback(async () => {
+	const fetchPerfumes = useCallback(async (retry = 0) => {
 		try {
-			// Fetch con timestamp para evitar caché en producción
+			// Actualizar mensaje según el intento
+			if (retry === 0) {
+				setLoadingMessage("Cargando perfumes...")
+			} else {
+				setLoadingMessage(`Conectando con el servidor... (intento ${retry + 1})`)
+			}
+
+			// Fetch con timeout más largo para cold starts de Render
 			const controller = new AbortController()
-			const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 segundos timeout
+			const timeoutId = setTimeout(() => {
+				controller.abort()
+			}, 60000) // 60 segundos timeout para cold starts
 			
 			const res = await fetch(`/api/perfumes?t=${Date.now()}`, {
 				method: 'GET',
@@ -48,8 +60,12 @@ export default function PerfumesPage() {
 				
 			if (!res.ok) {
 				console.error("Error en la respuesta de la API:", res.status, res.statusText)
-				const errorText = await res.text()
-				console.error("Detalles del error:", errorText)
+				// Si hay error del servidor, reintentar
+				if (retry < 2 && (res.status >= 500 || res.status === 0)) {
+					setRetryCount(retry + 1)
+					setTimeout(() => fetchPerfumes(retry + 1), 2000)
+					return
+				}
 				setLoading(false)
 				return
 			}
@@ -69,14 +85,14 @@ export default function PerfumesPage() {
 			const data: PerfumeFromDB[] = Array.isArray(responseData) ? responseData : (responseData.perfumes || [])
 			
 			if (!data || data.length === 0) {
-				console.warn("La API devolvió un array vacío. Verifica que DATABASE_URL esté configurada.")
+				console.warn("La API devolvió un array vacío.")
 				setPerfumesData([])
 				setPerfumes([])
 				setLoading(false)
 				return
 			}
 			
-			setPerfumesData(data) // Guardar los datos originales
+			setPerfumesData(data)
 			// Convertir los perfumes de la BD al formato Product
 			const converted: Product[] = data.map((p) => ({
 				id: p.id,
@@ -89,11 +105,20 @@ export default function PerfumesPage() {
 				tipoLanzamiento: p.tipoLanzamiento as "NUEVO" | "RESTOCK" | null || null,
 			}))
 			setPerfumes(converted)
-		} catch (error) {
+			setLoading(false)
+		} catch (error: any) {
 			console.error("Error al cargar perfumes:", error)
+			
+			// Si es un timeout o error de red, reintentar
+			if (retry < 2 && (error.name === 'AbortError' || error.message?.includes('fetch'))) {
+				setLoadingMessage("El servidor está iniciando, por favor espera...")
+				setRetryCount(retry + 1)
+				setTimeout(() => fetchPerfumes(retry + 1), 3000)
+				return
+			}
+			
 			setPerfumesData([])
 			setPerfumes([])
-		} finally {
 			setLoading(false)
 		}
 	}, [])
@@ -105,16 +130,27 @@ export default function PerfumesPage() {
 
 	// Efecto para cargar los perfumes después de que el componente esté montado
 	useEffect(() => {
-		if (mounted) {
-			fetchPerfumes()
+		if (mounted && !fetchStartedRef.current) {
+			fetchStartedRef.current = true
+			fetchPerfumes(0)
 		}
 	}, [mounted, fetchPerfumes])
 
 	if (loading) {
 		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="text-center py-12">
-					<p className="text-gray-600">Cargando perfumes...</p>
+			<div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #fdf6f6 0%, #e8f4f8 50%, #f6f0fd 100%)' }}>
+				<div className="text-center p-8">
+					{/* Spinner animado */}
+					<div className="relative w-16 h-16 mx-auto mb-6">
+						<div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+						<div className="absolute inset-0 border-4 border-transparent border-t-[#2c2f43] rounded-full animate-spin"></div>
+					</div>
+					<p className="text-gray-600 text-lg font-medium">{loadingMessage}</p>
+					{retryCount > 0 && (
+						<p className="text-gray-400 text-sm mt-2">
+							Esto puede tardar unos segundos la primera vez...
+						</p>
+					)}
 				</div>
 			</div>
 		)
