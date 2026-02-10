@@ -41,6 +41,23 @@ const nextConfig: NextConfig = {
 	experimental: {
 		optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
 	},
+
+	async redirects() {
+		return [
+			// Normalizar URLs mal copiadas con corchete de cierre
+			{
+				source: "/perfumes]",
+				destination: "/perfumes",
+				permanent: true,
+			},
+			{
+				// Versión con el corchete URL-encoded: %5D
+				source: "/perfumes%5D",
+				destination: "/perfumes",
+				permanent: true,
+			},
+		]
+	},
 }
 
 export default nextConfig
