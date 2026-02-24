@@ -1,240 +1,43 @@
-"use client"
-// Version: 2025-01-08 - Fix loading state and cold start handling
+import { headers } from "next/headers"
+import PerfumesClient, { type PerfumeFromDB } from "./PerfumesClient"
 
-import { useEffect, useState, useCallback } from "react"
-import { ProductCard, type Product } from "@/components/ProductCard"
-import { useSearch } from "@/context/SearchContext"
-import { MobileNav } from "@/components/MobileNav"
+export const dynamic = "force-dynamic"
 
-type PerfumeFromDB = {
-	id: string
-	nombre: string
-	subtitulo: string | null
-	genero: string | null
-	imagenPrincipal: string
-	imagenes: string[]
-	sizes: number[]
-	activo: boolean
-	usoPorDefecto?: string | null
-	fijarUso?: boolean
-	tipoLanzamiento?: string | null
+async function fetchPerfumesOnServer(): Promise<PerfumeFromDB[]> {
+  const headersList = headers()
+  const host = headersList.get("host") ?? "localhost:3000"
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http"
+  const baseUrl = `${protocol}://${host}`
+
+  try {
+    const res = await fetch(`${baseUrl}/api/perfumes?t=${Date.now()}`, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    })
+
+    if (!res.ok) {
+      console.error("Error al cargar perfumes en el servidor:", res.status, res.statusText)
+      return []
+    }
+
+    const responseData = await res.json()
+    const data: PerfumeFromDB[] = Array.isArray(responseData)
+      ? responseData
+      : (responseData.perfumes || [])
+
+    return Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error("Error al hacer fetch de perfumes en el servidor:", error)
+    return []
+  }
 }
 
-export default function PerfumesPage() {
-	const { searchQuery } = useSearch()
-	const [perfumes, setPerfumes] = useState<Product[]>([])
-	const [perfumesData, setPerfumesData] = useState<PerfumeFromDB[]>([])
-	const [loading, setLoading] = useState(true)
-	const [loadingMessage, setLoadingMessage] = useState("Cargando perfumes...")
-	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("HOMBRES")
-	const [mounted, setMounted] = useState(false)
-
-	const fetchPerfumes = useCallback(async () => {
-		try {
-			setLoadingMessage("Cargando perfumes...")
-			
-			// Timeout de 60 segundos para manejar cold starts de Render
-			const controller = new AbortController()
-			const timeoutId = setTimeout(() => {
-				setLoadingMessage("El servidor está iniciando, por favor espera...")
-			}, 5000)
-			
-			const longTimeoutId = setTimeout(() => controller.abort(), 60000)
-			
-			const res = await fetch(`/api/perfumes?t=${Date.now()}`, {
-				method: 'GET',
-				headers: {
-					'Cache-Control': 'no-cache, no-store, must-revalidate',
-					'Pragma': 'no-cache',
-					'Expires': '0',
-				},
-				signal: controller.signal
-			})
-			
-			clearTimeout(timeoutId)
-			clearTimeout(longTimeoutId)
-				
-			if (!res.ok) {
-				console.error("Error en la respuesta de la API:", res.status, res.statusText)
-				setLoadingMessage("Error al cargar. Intenta recargar la página.")
-				setLoading(false)
-				return
-			}
-			
-			const responseData = await res.json()
-			
-			// Manejar respuesta de error
-			if (responseData.error) {
-				console.error("Error de la API:", responseData.error)
-				setPerfumesData([])
-				setPerfumes([])
-				setLoading(false)
-				return
-			}
-			
-			// La respuesta puede ser un array directamente o un objeto con perfumes
-			const data: PerfumeFromDB[] = Array.isArray(responseData) ? responseData : (responseData.perfumes || [])
-			
-			if (!data || data.length === 0) {
-				console.warn("La API devolvió un array vacío.")
-				setPerfumesData([])
-				setPerfumes([])
-				setLoading(false)
-				return
-			}
-			
-			setPerfumesData(data)
-			// Convertir los perfumes de la BD al formato Product
-			const converted: Product[] = data.map((p) => ({
-				id: p.id,
-				name: p.nombre.toUpperCase(),
-				subtitle: p.subtitulo || undefined,
-				brand: "Parma",
-				gender: (p.genero as "HOMBRE" | "MUJER" | "UNISEX") || undefined,
-				images: p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.imagenPrincipal],
-				sizes: (p.sizes.length > 0 ? p.sizes : [30, 50]) as Product["sizes"],
-				tipoLanzamiento: p.tipoLanzamiento as "NUEVO" | "RESTOCK" | null || null,
-			}))
-			setPerfumes(converted)
-		} catch (error: unknown) {
-			if (error instanceof Error && error.name === 'AbortError') {
-				setLoadingMessage("La conexión tardó demasiado. Por favor recarga la página.")
-			} else {
-				console.error("Error al cargar perfumes:", error)
-				setLoadingMessage("Error al cargar. Intenta recargar la página.")
-			}
-			setPerfumesData([])
-			setPerfumes([])
-		} finally {
-			setLoading(false)
-		}
-	}, [])
-
-	// Marcar componente como montado
-	useEffect(() => {
-		setMounted(true)
-	}, [])
-
-	// Cargar perfumes solo después de montar
-	useEffect(() => {
-		if (mounted) {
-			fetchPerfumes()
-		}
-	}, [mounted, fetchPerfumes])
-
-	if (loading) {
-		return (
-			<div className="container mx-auto px-4 py-8 pt-24">
-				<div className="text-center py-12">
-					<div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
-					<p className="text-gray-600">{loadingMessage}</p>
-				</div>
-			</div>
-		)
-	}
-
-	// Filtrar perfumes según el género seleccionado y la búsqueda
-	// Usar perfumesData como fuente de verdad y mapear a perfumes
-	const filteredData = perfumesData
-		.map((perfumeData, index) => ({ perfumeData, perfume: perfumes[index] }))
-		.filter(({ perfumeData, perfume }) => {
-			// Filtro por búsqueda (nombre)
-			if (searchQuery.trim() !== "") {
-				const searchLower = searchQuery.toLowerCase().trim()
-				const nombreLower = perfume.name.toLowerCase()
-				if (!nombreLower.includes(searchLower)) {
-					return false
-				}
-			}
-
-			// Filtro por género
-			if (selectedFilter === "TODOS") return true
-			const genero = perfumeData?.genero
-			if (selectedFilter === "HOMBRES") {
-				return genero === "HOMBRE" || genero === "UNISEX"
-			}
-			if (selectedFilter === "MUJERES") {
-				return genero === "MUJER" || genero === "UNISEX"
-			}
-			return true
-		})
-
-	// Extraer los perfumes y datos filtrados
-	const filteredPerfumes = filteredData.map(({ perfume }) => perfume)
-	const filteredPerfumesData = filteredData.map(({ perfumeData }) => perfumeData)
-
-	return (
-		<div className="container mx-auto px-2 sm:px-4 py-2 sm:py-8 pb-20 lg:pb-8 max-w-6xl pt-20 sm:pt-24">
-			{/* Filtros de Género - Solo visible en desktop */}
-			<div className="hidden lg:flex justify-center mb-4 sm:mb-8">
-				<div className="flex gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm p-0.5 sm:p-1 rounded-full border border-gray-200 shadow-sm">
-					<button
-						onClick={() => setSelectedFilter("HOMBRES")}
-						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
-							selectedFilter === "HOMBRES"
-								? "bg-[#2c2f43] text-white shadow-md"
-								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-						}`}
-					>
-						HOMBRES
-					</button>
-					<button
-						onClick={() => setSelectedFilter("MUJERES")}
-						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
-							selectedFilter === "MUJERES"
-								? "bg-[#2c2f43] text-white shadow-md"
-								: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-						}`}
-					>
-						MUJERES
-					</button>
-				</div>
-			</div>
-
-			{filteredPerfumes.length === 0 ? (
-				<div className="text-center py-8 sm:py-12">
-					<p className="text-gray-600 text-sm sm:text-base px-4">
-						{searchQuery.trim() !== "" 
-							? `No se encontraron perfumes que coincidan con "${searchQuery}"`
-							: selectedFilter === "TODOS" 
-								? "No hay perfumes disponibles en este momento."
-								: `No hay perfumes de ${selectedFilter.toLowerCase()} disponibles.`}
-					</p>
-				</div>
-			) : (
-				<div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-6" style={{ willChange: 'contents', contain: 'layout style paint' }}>
-					{filteredPerfumes.map((perfume, filteredIndex) => {
-						const perfumeData = filteredPerfumesData[filteredIndex]
-						// Normalizar usoPorDefecto: el valor ya viene normalizado desde la API
-						let defaultUse: "DIA" | "NOCHE" | "AMBOS" | undefined = undefined
-						if (perfumeData?.usoPorDefecto) {
-							const usoNormalizado = String(perfumeData.usoPorDefecto).trim().toUpperCase()
-							// Validar que el valor sea uno de los permitidos
-							if (usoNormalizado === "DIA") {
-								defaultUse = "DIA"
-							} else if (usoNormalizado === "NOCHE") {
-								defaultUse = "NOCHE"
-							} else if (usoNormalizado === "AMBOS") {
-								defaultUse = "AMBOS"
-							}
-						}
-						// En el catálogo público, SIEMPRE fijar el uso (no permitir cambios)
-						const fixedUse = true
-						return (
-							<div key={perfume.id} className="w-full">
-								<ProductCard product={perfume} defaultUse={defaultUse} fixedUse={fixedUse} />
-							</div>
-						)
-					})}
-				</div>
-			)}
-
-			{/* Navegación móvil */}
-			<MobileNav 
-				onFilterChange={setSelectedFilter}
-				currentFilter={selectedFilter}
-			/>
-		</div>
-	)
+export default async function PerfumesPage() {
+  const perfumes = await fetchPerfumesOnServer()
+  return <PerfumesClient initialData={perfumes} />
 }
 
