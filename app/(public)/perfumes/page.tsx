@@ -1,43 +1,63 @@
-import { headers } from "next/headers"
+import { prisma } from "@/lib/prisma"
 import PerfumesClient, { type PerfumeFromDB } from "./PerfumesClient"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
 
-async function fetchPerfumesOnServer(): Promise<PerfumeFromDB[]> {
-  const headersList = headers()
-  const host = headersList.get("host") ?? "localhost:3000"
-  const protocol = process.env.NODE_ENV === "production" ? "https" : "http"
-  const baseUrl = `${protocol}://${host}`
+async function getPerfumes(): Promise<PerfumeFromDB[]> {
+	try {
+		// Intentar con todos los campos
+		let perfumes: any[]
+		try {
+			perfumes = await prisma.$queryRawUnsafe<Array<any>>(`
+				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
+				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
+				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
+				       "usoPorDefecto", "fijarUso"
+				FROM "Perfume"
+				WHERE activo = true
+				ORDER BY "createdAt" DESC
+			`)
+			// Agregar tipoLanzamiento como null (no existe en la BD)
+			perfumes = perfumes.map(p => ({ ...p, tipoLanzamiento: null }))
+		} catch (e: any) {
+			// Si falla por campos que no existen, leer sin ellos
+			if (e.message?.includes("usoPorDefecto") || e.message?.includes("fijarUso") || e.message?.includes("column") || e.message?.includes("does not exist")) {
+				perfumes = await prisma.$queryRawUnsafe<Array<any>>(`
+					SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
+					       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
+					       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt"
+					FROM "Perfume"
+					WHERE activo = true
+					ORDER BY "createdAt" DESC
+				`)
+				perfumes = perfumes.map(p => ({
+					...p,
+					usoPorDefecto: null,
+					fijarUso: false,
+					tipoLanzamiento: null,
+				}))
+			} else {
+				throw e
+			}
+		}
 
-  try {
-    const res = await fetch(`${baseUrl}/api/perfumes?t=${Date.now()}`, {
-      cache: "no-store",
-      headers: {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
-      },
-    })
-
-    if (!res.ok) {
-      console.error("Error al cargar perfumes en el servidor:", res.status, res.statusText)
-      return []
-    }
-
-    const responseData = await res.json()
-    const data: PerfumeFromDB[] = Array.isArray(responseData)
-      ? responseData
-      : (responseData.perfumes || [])
-
-    return Array.isArray(data) ? data : []
-  } catch (error) {
-    console.error("Error al hacer fetch de perfumes en el servidor:", error)
-    return []
-  }
+		// Normalizar datos
+		return perfumes.map(p => ({
+			...p,
+			imagenes: Array.isArray(p.imagenes) ? p.imagenes : [],
+			notas: Array.isArray(p.notas) ? p.notas : [],
+			sizes: Array.isArray(p.sizes) ? p.sizes : [],
+			usoPorDefecto: p.usoPorDefecto ? String(p.usoPorDefecto).trim().toUpperCase() : null,
+			fijarUso: p.fijarUso !== undefined ? Boolean(p.fijarUso) : false,
+		}))
+	} catch (error) {
+		console.error("Error al cargar perfumes desde la BD:", error)
+		return []
+	}
 }
 
 export default async function PerfumesPage() {
-  const perfumes = await fetchPerfumesOnServer()
-  return <PerfumesClient initialData={perfumes} />
+	const perfumes = await getPerfumes()
+	return <PerfumesClient initialData={perfumes} />
 }
-
