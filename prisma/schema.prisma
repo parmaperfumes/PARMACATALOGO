@@ -39,6 +39,8 @@ model Perfume {
   subtitulo       String?
   usoPorDefecto   String?
   fijarUso        Boolean?  @default(false)
+  precio30        String?
+  precio50        String?
 
   @@index([activo, destacado], map: "idx_perfume_activo_destacado")
   @@index([categoriaId], map: "idx_perfume_categoria")

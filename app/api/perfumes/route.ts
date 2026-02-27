@@ -260,7 +260,7 @@ export async function GET(req: NextRequest) {
 				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
-				       "usoPorDefecto", "fijarUso"
+				       "usoPorDefecto", "fijarUso", precio30, precio50
 				FROM "Perfume"
 				${whereClause}
 				ORDER BY "createdAt" DESC
@@ -385,6 +385,14 @@ export async function POST(req: NextRequest) {
 		// Agregar fijarUso (por defecto true para el catálogo público)
 		if (data.fijarUso !== undefined) {
 			perfumeData.fijarUso = !!data.fijarUso
+		}
+
+		// Agregar precios por tamaño
+		if (data.precio30 !== undefined) {
+			perfumeData.precio30 = data.precio30 || null
+		}
+		if (data.precio50 !== undefined) {
+			perfumeData.precio50 = data.precio50 || null
 		}
 
 		// NO agregar tipoLanzamiento - el campo no existe en la BD

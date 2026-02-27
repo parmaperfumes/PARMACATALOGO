@@ -22,6 +22,8 @@ const perfumeSchema = z.object({
 	notas: z.string().optional(), // comma separated
 	size30: z.boolean(),
 	size50: z.boolean(),
+	precio30: z.string().optional(),
+	precio50: z.string().optional(),
 	categoria: z.string().optional(),
 	marca: z.string().optional(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
@@ -48,6 +50,8 @@ export default function AdminNewPerfumePage() {
 			active: true,
 			size30: true,
 			size50: true,
+			precio30: "850 RD",
+			precio50: "1,350 RD",
 			usoPorDefecto: "DIA",
 		},
 	})
@@ -172,8 +176,10 @@ export default function AdminNewPerfumePage() {
 			gender: values.gender,
 			images: images, // Usar array vacío si no hay imagen, el ProductCard lo manejará
 			sizes: sizes.length ? sizes : [30, 50],
+			precio30: values.precio30 || null,
+			precio50: values.precio50 || null,
 		}
-	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.mainImage, uploadedImageUrl])
+	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.mainImage, uploadedImageUrl, formValues.precio30, formValues.precio50])
 
 	async function onSubmit(data: PerfumeForm) {
 		try {
@@ -198,6 +204,8 @@ export default function AdminNewPerfumePage() {
 				categoriaId: data.categoria || undefined,
 				marcaId: data.marca || undefined,
 				sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
+				precio30: data.precio30 || null,
+				precio50: data.precio50 || null,
 				usoPorDefecto: data.usoPorDefecto || null,
 				tipoLanzamiento: data.tipoLanzamiento && data.tipoLanzamiento !== "NINGUNO" ? data.tipoLanzamiento : null,
 			}
@@ -370,18 +378,42 @@ export default function AdminNewPerfumePage() {
 					</div>
 				</div>
 
-				{/* Tamaños Disponibles */}
+				{/* Tamaños Disponibles y Precios */}
 				<div className="space-y-4 border-b pb-6">
-					<h2 className="text-lg font-semibold">Tamaños Disponibles</h2>
-					<div className="grid grid-cols-2 gap-3">
-						<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
-							<input type="checkbox" {...form.register("size30")} />
-							<span className="text-sm font-medium">30 ML</span>
-						</label>
-						<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
-							<input type="checkbox" {...form.register("size50")} />
-							<span className="text-sm font-medium">50 ML</span>
-						</label>
+					<h2 className="text-lg font-semibold">Tamaños y Precios</h2>
+					<div className="grid grid-cols-1 gap-4">
+						{/* 30 ML */}
+						<div className="p-4 border rounded-lg">
+							<label className="flex items-center gap-2 cursor-pointer mb-3">
+								<input type="checkbox" {...form.register("size30")} />
+								<span className="text-sm font-bold">30 ML</span>
+							</label>
+							{form.watch("size30") && (
+								<div>
+									<label className="block text-sm font-medium mb-1 text-gray-600">Precio (texto visible en la tarjeta)</label>
+									<Input 
+										{...form.register("precio30")} 
+										placeholder="Ej: 850 RD" 
+									/>
+								</div>
+							)}
+						</div>
+						{/* 50 ML */}
+						<div className="p-4 border rounded-lg">
+							<label className="flex items-center gap-2 cursor-pointer mb-3">
+								<input type="checkbox" {...form.register("size50")} />
+								<span className="text-sm font-bold">50 ML</span>
+							</label>
+							{form.watch("size50") && (
+								<div>
+									<label className="block text-sm font-medium mb-1 text-gray-600">Precio (texto visible en la tarjeta)</label>
+									<Input 
+										{...form.register("precio50")} 
+										placeholder="Ej: 1,350 RD" 
+									/>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 

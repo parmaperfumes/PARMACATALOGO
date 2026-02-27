@@ -13,7 +13,7 @@ async function getPerfumes(): Promise<PerfumeFromDB[]> {
 				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
-				       "usoPorDefecto", "fijarUso"
+				       "usoPorDefecto", "fijarUso", precio30, precio50
 				FROM "Perfume"
 				WHERE activo = true
 				ORDER BY "createdAt" DESC

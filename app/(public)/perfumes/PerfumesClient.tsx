@@ -17,6 +17,8 @@ export type PerfumeFromDB = {
 	usoPorDefecto?: string | null
 	fijarUso?: boolean
 	tipoLanzamiento?: string | null
+	precio30?: string | null
+	precio50?: string | null
 }
 
 type PerfumesClientProps = {
@@ -39,6 +41,8 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 		images: p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.imagenPrincipal],
 		sizes: (p.sizes.length > 0 ? p.sizes : [30, 50]) as Product["sizes"],
 		tipoLanzamiento: (p.tipoLanzamiento as "NUEVO" | "RESTOCK" | null) || null,
+		precio30: p.precio30 || null,
+		precio50: p.precio50 || null,
 	}))
 
 	// Filtrar perfumes según el género seleccionado y la búsqueda

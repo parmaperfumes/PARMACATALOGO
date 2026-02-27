@@ -16,6 +16,8 @@ export type Product = {
 	images: string[] // at least one
 	sizes: ProductSizeMl[]
 	tipoLanzamiento?: "NUEVO" | "RESTOCK" | null
+	precio30?: string | null // Precio personalizado para 30ml (ej: "850 RD")
+	precio50?: string | null // Precio personalizado para 50ml (ej: "1,350 RD")
 }
 
 export type ProductCardProps = {
@@ -249,11 +251,11 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 			{/* Tamaños - Altura fija, todos en una fila */}
 			<div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2 mb-2 sm:mb-3">
 				{product.sizes.filter(s => s === 30 || s === 50).map((s) => {
-						// Función para obtener el precio según el tamaño
+						// Función para obtener el precio según el tamaño (usa precio personalizado o por defecto)
 						const getPrice = (size: ProductSizeMl): string => {
 							switch (size) {
-								case 30: return "850 RD"
-								case 50: return "1,350 RD"
+								case 30: return product.precio30 || "850 RD"
+								case 50: return product.precio50 || "1,350 RD"
 								default: return ""
 							}
 						}

@@ -21,6 +21,8 @@ const schema = z.object({
 	volumen: z.string().optional(),
 	size30: z.boolean(),
 	size50: z.boolean(),
+	precio30: z.string().optional(),
+	precio50: z.string().optional(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
 	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "NINGUNO"]).optional(),
 })
@@ -36,6 +38,8 @@ type FormT = {
 	volumen?: string
 	size30: boolean
 	size50: boolean
+	precio30?: string
+	precio50?: string
 	usoPorDefecto?: "DIA" | "NOCHE" | "AMBOS"
 	tipoLanzamiento?: "NUEVO" | "RESTOCK" | "NINGUNO"
 }
@@ -53,6 +57,8 @@ export default function EditPerfumePage() {
 			active: true,
 			size30: true,
 			size50: true,
+			precio30: "850 RD",
+			precio50: "1,350 RD",
 		}
 	})
 	const [uploading, setUploading] = useState(false)
@@ -93,6 +99,8 @@ export default function EditPerfumePage() {
 				volumen: p.volumen || "",
 				size30: sizes.includes(30),
 				size50: sizes.includes(50),
+				precio30: p.precio30 || "850 RD",
+				precio50: p.precio50 || "1,350 RD",
 				usoPorDefecto: (p.usoPorDefecto as "DIA" | "NOCHE" | "AMBOS") || "DIA",
 				tipoLanzamiento: (p.tipoLanzamiento as "NUEVO" | "RESTOCK") || "NINGUNO",
 			})
@@ -208,6 +216,8 @@ export default function EditPerfumePage() {
 			gender: v.gender,
 			images: imageUrl ? [imageUrl] : [],
 			sizes: sizes.length ? sizes : [30, 50],
+			precio30: v.precio30 || null,
+			precio50: v.precio50 || null,
 		}
 	}, [form.watch(), uploadedImageUrl])
 	
@@ -230,6 +240,8 @@ export default function EditPerfumePage() {
 			subtitulo: data.subtitle || null,
 			volumen: data.volumen,
 			sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
+			precio30: data.precio30 || null,
+			precio50: data.precio50 || null,
 			usoPorDefecto: data.usoPorDefecto || null,
 		}
 		const res = await fetch(`/api/perfumes/${params.id}`, {
@@ -302,9 +314,43 @@ export default function EditPerfumePage() {
 						)}
 					</div>
 				</div>
-				<div className="grid grid-cols-2 gap-3">
-					<label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("size30")} /> 30 ML</label>
-					<label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("size50")} /> 50 ML</label>
+				{/* Tamaños y Precios */}
+				<div className="space-y-3">
+					<h3 className="text-sm font-semibold">Tamaños y Precios</h3>
+					<div className="grid grid-cols-1 gap-3">
+						{/* 30 ML */}
+						<div className="p-3 border rounded-lg">
+							<label className="flex items-center gap-2 cursor-pointer mb-2">
+								<input type="checkbox" {...form.register("size30")} />
+								<span className="text-sm font-bold">30 ML</span>
+							</label>
+							{form.watch("size30") && (
+								<div>
+									<label className="block text-xs font-medium mb-1 text-gray-600">Precio</label>
+									<Input 
+										{...form.register("precio30")} 
+										placeholder="Ej: 850 RD" 
+									/>
+								</div>
+							)}
+						</div>
+						{/* 50 ML */}
+						<div className="p-3 border rounded-lg">
+							<label className="flex items-center gap-2 cursor-pointer mb-2">
+								<input type="checkbox" {...form.register("size50")} />
+								<span className="text-sm font-bold">50 ML</span>
+							</label>
+							{form.watch("size50") && (
+								<div>
+									<label className="block text-xs font-medium mb-1 text-gray-600">Precio</label>
+									<Input 
+										{...form.register("precio50")} 
+										placeholder="Ej: 1,350 RD" 
+									/>
+								</div>
+							)}
+						</div>
+					</div>
 				</div>
 				<div className="grid grid-cols-3 gap-4">
 					<div>

@@ -16,7 +16,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 			SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 			       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 			       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
-			       "usoPorDefecto", "fijarUso", "tipoLanzamiento"
+			       "usoPorDefecto", "fijarUso", "tipoLanzamiento", precio30, precio50
 			FROM "Perfume"
 			WHERE id = ${id}
 		`
@@ -110,6 +110,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		// Agregar tipoLanzamiento
 		if (data.tipoLanzamiento !== undefined) {
 			updateData.tipoLanzamiento = (data.tipoLanzamiento === "NINGUNO" || !data.tipoLanzamiento) ? null : data.tipoLanzamiento
+		}
+		// Agregar precios por tamaño
+		if (data.precio30 !== undefined) {
+			updateData.precio30 = data.precio30 || null
+		}
+		if (data.precio50 !== undefined) {
+			updateData.precio50 = data.precio50 || null
 		}
 		
 		// Intentar actualizar usando Prisma
