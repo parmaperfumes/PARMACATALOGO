@@ -16,7 +16,8 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 			SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 			       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 			       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
-			       "usoPorDefecto", "fijarUso", "tipoLanzamiento", precio30, precio50
+			       "usoPorDefecto", "fijarUso", "tipoLanzamiento", precio30, precio50,
+			       fijado, "ordenFijado"
 			FROM "Perfume"
 			WHERE id = ${id}
 		`
@@ -53,6 +54,8 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 		// Valores por defecto si los campos no existen
 		if (perfume.usoPorDefecto === undefined) perfume.usoPorDefecto = null
 		if (perfume.fijarUso === undefined) perfume.fijarUso = false
+		if (perfume.fijado === undefined) perfume.fijado = false
+		if (perfume.ordenFijado === undefined) perfume.ordenFijado = 0
 		
 		return NextResponse.json(perfume)
 	} catch (e: any) {
@@ -118,6 +121,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		if (data.precio50 !== undefined) {
 			updateData.precio50 = data.precio50 || null
 		}
+		// Agregar fijado y ordenFijado
+		if (data.fijado !== undefined) {
+			updateData.fijado = !!data.fijado
+		}
+		if (data.ordenFijado !== undefined) {
+			updateData.ordenFijado = Number(data.ordenFijado) || 0
+		}
 		
 		// Intentar actualizar usando Prisma
 		let perfume
@@ -127,32 +137,53 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 				data: updateData,
 			})
 		} catch (e: any) {
-			// Si el error es por columnas que no existen, usar SQL raw sin usoPorDefecto
+			// Si falla por campos que no existen, usar SQL raw con todos los campos conocidos
 			if (e.message?.includes("column") || e.message?.includes("does not exist") || e.message?.includes("Unknown arg")) {
-				// Construir la consulta SQL manualmente con solo los campos que existen
+				// Mapa de campos JS -> nombre de columna SQL con comillas correctas
+				const fieldMap: Record<string, string> = {
+					nombre: 'nombre',
+					slug: 'slug',
+					descripcion: 'descripcion',
+					precio: 'precio',
+					precioDescuento: '"precioDescuento"',
+					imagenPrincipal: '"imagenPrincipal"',
+					imagenes: 'imagenes',
+					stock: 'stock',
+					destacado: 'destacado',
+					activo: 'activo',
+					categoriaId: '"categoriaId"',
+					marcaId: '"marcaId"',
+					genero: 'genero',
+					subtitulo: 'subtitulo',
+					volumen: 'volumen',
+					notas: 'notas',
+					sizes: 'sizes',
+					usoPorDefecto: '"usoPorDefecto"',
+					fijarUso: '"fijarUso"',
+					precio30: 'precio30',
+					precio50: 'precio50',
+					tipoLanzamiento: '"tipoLanzamiento"',
+					fijado: 'fijado',
+					ordenFijado: '"ordenFijado"',
+				}
+
 				const setParts: string[] = []
 				const values: any[] = []
 				let paramIndex = 1
-				
-				// Agregar todos los campos básicos (SIN usoPorDefecto)
-				const basicFields = ['nombre', 'slug', 'precio', 'imagenPrincipal', 'imagenes', 'stock', 'destacado', 'activo', 'genero', 'subtitulo', 'volumen', 'sizes']
-				basicFields.forEach(field => {
-					if (updateData[field] !== undefined) {
-						const fieldName = field === 'imagenPrincipal' ? '"imagenPrincipal"' : field
-						setParts.push(`${fieldName} = $${paramIndex++}`)
-						values.push(updateData[field])
+
+				for (const [jsField, sqlColumn] of Object.entries(fieldMap)) {
+					if (updateData[jsField] !== undefined) {
+						setParts.push(`${sqlColumn} = $${paramIndex++}`)
+						values.push(updateData[jsField])
 					}
-				})
-				
-				// NO intentar agregar usoPorDefecto aquí porque sabemos que la columna no existe
-				
+				}
+
 				const idParamIndex = paramIndex
 				values.push(id)
 				await prisma.$executeRawUnsafe(
 					`UPDATE "Perfume" SET ${setParts.join(", ")} WHERE id = $${idParamIndex}`,
 					...values
 				)
-				// Leer el perfume usando SQL raw para evitar problemas con campos que no existen
 				const result = await prisma.$queryRawUnsafe<Array<any>>(
 					`SELECT id FROM "Perfume" WHERE id = $1`,
 					id

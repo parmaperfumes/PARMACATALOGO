@@ -41,6 +41,9 @@ model Perfume {
   fijarUso        Boolean?  @default(false)
   precio30        String?
   precio50        String?
+  tipoLanzamiento String?
+  fijado          Boolean?  @default(false)
+  ordenFijado     Int?      @default(0)
 
   @@index([activo, destacado], map: "idx_perfume_activo_destacado")
   @@index([categoriaId], map: "idx_perfume_categoria")

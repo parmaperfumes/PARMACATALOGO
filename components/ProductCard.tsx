@@ -86,14 +86,14 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
 			{/* Header visual con imagen */}
 			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
-				{/* Etiqueta NUEVO / RE-STOCK */}
+				{/* Etiqueta MÁS VENDIDO / RE-STOCK */}
 				{product.tipoLanzamiento && (
-					<div className={`absolute top-2 right-2 z-10 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-bold shadow-lg ${
+					<div className={`absolute top-2 right-2 z-10 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold shadow-lg backdrop-blur-sm ${
 						product.tipoLanzamiento === "NUEVO" 
-							? "bg-green-500 text-white" 
-							: "bg-blue-500 text-white"
+							? "bg-gradient-to-r from-red-500 to-rose-600 text-white" 
+							: "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
 					}`}>
-						{product.tipoLanzamiento === "NUEVO" ? "🆕 NUEVO" : "📦 RE-STOCK"}
+						{product.tipoLanzamiento === "NUEVO" ? "MÁS VENDIDO" : "RE-STOCK"}
 					</div>
 				)}
 				

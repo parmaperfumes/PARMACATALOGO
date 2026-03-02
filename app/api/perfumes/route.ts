@@ -260,14 +260,12 @@ export async function GET(req: NextRequest) {
 				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
 				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
-				       "usoPorDefecto", "fijarUso", precio30, precio50
+				       "usoPorDefecto", "fijarUso", precio30, precio50,
+				       "tipoLanzamiento", fijado, "ordenFijado"
 				FROM "Perfume"
 				${whereClause}
-				ORDER BY "createdAt" DESC
+				ORDER BY COALESCE(fijado, false) DESC, COALESCE("ordenFijado", 999) ASC, "createdAt" DESC
 			`)
-			
-			// Agregar tipoLanzamiento como null
-			perfumes = perfumes.map(p => ({ ...p, tipoLanzamiento: null }))
 		} catch (e: any) {
 			// Si los campos nuevos no existen, leer sin ellos
 			if (e.message?.includes("usoPorDefecto") || e.message?.includes("fijarUso") || e.message?.includes("column") || e.message?.includes("does not exist")) {
@@ -385,6 +383,14 @@ export async function POST(req: NextRequest) {
 		// Agregar fijarUso (por defecto true para el catálogo público)
 		if (data.fijarUso !== undefined) {
 			perfumeData.fijarUso = !!data.fijarUso
+		}
+
+		// Agregar fijado y ordenFijado
+		if (data.fijado !== undefined) {
+			perfumeData.fijado = !!data.fijado
+		}
+		if (data.ordenFijado !== undefined) {
+			perfumeData.ordenFijado = Number(data.ordenFijado) || 0
 		}
 
 		// Agregar precios por tamaño

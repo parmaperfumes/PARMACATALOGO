@@ -28,6 +28,8 @@ const perfumeSchema = z.object({
 	marca: z.string().optional(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
 	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "NINGUNO"]).optional(),
+	fijado: z.boolean().optional(),
+	ordenFijado: z.coerce.number().int().nonnegative().optional(),
 })
 
 type PerfumeForm = z.infer<typeof perfumeSchema>
@@ -53,6 +55,8 @@ export default function AdminNewPerfumePage() {
 			precio30: "850 RD",
 			precio50: "1,350 RD",
 			usoPorDefecto: "DIA",
+			fijado: false,
+			ordenFijado: 0,
 		},
 	})
 
@@ -171,15 +175,16 @@ export default function AdminNewPerfumePage() {
 		return {
 			id: slug,
 			name: values.name.toUpperCase(),
-			subtitle: values.subtitle || undefined, // Si está vacío (NADA), no mostrar subtítulo
-			brand: "Parma", // Marca fija
+			subtitle: values.subtitle || undefined,
+			brand: "Parma",
 			gender: values.gender,
-			images: images, // Usar array vacío si no hay imagen, el ProductCard lo manejará
+			images: images,
 			sizes: sizes.length ? sizes : [30, 50],
 			precio30: values.precio30 || null,
 			precio50: values.precio50 || null,
+			tipoLanzamiento: (values.tipoLanzamiento && values.tipoLanzamiento !== "NINGUNO" ? values.tipoLanzamiento : null) as "NUEVO" | "RESTOCK" | null,
 		}
-	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.mainImage, uploadedImageUrl, formValues.precio30, formValues.precio50])
+	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.mainImage, uploadedImageUrl, formValues.precio30, formValues.precio50, formValues.tipoLanzamiento])
 
 	async function onSubmit(data: PerfumeForm) {
 		try {
@@ -204,10 +209,12 @@ export default function AdminNewPerfumePage() {
 				categoriaId: data.categoria || undefined,
 				marcaId: data.marca || undefined,
 				sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
-				precio30: data.precio30 || null,
-				precio50: data.precio50 || null,
-				usoPorDefecto: data.usoPorDefecto || null,
-				tipoLanzamiento: data.tipoLanzamiento && data.tipoLanzamiento !== "NINGUNO" ? data.tipoLanzamiento : null,
+			precio30: data.precio30 || null,
+			precio50: data.precio50 || null,
+			usoPorDefecto: data.usoPorDefecto || null,
+			tipoLanzamiento: data.tipoLanzamiento && data.tipoLanzamiento !== "NINGUNO" ? data.tipoLanzamiento : null,
+			fijado: !!data.fijado,
+			ordenFijado: data.ordenFijado || 0,
 			}
 
 			const res = await fetch("/api/perfumes", {
@@ -429,31 +436,56 @@ export default function AdminNewPerfumePage() {
 								<option value="AMBOS">AMBOS</option>
 							</select>
 						</div>
-						<div>
-							<label className="block text-sm font-medium mb-2">Tipo de Lanzamiento</label>
-							<select className="border rounded-md h-10 px-3 w-full" {...form.register("tipoLanzamiento")}>
-								<option value="NINGUNO">Ninguno</option>
-								<option value="NUEVO">NUEVO 🆕</option>
-								<option value="RESTOCK">RE-STOCK 📦</option>
-							</select>
-						</div>
+					<div>
+						<label className="block text-sm font-medium mb-2">Etiqueta</label>
+						<select className="border rounded-md h-10 px-3 w-full" {...form.register("tipoLanzamiento")}>
+							<option value="NINGUNO">Ninguna</option>
+							<option value="NUEVO">🔴 MÁS VENDIDO</option>
+							<option value="RESTOCK">🔵 RE-STOCK</option>
+						</select>
+					</div>
 					</div>
 				</div>
 
-				{/* Opciones Adicionales */}
-				<div className="space-y-4">
-					<h2 className="text-lg font-semibold">Opciones</h2>
-					<div className="grid grid-cols-2 gap-4">
-						<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
-							<input type="checkbox" {...form.register("highlight")} />
-							<span className="text-sm">Destacado</span>
-						</label>
-						<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
-							<input type="checkbox" defaultChecked {...form.register("active")} />
-							<span className="text-sm">Activo</span>
-						</label>
+			{/* Fijar Posición */}
+			<div className="space-y-4 border-b pb-6">
+				<h2 className="text-lg font-semibold">📌 Fijar en Catálogo</h2>
+				<p className="text-sm text-gray-500">Los perfumes fijados siempre aparecen primero en el catálogo y no se mueven de posición.</p>
+				<label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+					<input type="checkbox" {...form.register("fijado")} className="w-5 h-5 accent-blue-600" />
+					<div>
+						<span className="text-sm font-bold">Fijar este perfume</span>
+						<p className="text-xs text-gray-500">Aparecerá siempre al inicio del catálogo</p>
 					</div>
+				</label>
+				{form.watch("fijado") && (
+					<div>
+						<label className="block text-sm font-medium mb-1 text-gray-600">Orden de posición (menor = más arriba)</label>
+						<Input 
+							type="number" 
+							{...form.register("ordenFijado")} 
+							placeholder="Ej: 1, 2, 3..." 
+							min={0}
+						/>
+						<p className="text-xs text-gray-400 mt-1">Los perfumes fijados se ordenan por este número (1 primero, 2 segundo, etc.)</p>
+					</div>
+				)}
+			</div>
+
+			{/* Opciones Adicionales */}
+			<div className="space-y-4">
+				<h2 className="text-lg font-semibold">Opciones</h2>
+				<div className="grid grid-cols-2 gap-4">
+					<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
+						<input type="checkbox" {...form.register("highlight")} />
+						<span className="text-sm">Destacado</span>
+					</label>
+					<label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
+						<input type="checkbox" defaultChecked {...form.register("active")} />
+						<span className="text-sm">Activo</span>
+					</label>
 				</div>
+			</div>
 
 				{/* Botones */}
 				<div className="flex gap-4 pt-4">

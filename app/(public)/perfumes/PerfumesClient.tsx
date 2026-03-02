@@ -19,6 +19,8 @@ export type PerfumeFromDB = {
 	tipoLanzamiento?: string | null
 	precio30?: string | null
 	precio50?: string | null
+	fijado?: boolean
+	ordenFijado?: number
 }
 
 type PerfumesClientProps = {
@@ -72,8 +74,19 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 			return true
 		})
 
-	const filteredPerfumes = filteredData.map(({ perfume }) => perfume)
-	const filteredPerfumesData = filteredData.map(({ perfumeData }) => perfumeData)
+	// Ordenar: fijados primero (por ordenFijado), luego el resto
+	const sortedFilteredData = [...filteredData].sort((a, b) => {
+		const aFijado = a.perfumeData.fijado ? 1 : 0
+		const bFijado = b.perfumeData.fijado ? 1 : 0
+		if (aFijado !== bFijado) return bFijado - aFijado // fijados primero
+		if (aFijado && bFijado) {
+			return (a.perfumeData.ordenFijado || 0) - (b.perfumeData.ordenFijado || 0)
+		}
+		return 0 // mantener orden original para no-fijados
+	})
+
+	const filteredPerfumes = sortedFilteredData.map(({ perfume }) => perfume)
+	const filteredPerfumesData = sortedFilteredData.map(({ perfumeData }) => perfumeData)
 
 	return (
 		<div className="container mx-auto px-2 sm:px-4 py-2 sm:py-8 pb-20 lg:pb-8 max-w-6xl pt-20 sm:pt-24">

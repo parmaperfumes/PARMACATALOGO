@@ -25,6 +25,8 @@ const schema = z.object({
 	precio50: z.string().optional(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
 	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "NINGUNO"]).optional(),
+	fijado: z.boolean().optional(),
+	ordenFijado: z.coerce.number().int().nonnegative().optional(),
 })
 
 type FormT = {
@@ -42,6 +44,8 @@ type FormT = {
 	precio50?: string
 	usoPorDefecto?: "DIA" | "NOCHE" | "AMBOS"
 	tipoLanzamiento?: "NUEVO" | "RESTOCK" | "NINGUNO"
+	fijado?: boolean
+	ordenFijado?: number
 }
 
 export default function EditPerfumePage() {
@@ -59,6 +63,8 @@ export default function EditPerfumePage() {
 			size50: true,
 			precio30: "850 RD",
 			precio50: "1,350 RD",
+			fijado: false,
+			ordenFijado: 0,
 		}
 	})
 	const [uploading, setUploading] = useState(false)
@@ -103,6 +109,8 @@ export default function EditPerfumePage() {
 				precio50: p.precio50 || "1,350 RD",
 				usoPorDefecto: (p.usoPorDefecto as "DIA" | "NOCHE" | "AMBOS") || "DIA",
 				tipoLanzamiento: (p.tipoLanzamiento as "NUEVO" | "RESTOCK") || "NINGUNO",
+				fijado: !!p.fijado,
+				ordenFijado: p.ordenFijado || 0,
 			})
 			} catch (error: any) {
 				console.error("Error al cargar perfume:", error)
@@ -211,13 +219,14 @@ export default function EditPerfumePage() {
 		return {
 			id: "edit",
 			name: (v.name || "").toUpperCase(),
-			subtitle: v.subtitle || undefined, // Si está vacío (NADA), no mostrar subtítulo
+			subtitle: v.subtitle || undefined,
 			brand: "Parma",
 			gender: v.gender,
 			images: imageUrl ? [imageUrl] : [],
 			sizes: sizes.length ? sizes : [30, 50],
 			precio30: v.precio30 || null,
 			precio50: v.precio50 || null,
+			tipoLanzamiento: (v.tipoLanzamiento && v.tipoLanzamiento !== "NINGUNO" ? v.tipoLanzamiento : null) as "NUEVO" | "RESTOCK" | null,
 		}
 	}, [form.watch(), uploadedImageUrl])
 	
@@ -243,6 +252,9 @@ export default function EditPerfumePage() {
 			precio30: data.precio30 || null,
 			precio50: data.precio50 || null,
 			usoPorDefecto: data.usoPorDefecto || null,
+			tipoLanzamiento: data.tipoLanzamiento && data.tipoLanzamiento !== "NINGUNO" ? data.tipoLanzamiento : null,
+			fijado: !!data.fijado,
+			ordenFijado: data.ordenFijado || 0,
 		}
 		const res = await fetch(`/api/perfumes/${params.id}`, {
 			method: "PUT",
@@ -360,8 +372,32 @@ export default function EditPerfumePage() {
 					<label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" {...form.register("highlight")} /> Destacado</label>
 					<label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" {...form.register("active")} /> Activo</label>
 				</div>
-			<div className="space-y-4 border-t pt-4">
-				<h3 className="text-sm font-semibold">Configuración de Uso y Lanzamiento</h3>
+		{/* Fijar Posición */}
+			<div className="space-y-3 border-t pt-4">
+				<h3 className="text-sm font-semibold">📌 Fijar en Catálogo</h3>
+				<p className="text-xs text-gray-500">Los perfumes fijados siempre aparecen primero en el catálogo.</p>
+				<label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+					<input type="checkbox" {...form.register("fijado")} className="w-5 h-5 accent-blue-600" />
+					<div>
+						<span className="text-sm font-bold">Fijar este perfume</span>
+						<p className="text-xs text-gray-500">Aparecerá siempre al inicio</p>
+					</div>
+				</label>
+				{form.watch("fijado") && (
+					<div>
+						<label className="block text-xs font-medium mb-1 text-gray-600">Orden de posición (menor = más arriba)</label>
+						<Input 
+							type="number" 
+							{...form.register("ordenFijado")} 
+							placeholder="Ej: 1, 2, 3..." 
+							min={0}
+						/>
+						<p className="text-xs text-gray-400 mt-1">1 = primero, 2 = segundo, etc.</p>
+					</div>
+				)}
+			</div>
+		<div className="space-y-4 border-t pt-4">
+			<h3 className="text-sm font-semibold">Configuración de Uso y Lanzamiento</h3>
 				<div className="grid grid-cols-2 gap-4">
 					<div>
 						<label className="block text-sm font-medium mb-2">Uso por Defecto</label>
@@ -371,14 +407,14 @@ export default function EditPerfumePage() {
 							<option value="AMBOS">AMBOS</option>
 						</select>
 					</div>
-					<div>
-						<label className="block text-sm font-medium mb-2">Tipo de Lanzamiento</label>
-						<select className="border rounded-md h-10 px-3 w-full" {...form.register("tipoLanzamiento")}>
-							<option value="NINGUNO">Ninguno</option>
-							<option value="NUEVO">NUEVO 🆕</option>
-							<option value="RESTOCK">RE-STOCK 📦</option>
-						</select>
-					</div>
+				<div>
+					<label className="block text-sm font-medium mb-2">Etiqueta</label>
+					<select className="border rounded-md h-10 px-3 w-full" {...form.register("tipoLanzamiento")}>
+						<option value="NINGUNO">Ninguna</option>
+						<option value="NUEVO">🔴 MÁS VENDIDO</option>
+						<option value="RESTOCK">🔵 RE-STOCK</option>
+					</select>
+				</div>
 				</div>
 			</div>
 				<div className="pt-2"><Button type="submit">Guardar cambios</Button></div>
