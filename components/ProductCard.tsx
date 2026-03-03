@@ -95,7 +95,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 							? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white"
 							: "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
 					}`}>
-						{product.tipoLanzamiento === "NUEVO" ? "MÁS VENDIDO" : product.tipoLanzamiento === "LANZAMIENTO" ? "✨ NUEVO" : "RE-STOCK"}
+						{product.tipoLanzamiento === "NUEVO" ? "MÁS VENDIDO" : product.tipoLanzamiento === "LANZAMIENTO" ? "NUEVO" : "RE-STOCK"}
 					</div>
 				)}
 				

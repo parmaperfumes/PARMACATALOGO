@@ -442,7 +442,7 @@ export default function AdminNewPerfumePage() {
 							<option value="NINGUNO">Ninguna</option>
 							<option value="NUEVO">🔴 MÁS VENDIDO</option>
 							<option value="RESTOCK">🔵 RE-STOCK</option>
-							<option value="LANZAMIENTO">✨ NUEVO</option>
+							<option value="LANZAMIENTO">NUEVO</option>
 						</select>
 					</div>
 					</div>
