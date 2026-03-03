@@ -27,7 +27,7 @@ const perfumeSchema = z.object({
 	categoria: z.string().optional(),
 	marca: z.string().optional(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
-	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "NINGUNO"]).optional(),
+	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "LANZAMIENTO", "NINGUNO"]).optional(),
 	fijado: z.boolean().optional(),
 	ordenFijado: z.coerce.number().int().nonnegative().optional(),
 })
@@ -182,7 +182,7 @@ export default function AdminNewPerfumePage() {
 			sizes: sizes.length ? sizes : [30, 50],
 			precio30: values.precio30 || null,
 			precio50: values.precio50 || null,
-			tipoLanzamiento: (values.tipoLanzamiento && values.tipoLanzamiento !== "NINGUNO" ? values.tipoLanzamiento : null) as "NUEVO" | "RESTOCK" | null,
+			tipoLanzamiento: (values.tipoLanzamiento && values.tipoLanzamiento !== "NINGUNO" ? values.tipoLanzamiento : null) as "NUEVO" | "RESTOCK" | "LANZAMIENTO" | null,
 		}
 	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.mainImage, uploadedImageUrl, formValues.precio30, formValues.precio50, formValues.tipoLanzamiento])
 
@@ -442,6 +442,7 @@ export default function AdminNewPerfumePage() {
 							<option value="NINGUNO">Ninguna</option>
 							<option value="NUEVO">🔴 MÁS VENDIDO</option>
 							<option value="RESTOCK">🔵 RE-STOCK</option>
+							<option value="LANZAMIENTO">✨ NUEVO</option>
 						</select>
 					</div>
 					</div>

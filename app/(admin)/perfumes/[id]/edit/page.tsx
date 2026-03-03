@@ -24,7 +24,7 @@ const schema = z.object({
 	precio30: z.string().optional(),
 	precio50: z.string().optional(),
 	usoPorDefecto: z.enum(["DIA", "NOCHE", "AMBOS"]).optional(),
-	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "NINGUNO"]).optional(),
+	tipoLanzamiento: z.enum(["NUEVO", "RESTOCK", "LANZAMIENTO", "NINGUNO"]).optional(),
 	fijado: z.boolean().optional(),
 	ordenFijado: z.coerce.number().int().nonnegative().optional(),
 })
@@ -43,7 +43,7 @@ type FormT = {
 	precio30?: string
 	precio50?: string
 	usoPorDefecto?: "DIA" | "NOCHE" | "AMBOS"
-	tipoLanzamiento?: "NUEVO" | "RESTOCK" | "NINGUNO"
+	tipoLanzamiento?: "NUEVO" | "RESTOCK" | "LANZAMIENTO" | "NINGUNO"
 	fijado?: boolean
 	ordenFijado?: number
 }
@@ -226,7 +226,7 @@ export default function EditPerfumePage() {
 			sizes: sizes.length ? sizes : [30, 50],
 			precio30: v.precio30 || null,
 			precio50: v.precio50 || null,
-			tipoLanzamiento: (v.tipoLanzamiento && v.tipoLanzamiento !== "NINGUNO" ? v.tipoLanzamiento : null) as "NUEVO" | "RESTOCK" | null,
+			tipoLanzamiento: (v.tipoLanzamiento && v.tipoLanzamiento !== "NINGUNO" ? v.tipoLanzamiento : null) as "NUEVO" | "RESTOCK" | "LANZAMIENTO" | null,
 		}
 	}, [form.watch(), uploadedImageUrl])
 	
@@ -413,6 +413,7 @@ export default function EditPerfumePage() {
 						<option value="NINGUNO">Ninguna</option>
 						<option value="NUEVO">🔴 MÁS VENDIDO</option>
 						<option value="RESTOCK">🔵 RE-STOCK</option>
+						<option value="LANZAMIENTO">✨ NUEVO</option>
 					</select>
 				</div>
 				</div>

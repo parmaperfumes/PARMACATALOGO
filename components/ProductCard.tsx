@@ -15,7 +15,7 @@ export type Product = {
 	gender?: "HOMBRE" | "MUJER" | "UNISEX"
 	images: string[] // at least one
 	sizes: ProductSizeMl[]
-	tipoLanzamiento?: "NUEVO" | "RESTOCK" | null
+	tipoLanzamiento?: "NUEVO" | "RESTOCK" | "LANZAMIENTO" | null
 	precio30?: string | null // Precio personalizado para 30ml (ej: "850 RD")
 	precio50?: string | null // Precio personalizado para 50ml (ej: "1,350 RD")
 }
@@ -86,14 +86,16 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
 			{/* Header visual con imagen */}
 			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
-				{/* Etiqueta MÁS VENDIDO / RE-STOCK */}
+				{/* Etiqueta MÁS VENDIDO / RE-STOCK / NUEVO */}
 				{product.tipoLanzamiento && (
 					<div className={`absolute top-1 right-1 sm:top-2 sm:right-2 z-10 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[7px] sm:text-[10px] font-bold shadow-lg backdrop-blur-sm ${
 						product.tipoLanzamiento === "NUEVO" 
-							? "bg-gradient-to-r from-red-500 to-rose-600 text-white" 
+							? "bg-gradient-to-r from-red-500 to-rose-600 text-white"
+							: product.tipoLanzamiento === "LANZAMIENTO"
+							? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white"
 							: "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
 					}`}>
-						{product.tipoLanzamiento === "NUEVO" ? "MÁS VENDIDO" : "RE-STOCK"}
+						{product.tipoLanzamiento === "NUEVO" ? "MÁS VENDIDO" : product.tipoLanzamiento === "LANZAMIENTO" ? "✨ NUEVO" : "RE-STOCK"}
 					</div>
 				)}
 				

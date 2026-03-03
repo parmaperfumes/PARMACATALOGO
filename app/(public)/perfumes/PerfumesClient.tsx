@@ -42,7 +42,7 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 		gender: (p.genero as "HOMBRE" | "MUJER" | "UNISEX") || undefined,
 		images: p.imagenes && p.imagenes.length > 0 ? p.imagenes : [p.imagenPrincipal],
 		sizes: (p.sizes.length > 0 ? p.sizes : [30, 50]) as Product["sizes"],
-		tipoLanzamiento: (p.tipoLanzamiento as "NUEVO" | "RESTOCK" | null) || null,
+		tipoLanzamiento: (p.tipoLanzamiento as "NUEVO" | "RESTOCK" | "LANZAMIENTO" | null) || null,
 		precio30: p.precio30 || null,
 		precio50: p.precio50 || null,
 	}))
