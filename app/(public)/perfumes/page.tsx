@@ -17,7 +17,7 @@ async function getPerfumes(): Promise<PerfumeFromDB[]> {
 				       "tipoLanzamiento", fijado, "ordenFijado"
 				FROM "Perfume"
 				WHERE activo = true
-				ORDER BY COALESCE(fijado, false) DESC, COALESCE("ordenFijado", 999) ASC, "createdAt" DESC
+				ORDER BY COALESCE(fijado, false) DESC, COALESCE("ordenFijado", 999) ASC, CASE WHEN "tipoLanzamiento" = 'LANZAMIENTO' THEN 0 WHEN "tipoLanzamiento" = 'RESTOCK' THEN 1 ELSE 2 END ASC, "createdAt" DESC
 			`)
 		} catch (e: any) {
 			// Si falla por campos que no existen, leer sin ellos

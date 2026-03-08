@@ -74,15 +74,21 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 			return true
 		})
 
-	// Ordenar: fijados primero (por ordenFijado), luego el resto
+	// Ordenar: 1) fijados, 2) NUEVO, 3) RE-STOCK, 4) resto
 	const sortedFilteredData = [...filteredData].sort((a, b) => {
 		const aFijado = a.perfumeData.fijado ? 1 : 0
 		const bFijado = b.perfumeData.fijado ? 1 : 0
-		if (aFijado !== bFijado) return bFijado - aFijado // fijados primero
+		if (aFijado !== bFijado) return bFijado - aFijado
 		if (aFijado && bFijado) {
 			return (a.perfumeData.ordenFijado || 0) - (b.perfumeData.ordenFijado || 0)
 		}
-		return 0 // mantener orden original para no-fijados
+
+		const labelRank = (tipo: string | null | undefined) =>
+			tipo === "LANZAMIENTO" ? 0 : tipo === "RESTOCK" ? 1 : 2
+		const rankDiff = labelRank(a.perfumeData.tipoLanzamiento) - labelRank(b.perfumeData.tipoLanzamiento)
+		if (rankDiff !== 0) return rankDiff
+
+		return 0
 	})
 
 	const filteredPerfumes = sortedFilteredData.map(({ perfume }) => perfume)

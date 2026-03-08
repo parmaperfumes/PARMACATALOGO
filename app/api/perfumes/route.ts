@@ -254,7 +254,6 @@ export async function GET(req: NextRequest) {
 		// Usar SQL raw para evitar errores si los campos nuevos no existen
 		let perfumes: any[]
 		try {
-			// Leer sin tipoLanzamiento (no existe en la BD)
 			const whereClause = includeInactive ? '' : 'WHERE activo = true'
 			perfumes = await prisma.$queryRawUnsafe<Array<any>>(`
 				SELECT id, nombre, slug, descripcion, precio, "precioDescuento", "imagenPrincipal", 
@@ -264,7 +263,7 @@ export async function GET(req: NextRequest) {
 				       "tipoLanzamiento", fijado, "ordenFijado"
 				FROM "Perfume"
 				${whereClause}
-				ORDER BY COALESCE(fijado, false) DESC, COALESCE("ordenFijado", 999) ASC, "createdAt" DESC
+				ORDER BY COALESCE(fijado, false) DESC, COALESCE("ordenFijado", 999) ASC, CASE WHEN "tipoLanzamiento" = 'LANZAMIENTO' THEN 0 WHEN "tipoLanzamiento" = 'RESTOCK' THEN 1 ELSE 2 END ASC, "createdAt" DESC
 			`)
 		} catch (e: any) {
 			// Si los campos nuevos no existen, leer sin ellos
@@ -401,7 +400,10 @@ export async function POST(req: NextRequest) {
 			perfumeData.precio50 = data.precio50 || null
 		}
 
-		// NO agregar tipoLanzamiento - el campo no existe en la BD
+		// Agregar tipoLanzamiento
+		if (data.tipoLanzamiento !== undefined) {
+			perfumeData.tipoLanzamiento = (data.tipoLanzamiento === "NINGUNO" || !data.tipoLanzamiento) ? null : data.tipoLanzamiento
+		}
 
 		// Intentar crear con Prisma, pero si falla por campos que no existen, usar SQL raw
 		let perfume
