@@ -12,6 +12,7 @@ import { Upload } from "lucide-react"
 
 const schema = z.object({
 	name: z.string().min(2),
+	sku: z.string().optional(),
 	subtitle: z.string().optional(),
 	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]),
 	mainImage: z.string().url(),
@@ -31,6 +32,7 @@ const schema = z.object({
 
 type FormT = {
 	name: string
+	sku?: string
 	subtitle?: string
 	gender: "HOMBRE" | "MUJER" | "UNISEX"
 	mainImage: string
@@ -55,6 +57,7 @@ export default function EditPerfumePage() {
 		resolver: zodResolver(schema) as any,
 		defaultValues: {
 			name: "",
+			sku: "",
 			gender: "HOMBRE" as const,
 			mainImage: "",
 			stock: 0,
@@ -96,6 +99,7 @@ export default function EditPerfumePage() {
 			const sizes = p.sizes || []
 			form.reset({
 				name: p.nombre || "",
+				sku: p.sku || "",
 				subtitle: p.subtitulo || "",
 				gender: (p.genero as any) || "HOMBRE",
 				mainImage: p.imagenPrincipal || "",
@@ -238,6 +242,7 @@ export default function EditPerfumePage() {
 		const currentPerfume = await fetch(`/api/perfumes/${params.id}`).then(r => r.json()).catch(() => null)
 		const payload: any = {
 			name: data.name,
+			sku: data.sku || null,
 			slug: currentPerfume?.slug || data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
 			precio: currentPerfume?.precio || 0, // Mantener el precio existente o usar 0 por defecto
 			imagenPrincipal: data.mainImage,
@@ -271,6 +276,8 @@ export default function EditPerfumePage() {
 				<h1 className="text-2xl font-bold">Editar perfume</h1>
 				<label className="block text-sm font-medium">Nombre</label>
 				<Input {...form.register("name")} />
+				<label className="block text-sm font-medium">SKU (Código único)</label>
+				<Input {...form.register("sku")} placeholder="Ej: PF-001" />
 				<label className="block text-sm font-medium">Subtítulo/Tipo</label>
 				<select className="border rounded-md h-10 px-3 w-full" {...form.register("subtitle")}>
 					<option value="">NADA</option>

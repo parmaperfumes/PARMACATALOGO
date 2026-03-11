@@ -20,6 +20,7 @@ const perfumeSchema = z.object({
 	active: z.boolean(),
 	volumen: z.string().optional(),
 	notas: z.string().optional(), // comma separated
+	sku: z.string().optional(),
 	size30: z.boolean(),
 	size50: z.boolean(),
 	precio30: z.string().optional(),
@@ -45,6 +46,7 @@ export default function AdminNewPerfumePage() {
 		defaultValues: {
 			name: "",
 			subtitle: "",
+			sku: "",
 			gender: "HOMBRE",
 			mainImage: "",
 			stock: 0,
@@ -196,6 +198,7 @@ export default function AdminNewPerfumePage() {
 			const payload = {
 				name: data.name,
 				slug: slug,
+				sku: data.sku || null,
 				precio: 0, // Valor por defecto
 				imagenPrincipal: data.mainImage,
 				imagenes: [data.mainImage],
@@ -255,6 +258,11 @@ export default function AdminNewPerfumePage() {
 						{form.formState.errors.name && (
 							<p className="text-xs text-red-500 mt-1">{form.formState.errors.name.message}</p>
 						)}
+					</div>
+
+					<div>
+						<label className="block text-sm font-medium mb-1">SKU (Código único)</label>
+						<Input {...form.register("sku")} placeholder="Ej: PF-001" />
 					</div>
 
 					<div>

@@ -1,0 +1,2 @@
+ALTER TABLE "Perfume" ADD COLUMN IF NOT EXISTS "sku" TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS "Perfume_sku_key" ON "Perfume"("sku");

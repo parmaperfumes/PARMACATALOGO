@@ -4,7 +4,7 @@ import { useState } from "react"
 import useSWR from "swr"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, EyeOff } from "lucide-react"
+import { Search, Eye, EyeOff, Pencil, Check, X } from "lucide-react"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -12,6 +12,8 @@ export default function AdminDashboardPage() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [showHidden, setShowHidden] = useState(false)
 	const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
+	const [editingSku, setEditingSku] = useState<string | null>(null)
+	const [skuValue, setSkuValue] = useState("")
 	const { data, mutate, isLoading, error } = useSWR(
 		`/api/perfumes?includeInactive=true`, 
 		fetcher
@@ -64,6 +66,53 @@ export default function AdminDashboardPage() {
 				return newSet
 			})
 		}
+	}
+
+	async function handleSaveSku(id: string) {
+		const newSku = skuValue.trim() || null
+		const optimisticData = data?.map((p: any) =>
+			p.id === id ? { ...p, sku: newSku } : p
+		)
+		try {
+			await mutate(
+				async () => {
+					const current = await fetch(`/api/perfumes/${id}`).then(r => r.json())
+					const res = await fetch(`/api/perfumes/${id}`, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							name: current.nombre,
+							slug: current.slug,
+							precio: current.precio,
+							imagenPrincipal: current.imagenPrincipal,
+							imagenes: current.imagenes,
+							stock: current.stock,
+							destacado: current.destacado,
+							activo: current.activo,
+							genero: current.genero,
+							subtitulo: current.subtitulo,
+							volumen: current.volumen,
+							notas: current.notas,
+							sizes: current.sizes,
+							usoPorDefecto: current.usoPorDefecto,
+							fijarUso: current.fijarUso,
+							tipoLanzamiento: current.tipoLanzamiento,
+							precio30: current.precio30,
+							precio50: current.precio50,
+							fijado: current.fijado,
+							ordenFijado: current.ordenFijado,
+							sku: newSku,
+						}),
+					})
+					if (!res.ok) throw new Error(await res.text())
+					return optimisticData
+				},
+				{ optimisticData, rollbackOnError: true, revalidate: false }
+			)
+		} catch (error: any) {
+			alert(`Error al guardar SKU: ${error?.message || "Error desconocido"}`)
+		}
+		setEditingSku(null)
 	}
 
 	// Filtrar perfumes según búsqueda y estado
@@ -140,6 +189,7 @@ export default function AdminDashboardPage() {
 					<thead className="bg-gray-50">
 						<tr>
 							<th className="px-4 py-2 text-left">Nombre</th>
+							<th className="px-4 py-2 text-left">SKU</th>
 							<th className="px-4 py-2 text-left">Stock</th>
 							<th className="px-4 py-2 text-left">Estado</th>
 							<th className="px-4 py-2 text-right">Acciones</th>
@@ -147,12 +197,12 @@ export default function AdminDashboardPage() {
 					</thead>
 					<tbody>
 						{isLoading ? (
-							<tr><td className="px-4 py-6" colSpan={4}>Cargando...</td></tr>
+							<tr><td className="px-4 py-6" colSpan={5}>Cargando...</td></tr>
 						) : error ? (
-							<tr><td className="px-4 py-6 text-red-500" colSpan={4}>Error al cargar</td></tr>
+							<tr><td className="px-4 py-6 text-red-500" colSpan={5}>Error al cargar</td></tr>
 						) : filteredPerfumes.length === 0 ? (
 							<tr>
-								<td className="px-4 py-6 text-muted-foreground" colSpan={4}>
+								<td className="px-4 py-6 text-muted-foreground" colSpan={5}>
 									{searchQuery.trim() !== "" 
 										? `No se encontraron perfumes que coincidan con "${searchQuery}"`
 										: showHidden
@@ -165,6 +215,39 @@ export default function AdminDashboardPage() {
 								<tr key={p.id} className={`border-t ${!p.activo ? "bg-gray-50 opacity-75" : ""}`}>
 									<td className="px-4 py-2">
 										<span className={!p.activo ? "text-gray-500" : ""}>{p.nombre}</span>
+									</td>
+									<td className="px-4 py-2">
+										{editingSku === p.id ? (
+											<div className="flex items-center gap-1">
+												<input
+													type="text"
+													value={skuValue}
+													onChange={(e) => setSkuValue(e.target.value)}
+													onKeyDown={(e) => {
+														if (e.key === "Enter") handleSaveSku(p.id)
+														if (e.key === "Escape") setEditingSku(null)
+													}}
+													className="border rounded px-2 py-1 text-xs font-mono w-24 focus:outline-none focus:ring-1 focus:ring-blue-500"
+													autoFocus
+													placeholder="PF-001"
+												/>
+												<button onClick={() => handleSaveSku(p.id)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="Guardar">
+													<Check className="h-3.5 w-3.5" />
+												</button>
+												<button onClick={() => setEditingSku(null)} className="p-1 text-gray-400 hover:bg-gray-100 rounded" title="Cancelar">
+													<X className="h-3.5 w-3.5" />
+												</button>
+											</div>
+										) : (
+											<button
+												onClick={() => { setEditingSku(p.id); setSkuValue(p.sku || "") }}
+												className="flex items-center gap-1.5 group"
+												title="Editar SKU"
+											>
+												<span className={`font-mono text-xs ${!p.activo ? "text-gray-400" : "text-gray-500"}`}>{p.sku || "—"}</span>
+												<Pencil className="h-3 w-3 text-gray-300 group-hover:text-blue-500 transition-colors" />
+											</button>
+										)}
 									</td>
 									<td className="px-4 py-2">
 										<span className={!p.activo ? "text-gray-500" : ""}>{p.stock}</span>

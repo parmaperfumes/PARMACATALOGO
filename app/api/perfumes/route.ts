@@ -260,7 +260,7 @@ export async function GET(req: NextRequest) {
 				       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 				       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
 				       "usoPorDefecto", "fijarUso", precio30, precio50,
-				       "tipoLanzamiento", fijado, "ordenFijado"
+				       "tipoLanzamiento", fijado, "ordenFijado", sku
 				FROM "Perfume"
 				${whereClause}
 				ORDER BY COALESCE(fijado, false) DESC, COALESCE("ordenFijado", 999) ASC, CASE WHEN "tipoLanzamiento" = 'LANZAMIENTO' THEN 0 WHEN "tipoLanzamiento" = 'RESTOCK' THEN 1 ELSE 2 END ASC, "createdAt" DESC
@@ -403,6 +403,11 @@ export async function POST(req: NextRequest) {
 		// Agregar tipoLanzamiento
 		if (data.tipoLanzamiento !== undefined) {
 			perfumeData.tipoLanzamiento = (data.tipoLanzamiento === "NINGUNO" || !data.tipoLanzamiento) ? null : data.tipoLanzamiento
+		}
+
+		// Agregar SKU
+		if (data.sku !== undefined) {
+			perfumeData.sku = data.sku || null
 		}
 
 		// Intentar crear con Prisma, pero si falla por campos que no existen, usar SQL raw

@@ -17,7 +17,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 			       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 			       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt",
 			       "usoPorDefecto", "fijarUso", "tipoLanzamiento", precio30, precio50,
-			       fijado, "ordenFijado"
+			       fijado, "ordenFijado", sku
 			FROM "Perfume"
 			WHERE id = ${id}
 		`
@@ -56,6 +56,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 		if (perfume.fijarUso === undefined) perfume.fijarUso = false
 		if (perfume.fijado === undefined) perfume.fijado = false
 		if (perfume.ordenFijado === undefined) perfume.ordenFijado = 0
+		if (perfume.sku === undefined) perfume.sku = null
 		
 		return NextResponse.json(perfume)
 	} catch (e: any) {
@@ -128,6 +129,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		if (data.ordenFijado !== undefined) {
 			updateData.ordenFijado = Number(data.ordenFijado) || 0
 		}
+		if (data.sku !== undefined) {
+			updateData.sku = data.sku || null
+		}
 		
 		// Intentar actualizar usando Prisma
 		let perfume
@@ -165,6 +169,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 					tipoLanzamiento: '"tipoLanzamiento"',
 					fijado: 'fijado',
 					ordenFijado: '"ordenFijado"',
+					sku: 'sku',
 				}
 
 				const setParts: string[] = []

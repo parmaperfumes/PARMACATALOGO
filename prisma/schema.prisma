@@ -44,6 +44,7 @@ model Perfume {
   tipoLanzamiento String?
   fijado          Boolean?  @default(false)
   ordenFijado     Int?      @default(0)
+  sku             String?   @unique
 
   @@index([activo, destacado], map: "idx_perfume_activo_destacado")
   @@index([categoriaId], map: "idx_perfume_categoria")
