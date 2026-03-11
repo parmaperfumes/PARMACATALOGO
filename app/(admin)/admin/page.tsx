@@ -73,36 +73,14 @@ export default function AdminDashboardPage() {
 		const optimisticData = data?.map((p: any) =>
 			p.id === id ? { ...p, sku: newSku } : p
 		)
+		setEditingSku(null)
 		try {
 			await mutate(
 				async () => {
-					const current = await fetch(`/api/perfumes/${id}`).then(r => r.json())
-					const res = await fetch(`/api/perfumes/${id}`, {
-						method: "PUT",
+					const res = await fetch("/api/perfumes", {
+						method: "PATCH",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							name: current.nombre,
-							slug: current.slug,
-							precio: current.precio,
-							imagenPrincipal: current.imagenPrincipal,
-							imagenes: current.imagenes,
-							stock: current.stock,
-							destacado: current.destacado,
-							activo: current.activo,
-							genero: current.genero,
-							subtitulo: current.subtitulo,
-							volumen: current.volumen,
-							notas: current.notas,
-							sizes: current.sizes,
-							usoPorDefecto: current.usoPorDefecto,
-							fijarUso: current.fijarUso,
-							tipoLanzamiento: current.tipoLanzamiento,
-							precio30: current.precio30,
-							precio50: current.precio50,
-							fijado: current.fijado,
-							ordenFijado: current.ordenFijado,
-							sku: newSku,
-						}),
+						body: JSON.stringify({ id, sku: newSku }),
 					})
 					if (!res.ok) throw new Error(await res.text())
 					return optimisticData
@@ -112,7 +90,6 @@ export default function AdminDashboardPage() {
 		} catch (error: any) {
 			alert(`Error al guardar SKU: ${error?.message || "Error desconocido"}`)
 		}
-		setEditingSku(null)
 	}
 
 	// Filtrar perfumes según búsqueda y estado
@@ -244,7 +221,7 @@ export default function AdminDashboardPage() {
 												className="flex items-center gap-1.5 group"
 												title="Editar SKU"
 											>
-												<span className={`font-mono text-xs ${!p.activo ? "text-gray-400" : "text-gray-500"}`}>{p.sku || "—"}</span>
+												<span className={`font-mono text-xs font-semibold ${!p.activo ? "text-gray-400" : "text-gray-900"}`}>{p.sku || "—"}</span>
 												<Pencil className="h-3 w-3 text-gray-300 group-hover:text-blue-500 transition-colors" />
 											</button>
 										)}

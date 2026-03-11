@@ -203,34 +203,40 @@ export async function PATCH(req: NextRequest) {
 	}
 	try {
 		const body = await req.json()
-		const { id, activo } = body
+		const { id } = body
 		
 		if (!id) {
 			return new NextResponse("ID es requerido", { status: 400 })
 		}
-		
-		if (typeof activo !== 'boolean') {
-			return new NextResponse("activo debe ser un booleano", { status: 400 })
+
+		const updates: Record<string, any> = {}
+		if (typeof body.activo === "boolean") updates.activo = body.activo
+		if (body.sku !== undefined) updates.sku = body.sku || null
+
+		if (Object.keys(updates).length === 0) {
+			return new NextResponse("No hay campos para actualizar", { status: 400 })
 		}
 		
-		// Usar Prisma si es posible, sino usar SQL raw
 		try {
-			await prisma.perfume.update({
-				where: { id },
-				data: { activo }
-			})
+			await prisma.perfume.update({ where: { id }, data: updates })
 		} catch (prismaError: any) {
-			// Si falla con Prisma, usar SQL raw
+			const setParts: string[] = []
+			const values: any[] = []
+			let i = 1
+			for (const [col, val] of Object.entries(updates)) {
+				setParts.push(`"${col}" = $${i++}`)
+				values.push(val)
+			}
+			values.push(id)
 			await prisma.$executeRawUnsafe(
-				`UPDATE "Perfume" SET activo = $1 WHERE id = $2`,
-				activo,
-				id
+				`UPDATE "Perfume" SET ${setParts.join(", ")} WHERE id = $${i}`,
+				...values
 			)
 		}
 		
-		return NextResponse.json({ success: true, id, activo })
+		return NextResponse.json({ success: true, id, ...updates })
 	} catch (e: any) {
-		console.error("Error al actualizar estado del perfume:", e)
+		console.error("Error al actualizar perfume:", e)
 		return new NextResponse(e?.message || "Error", { status: 500 })
 	}
 }
