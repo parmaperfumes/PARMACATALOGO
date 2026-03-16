@@ -1,22 +1,90 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import useSWR from "swr"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, EyeOff, Pencil, Check, X } from "lucide-react"
+import { Search, Eye, EyeOff, Pencil } from "lucide-react"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
+function SkuEditor({ perfumeId, currentSku, onSaved }: { perfumeId: string; currentSku: string | null; onSaved: (newSku: string | null) => void }) {
+	const [editing, setEditing] = useState(false)
+	const [val, setVal] = useState(currentSku || "")
+	const [saving, setSaving] = useState(false)
+	const [justSaved, setJustSaved] = useState(false)
+	const valRef = useRef(val)
+	valRef.current = val
+
+	useEffect(() => {
+		if (!editing) setVal(currentSku || "")
+	}, [currentSku, editing])
+
+	async function save(e?: React.MouseEvent) {
+		if (e) e.stopPropagation()
+		const newSku = valRef.current.trim() || null
+		setSaving(true)
+		try {
+			const res = await fetch("/api/perfumes", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ id: perfumeId, sku: newSku }),
+			})
+			if (!res.ok) throw new Error(await res.text())
+			setEditing(false)
+			setJustSaved(true)
+			setTimeout(() => setJustSaved(false), 1500)
+			onSaved(newSku)
+		} catch (error: any) {
+			alert("Error al guardar SKU: " + (error?.message || "Error desconocido"))
+		}
+		setSaving(false)
+	}
+
+	if (editing) {
+		return (
+			<div className="flex items-center gap-1">
+				<input
+					type="text"
+					value={val}
+					onChange={(e) => setVal(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") { e.preventDefault(); save() }
+						if (e.key === "Escape") setEditing(false)
+					}}
+					className="border rounded px-2 py-1 text-sm font-mono font-semibold text-gray-900 w-28 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					autoFocus
+					placeholder="PAR-00"
+					disabled={saving}
+				/>
+				<button type="button" onClick={save} disabled={saving} className="p-1.5 text-green-600 hover:bg-green-50 rounded text-base leading-none" title="Guardar">✓</button>
+				<button type="button" onClick={() => setEditing(false)} disabled={saving} className="p-1.5 text-gray-400 hover:bg-gray-100 rounded text-base leading-none" title="Cancelar">✕</button>
+			</div>
+		)
+	}
+
+	return (
+		<div className="flex items-center gap-1.5">
+			{justSaved ? (
+				<span className="font-mono text-xs font-semibold text-green-600">Guardado</span>
+			) : (
+				<span className="font-mono text-xs font-semibold text-gray-900">{currentSku || "—"}</span>
+			)}
+			<button onClick={() => { setVal(currentSku || ""); setEditing(true) }} className="p-1 rounded text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors" title="Editar SKU">
+				<Pencil className="h-3 w-3" />
+			</button>
+		</div>
+	)
+}
 
 export default function AdminDashboardPage() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [showHidden, setShowHidden] = useState(false)
 	const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
-	const [editingSku, setEditingSku] = useState<string | null>(null)
-	const [skuValue, setSkuValue] = useState("")
 	const { data, mutate, isLoading, error } = useSWR(
 		`/api/perfumes?includeInactive=true`, 
-		fetcher
+		fetcher,
+		{ revalidateOnFocus: false }
 	)
 	
 	const displayData = data ?? []
@@ -65,30 +133,6 @@ export default function AdminDashboardPage() {
 				newSet.delete(id)
 				return newSet
 			})
-		}
-	}
-
-	async function handleSaveSku(id: string) {
-		const newSku = skuValue.trim() || null
-		const optimisticData = data?.map((p: any) =>
-			p.id === id ? { ...p, sku: newSku } : p
-		)
-		setEditingSku(null)
-		try {
-			await mutate(
-				async () => {
-					const res = await fetch("/api/perfumes", {
-						method: "PATCH",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ id, sku: newSku }),
-					})
-					if (!res.ok) throw new Error(await res.text())
-					return optimisticData
-				},
-				{ optimisticData, rollbackOnError: true, revalidate: false }
-			)
-		} catch (error: any) {
-			alert(`Error al guardar SKU: ${error?.message || "Error desconocido"}`)
 		}
 	}
 
@@ -194,37 +238,18 @@ export default function AdminDashboardPage() {
 										<span className={!p.activo ? "text-gray-500" : ""}>{p.nombre}</span>
 									</td>
 									<td className="px-4 py-2">
-										{editingSku === p.id ? (
-											<div className="flex items-center gap-1">
-												<input
-													type="text"
-													value={skuValue}
-													onChange={(e) => setSkuValue(e.target.value)}
-													onKeyDown={(e) => {
-														if (e.key === "Enter") handleSaveSku(p.id)
-														if (e.key === "Escape") setEditingSku(null)
-													}}
-													className="border rounded px-2 py-1 text-xs font-mono w-24 focus:outline-none focus:ring-1 focus:ring-blue-500"
-													autoFocus
-													placeholder="PF-001"
-												/>
-												<button onClick={() => handleSaveSku(p.id)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="Guardar">
-													<Check className="h-3.5 w-3.5" />
-												</button>
-												<button onClick={() => setEditingSku(null)} className="p-1 text-gray-400 hover:bg-gray-100 rounded" title="Cancelar">
-													<X className="h-3.5 w-3.5" />
-												</button>
-											</div>
-										) : (
-											<button
-												onClick={() => { setEditingSku(p.id); setSkuValue(p.sku || "") }}
-												className="flex items-center gap-1.5 group"
-												title="Editar SKU"
-											>
-												<span className={`font-mono text-xs font-semibold ${!p.activo ? "text-gray-400" : "text-gray-900"}`}>{p.sku || "—"}</span>
-												<Pencil className="h-3 w-3 text-gray-300 group-hover:text-blue-500 transition-colors" />
-											</button>
-										)}
+										<SkuEditor
+											perfumeId={p.id}
+											currentSku={p.sku}
+											onSaved={(newSku: string | null) => {
+												mutate(
+													(current: any) => current?.map((item: any) =>
+														item.id === p.id ? { ...item, sku: newSku } : item
+													),
+													{ revalidate: false }
+												)
+											}}
+										/>
 									</td>
 									<td className="px-4 py-2">
 										<span className={!p.activo ? "text-gray-500" : ""}>{p.stock}</span>

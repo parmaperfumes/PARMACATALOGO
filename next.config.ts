@@ -44,6 +44,12 @@ const nextConfig: NextConfig = {
 
 	async redirects() {
 		return [
+			// /perfume (singular) -> /perfumes (catálogo)
+			{
+				source: "/perfume",
+				destination: "/perfumes",
+				permanent: true,
+			},
 			// Normalizar URLs mal copiadas con corchete de cierre
 			{
 				source: "/perfumes]",

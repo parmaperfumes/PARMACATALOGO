@@ -16,6 +16,15 @@ model HeaderConfig {
   updatedAt DateTime? @default(now()) @db.Timestamp(6)
 }
 
+model CatalogPopupConfig {
+  id              String   @id @default("main")
+  mensajeTitulo   String?
+  mensajeTexto    String?
+  mensajeWhatsApp String?
+  createdAt       DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime? @default(now()) @db.Timestamp(6)
+}
+
 model Perfume {
   id              String    @id
   nombre          String

@@ -46,6 +46,9 @@ export default async function AdminLayout({
 						<Link href="/header" className="text-sm text-gray-600 hover:text-gray-900 underline">
 							Editar Header
 						</Link>
+						<Link href="/ajustes-catalogo" className="text-sm text-gray-600 hover:text-gray-900 underline">
+							Ajustes Catálogo
+						</Link>
 					</div>
 					<LogoutButton />
 				</div>

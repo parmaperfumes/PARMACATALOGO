@@ -1,8 +1,38 @@
 import { prisma } from "@/lib/prisma"
 import PerfumesClient, { type PerfumeFromDB } from "./PerfumesClient"
 
+const STOCK_API_URL = "https://uzvnluxxaekmaqnuocvo.supabase.co/functions/v1/stock-woocommerce"
+
 export const dynamic = "force-dynamic"
 export const revalidate = 0
+
+/** Obtiene el estado de stock por SKU. Retorna null si falla (para no ocultar perfumes por error de API). */
+async function fetchStockStatus(
+	skus: string[]
+): Promise<Map<string, "instock" | "outofstock"> | null> {
+	const uniqueSkus = [...new Set(skus.filter((s) => s && String(s).trim()))]
+	if (uniqueSkus.length === 0) return new Map()
+
+	try {
+		const skusParam = uniqueSkus.map(encodeURIComponent).join(",")
+		const url = `${STOCK_API_URL}?skus=${skusParam}`
+		const res = await fetch(url, { next: { revalidate: 0 } })
+		if (!res.ok) return null
+
+		const data = (await res.json()) as { success?: boolean; products?: Record<string, { stock_status?: string }> }
+		if (!data?.success || !data.products) return null
+
+		const map = new Map<string, "instock" | "outofstock">()
+		for (const [sku, info] of Object.entries(data.products)) {
+			const status = info?.stock_status === "instock" ? "instock" : "outofstock"
+			map.set(sku.trim(), status)
+		}
+		return map
+	} catch (e) {
+		console.error("Error al consultar stock:", e)
+		return null
+	}
+}
 
 async function getPerfumes(): Promise<PerfumeFromDB[]> {
 	try {
@@ -63,6 +93,22 @@ async function getPerfumes(): Promise<PerfumeFromDB[]> {
 }
 
 export default async function PerfumesPage() {
-	const perfumes = await getPerfumes()
+	let perfumes = await getPerfumes()
+
+	// Filtrar por stock: ocultar perfumes con SKU que estén outofstock
+	const skus = perfumes.map((p) => p.sku).filter(Boolean) as string[]
+	if (skus.length > 0) {
+		const stockMap = await fetchStockStatus(skus)
+		if (stockMap) {
+			perfumes = perfumes.filter((p) => {
+				const sku = p.sku ? String(p.sku).trim() : null
+				if (!sku) return true // Sin SKU: mostrar siempre
+				const status = stockMap.get(sku)
+				return status === "instock" // Solo mostrar si hay stock
+			})
+		}
+		// Si stockMap es null (API falló), no filtramos y mostramos todos
+	}
+
 	return <PerfumesClient initialData={perfumes} />
 }
