@@ -50,6 +50,18 @@ const nextConfig: NextConfig = {
 				destination: "/perfumes",
 				permanent: true,
 			},
+			// Normalizar variante singular mal copiada con corchete de cierre
+			{
+				source: "/perfume]",
+				destination: "/perfumes",
+				permanent: true,
+			},
+			{
+				// Versión singular con corchete URL-encoded: %5D
+				source: "/perfume%5D",
+				destination: "/perfumes",
+				permanent: true,
+			},
 			// Normalizar URLs mal copiadas con corchete de cierre
 			{
 				source: "/perfumes]",
