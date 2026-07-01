@@ -1,6 +1,6 @@
 "use client"
 
-import { useWhatsApp } from "@/context/WhatsAppContext"
+import { useWhatsApp, type CartItem } from "@/context/WhatsAppContext"
 import { X, Truck, Wallet, CheckCircle } from "lucide-react"
 import { MessageCircle } from "lucide-react"
 import { useRef, useEffect } from "react"
@@ -62,7 +62,7 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 	const phoneNumber = "18494714762"
 
 	// Agrupar items duplicados (mismo nombre, tamaño y uso) mostrando su cantidad
-	const groupedItems = items.reduce<Array<{ name: string; size: number; use: string; quantity: number }>>(
+	const groupedItems = items.reduce<Array<CartItem & { quantity: number }>>(
 		(acc, item) => {
 			const existing = acc.find(g => g.name === item.name && g.size === item.size && g.use === item.use)
 			if (existing) {
