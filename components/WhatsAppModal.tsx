@@ -60,22 +60,36 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 
 	// Número de WhatsApp: +1 (849) 471-4762
 	const phoneNumber = "18494714762"
-	
+
+	// Agrupar items duplicados (mismo nombre, tamaño y uso) mostrando su cantidad
+	const groupedItems = items.reduce<Array<{ name: string; size: number; use: string; quantity: number }>>(
+		(acc, item) => {
+			const existing = acc.find(g => g.name === item.name && g.size === item.size && g.use === item.use)
+			if (existing) {
+				existing.quantity += 1
+			} else {
+				acc.push({ ...item, quantity: 1 })
+			}
+			return acc
+		},
+		[]
+	)
+
 	const buildMessage = () => {
 		if (items.length === 0) {
 			return "Buenas 👋, me gustaria ordenar este perfume:"
 		}
-		
-		// Si es un solo perfume
-		if (items.length === 1) {
-			const item = items[0]
+
+		// Si es un solo perfume (una sola unidad)
+		if (groupedItems.length === 1 && groupedItems[0].quantity === 1) {
+			const item = groupedItems[0]
 			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${item.name} - ${item.size} ML`
 		}
-		
-		// Si son varios perfumes
+
+		// Si son varios perfumes o varias unidades
 		let message = "Buenas 👋, me gustaria ordenar estos perfumes:\n\n"
-		items.forEach((item) => {
-			message += `${item.name} - ${item.size} ML\n`
+		groupedItems.forEach((item) => {
+			message += `${item.name} - ${item.size} ML${item.quantity > 1 ? ` x${item.quantity}` : ""}\n`
 		})
 		return message
 	}
@@ -132,15 +146,20 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 				<div className="flex-1 overflow-y-auto p-4 sm:p-6">
 					{/* Selected Items List */}
 					<div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-						{items.length === 0 ? (
+						{groupedItems.length === 0 ? (
 							<p className="text-gray-400 text-center py-6 sm:py-8 text-sm sm:text-base">No hay perfumes seleccionados</p>
 						) : (
-							items.map((item, index) => (
-								<div key={index} className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-lg">
+							groupedItems.map((item, index) => (
+								<div key={`${item.name}-${item.size}-${item.use}-${index}`} className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-lg">
 									<div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
 										<CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
 										<div className="flex-1 min-w-0">
-											<p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{item.name}</p>
+											<p className="text-xs sm:text-sm font-medium text-gray-800 truncate">
+												{item.name}
+												{item.quantity > 1 && (
+													<span className="ml-1.5 text-green-600 font-bold">x{item.quantity}</span>
+												)}
+											</p>
 											<p className="text-[10px] sm:text-xs text-gray-500">
 												{item.size} ML
 											</p>

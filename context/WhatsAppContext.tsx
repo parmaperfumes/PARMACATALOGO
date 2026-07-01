@@ -24,16 +24,20 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
 		setItems((prev) => [...prev, item])
 	}
 
+	// Elimina solo una unidad (la primera coincidencia), no todas las duplicadas
 	const removeItem = (itemToRemove: CartItem) => {
-		setItems((prev) => 
-			prev.filter(
-				item => !(
+		setItems((prev) => {
+			const index = prev.findIndex(
+				item =>
 					item.name === itemToRemove.name &&
 					item.size === itemToRemove.size &&
 					item.use === itemToRemove.use
-				)
 			)
-		)
+			if (index === -1) return prev
+			const next = [...prev]
+			next.splice(index, 1)
+			return next
+		})
 	}
 
 	const clearItems = () => {

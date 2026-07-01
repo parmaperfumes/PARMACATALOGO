@@ -49,8 +49,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		const validSizes = product.sizes.filter(s => s === 30 || s === 50)
 		return validSizes[0] || 30
 	})
-	const [isAdded, setIsAdded] = useState(false)
-	const { addItem, removeItem, items } = useWhatsApp()
+	const { addItem, items } = useWhatsApp()
 
 	// Actualizar cuando cambie defaultUse
 	useEffect(() => {
@@ -72,15 +71,12 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		selectedDia ? "DIA" :
 		selectedNoche ? "NOCHE" : "DIA"
 
-	// Verificar si el producto ya está agregado cuando cambian los items o las selecciones
-	useEffect(() => {
-		const isProductAdded = items.some(
-			item => item.name === product.name && 
-			item.size === selectedSize && 
-			item.use === currentUse
-		)
-		setIsAdded(isProductAdded)
-	}, [items, product.name, selectedSize, currentUse])
+	// Cantidad de unidades de este producto (mismo tamaño y uso) ya en el carrito
+	const quantity = items.filter(
+		item => item.name === product.name &&
+		item.size === selectedSize &&
+		item.use === currentUse
+	).length
 
 	return (
 		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
@@ -278,33 +274,24 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 				<div className="mt-auto">
 					<Button
 						onClick={() => {
-							const currentItem = {
+							// Cada clic agrega una unidad más al carrito de WhatsApp
+							addItem({
 								name: product.name,
 								size: selectedSize,
 								use: currentUse,
-							}
-							
-							if (isAdded) {
-								// Remover el producto del carrito de WhatsApp
-								removeItem(currentItem)
-								setIsAdded(false)
-							} else {
-								// Agregar el producto al carrito de WhatsApp
-								addItem(currentItem)
-								setIsAdded(true)
-								// Llamar al callback original si existe
-								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
-							}
+							})
+							// Llamar al callback original si existe
+							onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 						}}
 						className={`w-full h-9 sm:h-10 lg:h-11 rounded-lg sm:rounded-xl text-xs sm:text-sm lg:text-base transition-colors duration-150 border-2 flex items-center justify-center touch-manipulation active:scale-95 ${
-							isAdded 
-								? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
+							quantity > 0
+								? "bg-green-600 hover:bg-green-700 text-white border-green-600"
 								: "bg-white hover:bg-green-50 text-green-600 border-green-600"
 						}`}
 					>
-						{isAdded ? (
+						{quantity > 0 ? (
 							<span className="flex items-center justify-center gap-1.5 sm:gap-2">
-								AGREGADO
+								AGREGADO{quantity > 1 ? ` x${quantity}` : ""}
 								<svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
 								</svg>
