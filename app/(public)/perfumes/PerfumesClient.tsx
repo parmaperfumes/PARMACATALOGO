@@ -39,7 +39,7 @@ const DEFAULT_CONFIG = {
 
 export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 	const { searchQuery } = useSearch()
-	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("HOMBRES")
+	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("TODOS")
 	const [showHelpOffer, setShowHelpOffer] = useState(false)
 	const [popupConfig, setPopupConfig] = useState(DEFAULT_CONFIG)
 
@@ -155,7 +155,7 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 			<div className="hidden lg:flex justify-center mb-4 sm:mb-8">
 				<div className="flex gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm p-0.5 sm:p-1 rounded-full border border-gray-200 shadow-sm">
 					<button
-						onClick={() => setSelectedFilter("HOMBRES")}
+						onClick={() => setSelectedFilter(selectedFilter === "HOMBRES" ? "TODOS" : "HOMBRES")}
 						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
 							selectedFilter === "HOMBRES"
 								? "bg-[#2c2f43] text-white shadow-md"
@@ -165,7 +165,7 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 						HOMBRES
 					</button>
 					<button
-						onClick={() => setSelectedFilter("MUJERES")}
+						onClick={() => setSelectedFilter(selectedFilter === "MUJERES" ? "TODOS" : "MUJERES")}
 						className={`px-3 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
 							selectedFilter === "MUJERES"
 								? "bg-[#2c2f43] text-white shadow-md"
