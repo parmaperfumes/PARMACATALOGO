@@ -49,7 +49,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		const validSizes = product.sizes.filter(s => s === 30 || s === 50)
 		return validSizes[0] || 30
 	})
-	const { addItem, items } = useWhatsApp()
+	const { addItem, removeItem, items } = useWhatsApp()
 
 	// Actualizar cuando cambie defaultUse
 	useEffect(() => {
@@ -261,10 +261,17 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 							<button
 								key={s}
 								onClick={() => setSelectedSize(s)}
-								className={`h-9 sm:h-10 lg:h-11 rounded-md border px-1.5 sm:px-2 lg:px-2.5 py-0.5 text-[10px] sm:text-[11px] lg:text-xs font-semibold flex flex-col items-center justify-center flex-1 min-w-0 touch-manipulation active:scale-95 ${selectedSize === s ? "bg-black text-white border-black" : "bg-white border-gray-300 text-black"}`}
+								className={`relative h-9 sm:h-10 lg:h-11 rounded-md border px-1.5 sm:px-2 lg:px-2.5 py-0.5 text-[10px] sm:text-[11px] lg:text-xs font-semibold flex flex-col items-center justify-center flex-1 min-w-0 touch-manipulation active:scale-95 ${selectedSize === s ? "bg-black text-white border-black" : "bg-gray-100 border-gray-200 text-gray-500"}`}
 							>
+								{selectedSize === s && (
+									<span className="absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-green-500 border-2 border-white flex items-center justify-center">
+										<svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+										</svg>
+									</span>
+								)}
 								<span>{s} ML</span>
-								<span className="text-[9px] sm:text-[10px] lg:text-[11px] font-normal mt-0.5 leading-tight">{getPrice(s)}</span>
+								<span className={`text-[9px] sm:text-[10px] lg:text-[11px] font-semibold mt-0.5 leading-tight ${selectedSize === s ? "text-green-400" : "text-gray-400 font-normal"}`}>{getPrice(s)}</span>
 							</button>
 						)
 					})}
@@ -272,37 +279,63 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 
 				{/* CTA - Altura fija y siempre al final */}
 				<div className="mt-auto">
-					<Button
-						onClick={() => {
-							// Cada clic agrega una unidad más al carrito de WhatsApp
-							addItem({
-								name: product.name,
-								size: selectedSize,
-								use: currentUse,
-							})
-							// Llamar al callback original si existe
-							onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
-						}}
-						className={`w-full h-9 sm:h-10 lg:h-11 rounded-lg sm:rounded-xl text-xs sm:text-sm lg:text-base transition-colors duration-150 border-2 flex items-center justify-center touch-manipulation active:scale-95 ${
-							quantity > 0
-								? "bg-green-600 hover:bg-green-700 text-white border-green-600"
-								: "bg-white hover:bg-green-50 text-green-600 border-green-600"
-						}`}
-					>
-						{quantity > 0 ? (
-							<span className="flex items-center justify-center gap-1.5 sm:gap-2">
-								AGREGADO{quantity > 1 ? ` x${quantity}` : ""}
-								<svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-								</svg>
-							</span>
-						) : (
+					{quantity > 0 ? (
+						// Selector de cantidad: el cliente ve claramente que puede agregar o quitar unidades
+						<div className="w-full h-9 sm:h-10 lg:h-11 rounded-lg sm:rounded-xl bg-green-50 flex items-center justify-between px-1 sm:px-1.5">
+							<button
+								type="button"
+								aria-label="Quitar una unidad"
+								onClick={() =>
+									removeItem({
+										name: product.name,
+										size: selectedSize,
+										use: currentUse,
+									})
+								}
+								className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-green-500 hover:bg-green-600 text-white text-base sm:text-lg font-bold flex items-center justify-center active:scale-95 touch-manipulation transition-colors duration-150 flex-shrink-0"
+							>
+								−
+							</button>
+							<div className="flex items-center justify-center gap-1 sm:gap-1.5 text-green-600 text-xs sm:text-sm lg:text-base font-bold select-none">
+								{quantity}
+								<span className="text-[10px] sm:text-xs lg:text-sm">EN CARRITO</span>
+							</div>
+							<button
+								type="button"
+								aria-label="Agregar una unidad"
+								onClick={() => {
+									addItem({
+										name: product.name,
+										size: selectedSize,
+										use: currentUse,
+									})
+									onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
+								}}
+								className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-green-500 hover:bg-green-600 text-white text-base sm:text-lg font-bold flex items-center justify-center active:scale-95 touch-manipulation transition-colors duration-150 flex-shrink-0"
+							>
+								+
+							</button>
+						</div>
+					) : (
+						<Button
+							onClick={() => {
+								// Cada clic agrega una unidad más al carrito de WhatsApp
+								addItem({
+									name: product.name,
+									size: selectedSize,
+									use: currentUse,
+								})
+								// Llamar al callback original si existe
+								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
+							}}
+							className="w-full h-9 sm:h-10 lg:h-11 rounded-full text-xs sm:text-sm lg:text-base font-bold transition-colors duration-150 border flex items-center justify-center touch-manipulation active:scale-95 bg-white hover:bg-green-50 text-green-600 border-green-500"
+						>
 							<span className="inline-flex items-center justify-center gap-1.5 sm:gap-2">
 								AGREGAR
 								<span className="text-xs sm:text-sm lg:text-base font-bold leading-none" style={{ marginTop: '-0.1em' }}>+</span>
 							</span>
-						)}
-					</Button>
+						</Button>
+					)}
 				</div>
 			</div>
 		</div>
