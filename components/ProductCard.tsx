@@ -18,6 +18,8 @@ export type Product = {
 	tipoLanzamiento?: "NUEVO" | "RESTOCK" | "LANZAMIENTO" | null
 	precio30?: string | null // Precio personalizado para 30ml (ej: "850 RD")
 	precio50?: string | null // Precio personalizado para 50ml (ej: "1,350 RD")
+	agotado30?: boolean | null // Marca el tamaño 30ml como agotado
+	agotado50?: boolean | null // Marca el tamaño 50ml como agotado
 }
 
 export type ProductCardProps = {
@@ -45,10 +47,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		if (defaultUse === "NOCHE") return true
 		return false
 	})
-	const [selectedSize, setSelectedSize] = useState<ProductSizeMl>(() => {
-		const validSizes = product.sizes.filter(s => s === 30 || s === 50)
-		return validSizes[0] || 30
-	})
+	// Ningún tamaño preseleccionado: la marca verde aparece solo cuando el cliente elige uno
+	const [selectedSize, setSelectedSize] = useState<ProductSizeMl | null>(null)
 	const { addItem, removeItem, items } = useWhatsApp()
 
 	// Actualizar cuando cambie defaultUse
@@ -246,8 +246,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 					)}
 				</div>
 
-			{/* Tamaños - Altura fija, todos en una fila */}
-			<div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2 mb-2 sm:mb-3">
+			{/* Tamaños - barra segmentada: la opción activa se ve como píldora negra flotante */}
+			<div className="flex items-stretch gap-2.5 rounded-2xl bg-[#f3f3f5] p-1.5 mb-2 sm:mb-3">
 				{product.sizes.filter(s => s === 30 || s === 50).map((s) => {
 						// Función para obtener el precio según el tamaño (usa precio personalizado o por defecto)
 						const getPrice = (size: ProductSizeMl): string => {
@@ -257,21 +257,38 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 								default: return ""
 							}
 						}
+						const isSelected = selectedSize === s
+						const isAgotado = s === 30 ? product.agotado30 === true : product.agotado50 === true
 						return (
 							<button
 								key={s}
-								onClick={() => setSelectedSize(s)}
-								className={`relative h-9 sm:h-10 lg:h-11 rounded-md border px-1.5 sm:px-2 lg:px-2.5 py-0.5 text-[10px] sm:text-[11px] lg:text-xs font-semibold flex flex-col items-center justify-center flex-1 min-w-0 touch-manipulation active:scale-95 ${selectedSize === s ? "bg-black text-white border-black" : "bg-gray-100 border-gray-200 text-gray-500"}`}
+								onClick={() => {
+									if (isAgotado) return
+									setSelectedSize(s)
+								}}
+								disabled={isAgotado}
+								className={`relative h-9 sm:h-10 lg:h-11 rounded-xl px-1.5 sm:px-2 lg:px-2.5 py-0.5 text-[10px] sm:text-[11px] lg:text-xs font-semibold flex flex-col items-center justify-center flex-1 min-w-0 touch-manipulation ${
+									isAgotado
+										? "bg-[#f5f5f7] text-[#9a9ca3] cursor-not-allowed"
+										: isSelected
+										? "bg-[#16181d] text-white shadow-[0_4px_12px_rgba(16,18,24,0.18)] active:scale-95"
+										: "bg-transparent text-[#16181d] active:scale-95"
+								}`}
 							>
-								{selectedSize === s && (
+								{isSelected && !isAgotado && (
 									<span className="absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-green-500 border-2 border-white flex items-center justify-center">
 										<svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
 										</svg>
 									</span>
 								)}
+								{isAgotado && (
+									<span className="absolute top-0.5 right-1 text-[7px] sm:text-[8px] font-bold tracking-wide text-[#9a9ca3]">AGOTADO</span>
+								)}
 								<span>{s} ML</span>
-								<span className={`text-[9px] sm:text-[10px] lg:text-[11px] font-semibold mt-0.5 leading-tight ${selectedSize === s ? "text-green-400" : "text-gray-400 font-normal"}`}>{getPrice(s)}</span>
+								<span className={`text-[9px] sm:text-[10px] lg:text-[11px] font-semibold mt-0.5 leading-tight ${
+									isAgotado ? "text-[#b3b5bc] line-through" : isSelected ? "text-[#8fe6b8]" : "text-green-600"
+								}`}>{getPrice(s)}</span>
 							</button>
 						)
 					})}
@@ -285,13 +302,14 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 							<button
 								type="button"
 								aria-label="Quitar una unidad"
-								onClick={() =>
+								onClick={() => {
+									if (selectedSize === null) return
 									removeItem({
 										name: product.name,
 										size: selectedSize,
 										use: currentUse,
 									})
-								}
+								}}
 								className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-green-500 hover:bg-green-600 text-white text-base sm:text-lg font-bold flex items-center justify-center active:scale-95 touch-manipulation transition-colors duration-150 flex-shrink-0"
 							>
 								−
@@ -304,6 +322,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 								type="button"
 								aria-label="Agregar una unidad"
 								onClick={() => {
+									if (selectedSize === null) return
 									addItem({
 										name: product.name,
 										size: selectedSize,
@@ -319,6 +338,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 					) : (
 						<Button
 							onClick={() => {
+								// Requiere que el cliente haya seleccionado un tamaño
+								if (selectedSize === null) return
 								// Cada clic agrega una unidad más al carrito de WhatsApp
 								addItem({
 									name: product.name,
@@ -328,7 +349,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 								// Llamar al callback original si existe
 								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 							}}
-							className="w-full h-9 sm:h-10 lg:h-11 rounded-full text-xs sm:text-sm lg:text-base font-bold transition-colors duration-150 border flex items-center justify-center touch-manipulation active:scale-95 bg-white hover:bg-green-50 text-green-600 border-green-500"
+							disabled={selectedSize === null}
+							className={`w-full h-9 sm:h-10 lg:h-11 rounded-full text-xs sm:text-sm lg:text-base font-bold transition-colors duration-150 border flex items-center justify-center touch-manipulation active:scale-95 ${selectedSize === null ? "bg-white text-gray-400 border-gray-300 cursor-not-allowed" : "bg-white hover:bg-green-50 text-green-600 border-green-500"}`}
 						>
 							<span className="inline-flex items-center justify-center gap-1.5 sm:gap-2">
 								AGREGAR
