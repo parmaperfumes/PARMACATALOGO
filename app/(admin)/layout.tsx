@@ -33,20 +33,20 @@ export default async function AdminLayout({
 	console.log("✅ AdminLayout - Sesión válida - Permitiendo acceso")
 	
 	return (
-		<div className="min-h-screen">
-			<nav className="border-b bg-card">
-				<div className="container mx-auto px-4 py-4 flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<Link href="/admin" className="text-xl font-bold hover:underline cursor-pointer">
-							Panel Administrativo
-						</Link>
-						<Link href="/estadisticas" className="text-sm text-gray-600 hover:text-gray-900 underline">
+		<div className="min-h-screen bg-white">
+			<nav className="bg-white border-b border-[#ececef]">
+				<div className="px-8 py-4 flex items-center justify-between">
+					<Link href="/admin" className="text-base font-bold text-black cursor-pointer">
+						Panel Administrativo
+					</Link>
+					<div className="flex items-center gap-[22px]">
+						<Link href="/estadisticas" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
 							Estadísticas
 						</Link>
-						<Link href="/header" className="text-sm text-gray-600 hover:text-gray-900 underline">
+						<Link href="/header" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
 							Editar Header
 						</Link>
-						<Link href="/ajustes-catalogo" className="text-sm text-gray-600 hover:text-gray-900 underline">
+						<Link href="/ajustes-catalogo" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
 							Ajustes Catálogo
 						</Link>
 					</div>

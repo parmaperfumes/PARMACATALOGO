@@ -12,7 +12,10 @@ export function LogoutButton() {
 	}
 	
 	return (
-		<button onClick={handleLogout} className="text-sm underline">
+		<button
+			onClick={handleLogout}
+			className="rounded-full border-[1.4px] border-[#e3e4e9] px-[14px] py-[7px] text-[13px] font-bold text-black bg-white hover:bg-gray-50 transition-colors"
+		>
 			Salir
 		</button>
 	)

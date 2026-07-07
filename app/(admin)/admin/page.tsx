@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import useSWR from "swr"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Search, Eye, EyeOff, Pencil } from "lucide-react"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -68,7 +67,7 @@ function SkuEditor({ perfumeId, currentSku, onSaved }: { perfumeId: string; curr
 			{justSaved ? (
 				<span className="font-mono text-xs font-semibold text-green-600">Guardado</span>
 			) : (
-				<span className="font-mono text-xs font-semibold text-gray-900">{currentSku || "—"}</span>
+				<span className="font-mono text-xs font-semibold text-gray-700 bg-gray-100 rounded-md px-2 py-1">{currentSku || "—"}</span>
 			)}
 			<button onClick={() => { setVal(currentSku || ""); setEditing(true) }} className="p-1 rounded text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors" title="Editar SKU">
 				<Pencil className="h-3 w-3" />
@@ -156,64 +155,63 @@ export default function AdminDashboardPage() {
 
 	return (
 		<div className="container mx-auto px-4 py-8 space-y-4">
+			{/* Header: título + acciones */}
 			<div className="flex items-center justify-between">
-				<h1 className="text-2xl font-bold">
-					Perfumes {!isLoading && <span className="text-lg text-gray-500 font-normal">({filteredPerfumes.length})</span>}
+				<h1 className="text-2xl font-bold text-black">
+					Perfumes {!isLoading && <span className="text-lg text-gray-400 font-normal">({filteredPerfumes.length})</span>}
 				</h1>
-				<Button asChild>
-					<Link href="/perfumes/new">Agregar perfume</Link>
-				</Button>
-			</div>
-
-			{/* Barra de búsqueda y filtros */}
-			<div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-				{/* Búsqueda */}
-				<div className="relative flex-1 max-w-md">
-					<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-					<input
-						type="text"
-						placeholder="Buscar perfumes..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-					/>
-				</div>
-
-				{/* Toggle para ver ocultos */}
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-3">
 					<button
 						onClick={() => setShowHidden(!showHidden)}
-						className={`px-4 py-2 rounded-lg border transition-colors ${
+						className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
 							showHidden
 								? "bg-gray-800 text-white border-gray-800"
 								: "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
 						}`}
 					>
 						{showHidden ? (
-							<span className="flex items-center gap-2">
+							<>
 								<EyeOff className="h-4 w-4" />
-								Ver Ocultos
-							</span>
+								Ver ocultos
+							</>
 						) : (
-							<span className="flex items-center gap-2">
+							<>
 								<Eye className="h-4 w-4" />
-								Ver Activos
-							</span>
+								Ver activos
+							</>
 						)}
 					</button>
+					<Link
+						href="/perfumes/new"
+						className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-black text-white text-sm font-semibold shadow-sm hover:bg-gray-800 transition-colors"
+					>
+						+ Agregar perfume
+					</Link>
 				</div>
 			</div>
 
+			{/* Buscador */}
+			<div className="relative">
+				<Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+				<input
+					type="text"
+					placeholder="Buscar perfumes..."
+					value={searchQuery}
+					onChange={(e) => setSearchQuery(e.target.value)}
+					className="w-full pl-10 pr-4 py-3 bg-white border border-[#e3e4e9] rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-transparent"
+				/>
+			</div>
+
 			{/* Tabla de perfumes */}
-			<div className="overflow-x-auto border rounded-lg">
+			<div className="overflow-x-auto bg-white border border-[#ececef] rounded-2xl">
 				<table className="min-w-full text-sm">
-					<thead className="bg-gray-50">
+					<thead className="bg-[#fafafa]">
 						<tr>
-							<th className="px-4 py-2 text-left">Nombre</th>
-							<th className="px-4 py-2 text-left">SKU</th>
-							<th className="px-4 py-2 text-left">Stock</th>
-							<th className="px-4 py-2 text-left">Estado</th>
-							<th className="px-4 py-2 text-right">Acciones</th>
+							<th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500">Nombre</th>
+							<th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500">SKU</th>
+							<th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500">Stock</th>
+							<th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-500">Estado</th>
+							<th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-gray-500">Acciones</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -233,11 +231,11 @@ export default function AdminDashboardPage() {
 							</tr>
 						) : (
 							filteredPerfumes.map((p: any) => (
-								<tr key={p.id} className={`border-t ${!p.activo ? "bg-gray-50 opacity-75" : ""}`}>
-									<td className="px-4 py-2">
-										<span className={!p.activo ? "text-gray-500" : ""}>{p.nombre}</span>
+								<tr key={p.id} className={`border-t border-[#f1f1f4] hover:bg-[#fafafa] transition-colors ${!p.activo ? "opacity-60" : ""}`}>
+									<td className="px-4 py-3">
+										<span className={!p.activo ? "text-gray-500" : "text-black"}>{p.nombre}</span>
 									</td>
-									<td className="px-4 py-2">
+									<td className="px-4 py-3">
 										<SkuEditor
 											perfumeId={p.id}
 											currentSku={p.sku}
@@ -251,28 +249,28 @@ export default function AdminDashboardPage() {
 											}}
 										/>
 									</td>
-									<td className="px-4 py-2">
-										<span className={!p.activo ? "text-gray-500" : ""}>{p.stock}</span>
+									<td className="px-4 py-3">
+										<span className={!p.activo ? "text-gray-500" : "text-gray-900"}>{p.stock}</span>
 									</td>
-									<td className="px-4 py-2">
-										<span className={`px-3 py-1 rounded text-xs font-medium ${
+									<td className="px-4 py-3">
+										<span className={`inline-block px-3.5 py-1.5 rounded-full text-xs font-semibold ${
 											p.activo
-												? "bg-green-100 text-green-700"
-												: "bg-gray-200 text-gray-600"
+												? "bg-[#e4f7ec] text-[#1e9e57]"
+												: "bg-gray-100 text-gray-500"
 										}`}>
 											{p.activo ? "Visible" : "Oculto"}
 										</span>
 									</td>
-									<td className="px-4 py-2">
+									<td className="px-4 py-3">
 										<div className="flex gap-2 justify-end items-center">
 											<button
 												onClick={() => handleToggleActive(p.id, p.activo)}
 												disabled={togglingIds.has(p.id)}
-												className={`p-2 rounded transition-colors ${
+												className={`p-2 rounded-lg border border-[#e3e4e9] bg-white transition-colors ${
 													togglingIds.has(p.id)
 														? "opacity-50 cursor-not-allowed"
 														: p.activo
-														? "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+														? "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
 														: "text-blue-600 hover:bg-blue-50 hover:text-blue-800"
 												}`}
 												title={p.activo ? "Ocultar perfume" : "Mostrar perfume"}
@@ -284,14 +282,14 @@ export default function AdminDashboardPage() {
 													<Eye className="h-4 w-4" />
 												)}
 											</button>
-											<Link 
-												className="underline text-blue-600 hover:text-blue-800 px-2 py-1" 
+											<Link
+												className="text-blue-600 text-sm font-bold hover:text-blue-800 px-2 py-1"
 												href={`/perfumes/${p.id}/edit`}
 											>
 												Editar
 											</Link>
-											<button 
-												className="text-red-600 underline hover:text-red-800 px-2 py-1" 
+											<button
+												className="text-red-600 text-sm font-bold hover:text-red-800 px-2 py-1"
 												onClick={() => handleDelete(p.id)}
 											>
 												Eliminar

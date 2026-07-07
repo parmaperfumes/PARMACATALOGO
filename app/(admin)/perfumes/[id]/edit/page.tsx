@@ -8,7 +8,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ProductCard, type Product } from "@/components/ProductCard"
-import { Upload } from "lucide-react"
+import { Upload, X } from "lucide-react"
 
 const schema = z.object({
 	name: z.string().min(2),
@@ -215,6 +215,11 @@ export default function EditPerfumePage() {
 		e.preventDefault()
 	}
 
+	function clearImage() {
+		setImageFile(null)
+		setUploadedImageUrl(null)
+	}
+
 	const preview: Product = useMemo(() => {
 		const v = form.getValues()
 		const sizes: Product["sizes"] = [v.size30 && 30, v.size50 && 50].filter(Boolean) as any
@@ -271,168 +276,258 @@ export default function EditPerfumePage() {
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-8 grid gap-8 lg:grid-cols-2">
-			<form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-				<h1 className="text-2xl font-bold">Editar perfume</h1>
-				<label className="block text-sm font-medium">Nombre</label>
-				<Input {...form.register("name")} />
-				<label className="block text-sm font-medium">SKU (Código único)</label>
-				<Input {...form.register("sku")} placeholder="Ej: PF-001" />
-				<label className="block text-sm font-medium">Subtítulo/Tipo</label>
-				<select className="border rounded-md h-10 px-3 w-full" {...form.register("subtitle")}>
-					<option value="">NADA</option>
-					<option value="EAU DE PARFUM">EAU DE PARFUM</option>
-					<option value="EAU DE TOILETTE">EAU DE TOILETTE</option>
-					<option value="EAU DE COLOGNE">EAU DE COLOGNE</option>
-				</select>
-				<label className="block text-sm font-medium">Género</label>
-				<select className="border rounded-md h-10 px-3" {...form.register("gender")}>
-					<option value="HOMBRE">HOMBRE</option>
-					<option value="MUJER">MUJER</option>
-					<option value="UNISEX">UNISEX</option>
-				</select>
-				<div>
-					<label className="block text-sm font-medium mb-2">Imagen Principal</label>
-					
-					{/* Opción de subir archivo */}
-					<div 
-						className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4 hover:border-gray-400 transition-colors"
-						onDrop={handleDrop}
-						onDragOver={handleDragOver}
-					>
-						<Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-						<p className="text-sm text-gray-600 mb-2">
-							Arrastra una imagen aquí o haz clic para seleccionar
-						</p>
-						<label className="inline-block px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer">
-							{uploading ? "Subiendo..." : "Seleccionar archivo"}
-							<input
-								type="file"
-								accept="image/*"
-								onChange={handleFileChange}
-								className="hidden"
-								disabled={uploading}
-							/>
-						</label>
-						{imageFile && (
-							<p className="text-xs text-gray-500 mt-2">Archivo: {imageFile.name}</p>
-						)}
+		<div className="container mx-auto px-4 py-8 max-w-7xl">
+			<h1 className="text-2xl font-bold mb-6">Editar perfume</h1>
+
+			<form onSubmit={form.handleSubmit(onSubmit)}>
+				<div className="bg-white border border-[#ececef] rounded-[18px] p-6 md:p-8">
+					<div className="grid gap-8 lg:grid-cols-3">
+						{/* Contenido del formulario (2/3) */}
+						<div className="lg:col-span-2">
+							{/* Información Básica — ancho completo, 3 columnas */}
+							<div>
+								<h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-3">Información Básica</h2>
+								<div className="grid gap-4 md:grid-cols-3">
+									<div>
+										<label className="block text-sm font-medium mb-1">Nombre del Perfume *</label>
+										<Input {...form.register("name")} placeholder="Ej: BLEU DE CHANEL" />
+										{form.formState.errors.name && (
+											<p className="text-xs text-red-500 mt-1">{form.formState.errors.name.message}</p>
+										)}
+									</div>
+									<div>
+										<label className="block text-sm font-medium mb-1">SKU (Código único)</label>
+										<Input {...form.register("sku")} placeholder="Ej: PF-001" />
+									</div>
+									<div>
+										<label className="block text-sm font-medium mb-1">Subtítulo/Tipo</label>
+										<select className="border rounded-md h-10 px-3 w-full" {...form.register("subtitle")}>
+											<option value="">NADA</option>
+											<option value="EAU DE PARFUM">EAU DE PARFUM</option>
+											<option value="EAU DE TOILETTE">EAU DE TOILETTE</option>
+											<option value="EAU DE COLOGNE">EAU DE COLOGNE</option>
+										</select>
+									</div>
+								</div>
+							</div>
+
+							{/* Dos columnas internas */}
+							<div className="grid gap-8 md:grid-cols-2 mt-8">
+								{/* Columna izquierda: Clasificación + Imagen */}
+								<div className="space-y-5">
+									<h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">Clasificación</h2>
+
+									<div>
+										<label className="block text-sm font-medium mb-1">Género *</label>
+										<div className="flex w-full rounded-lg border border-gray-200 bg-gray-100 p-1">
+											{(["HOMBRE", "MUJER", "UNISEX"] as const).map((g) => (
+												<button
+													key={g}
+													type="button"
+													onClick={() => form.setValue("gender", g)}
+													className={`flex-1 h-9 rounded-md text-sm font-medium transition-colors ${
+														formValues.gender === g
+															? "bg-black text-white shadow-sm"
+															: "bg-transparent text-gray-600 hover:text-black"
+													}`}
+												>
+													{g}
+												</button>
+											))}
+										</div>
+									</div>
+
+									<div className="grid grid-cols-2 gap-4">
+										<div>
+											<label className="block text-sm font-medium mb-1">Volumen</label>
+											<Input {...form.register("volumen")} placeholder="Ej: 50ml, 100ml" />
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Stock</label>
+											<Input type="number" {...form.register("stock")} />
+										</div>
+									</div>
+
+									<div className="grid grid-cols-2 gap-4">
+										<div>
+											<label className="block text-sm font-medium mb-1">Uso por Defecto</label>
+											<select className="border rounded-md h-10 px-3 w-full" {...form.register("usoPorDefecto")}>
+												<option value="DIA">DIA</option>
+												<option value="NOCHE">NOCHE</option>
+												<option value="AMBOS">AMBOS</option>
+											</select>
+										</div>
+										<div>
+											<label className="block text-sm font-medium mb-1">Etiqueta</label>
+											<select className="border rounded-md h-10 px-3 w-full" {...form.register("tipoLanzamiento")}>
+												<option value="NINGUNO">Ninguna</option>
+												<option value="NUEVO">🔴 MÁS VENDIDO</option>
+												<option value="RESTOCK">🔵 RE-STOCK</option>
+												<option value="LANZAMIENTO">NUEVO</option>
+											</select>
+										</div>
+									</div>
+
+									{/* Imagen */}
+									<div className="pt-1">
+										<h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-3">Imagen</h2>
+										{!uploadedImageUrl ? (
+											<div
+												className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
+												onDrop={handleDrop}
+												onDragOver={handleDragOver}
+											>
+												<input
+													type="file"
+													accept="image/jpeg,image/jpg,image/png,image/webp"
+													onChange={handleFileChange}
+													disabled={uploading}
+													className="hidden"
+													id="image-upload"
+												/>
+												<label
+													htmlFor="image-upload"
+													className="cursor-pointer flex flex-col items-center gap-2"
+												>
+													<Upload className="h-8 w-8 text-gray-400" />
+													<span className="text-sm text-gray-600">
+														{uploading ? "Subiendo..." : "Arrastra una imagen aquí o haz clic para seleccionar"}
+													</span>
+													<span className="text-xs text-gray-500">
+														JPEG, PNG o WEBP (máx. 5MB)
+													</span>
+												</label>
+												{imageFile && (
+													<p className="text-xs text-gray-500 mt-2">Archivo: {imageFile.name}</p>
+												)}
+											</div>
+										) : (
+											<div className="relative">
+												<div className="relative w-full h-48 rounded-lg overflow-hidden border">
+													<img
+														src={uploadedImageUrl}
+														alt="Vista previa"
+														className="w-full h-full object-cover"
+													/>
+													<button
+														type="button"
+														onClick={clearImage}
+														className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+														aria-label="Eliminar imagen"
+													>
+														<X className="h-4 w-4" />
+													</button>
+												</div>
+												<p className="text-xs text-gray-500 mt-2">Imagen subida correctamente</p>
+											</div>
+										)}
+
+										<div className="mt-3">
+											<label className="block text-sm font-medium mb-1">O usar URL de imagen</label>
+											<Input {...form.register("mainImage")} placeholder="https://..." />
+											{form.formState.errors.mainImage && (
+												<p className="text-xs text-red-500 mt-1">{form.formState.errors.mainImage.message}</p>
+											)}
+											{uploadedImageUrl && (
+												<p className="text-xs text-gray-500 mt-1">
+													La imagen subida tiene prioridad sobre la URL
+												</p>
+											)}
+										</div>
+									</div>
+								</div>
+
+								{/* Columna derecha: Tamaños y Precios + Fijar */}
+								<div className="space-y-5">
+									<h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900">Tamaños y Precios</h2>
+
+									{/* 30 ML */}
+									<div className="p-4 border rounded-lg">
+										<label className="flex items-center gap-2 cursor-pointer">
+											<input type="checkbox" {...form.register("size30")} />
+											<span className="text-sm font-bold">30 ML</span>
+										</label>
+										{form.watch("size30") && (
+											<div className="mt-3">
+												<label className="block text-sm font-medium mb-1 text-gray-600">Precio (texto visible en la tarjeta)</label>
+												<Input
+													{...form.register("precio30")}
+													placeholder="Ej: 850 RD"
+												/>
+											</div>
+										)}
+									</div>
+
+									{/* 50 ML */}
+									<div className="p-4 border rounded-lg">
+										<label className="flex items-center gap-2 cursor-pointer">
+											<input type="checkbox" {...form.register("size50")} />
+											<span className="text-sm font-bold">50 ML</span>
+										</label>
+										{form.watch("size50") && (
+											<div className="mt-3">
+												<label className="block text-sm font-medium mb-1 text-gray-600">Precio (texto visible en la tarjeta)</label>
+												<Input
+													{...form.register("precio50")}
+													placeholder="Ej: 1,350 RD"
+												/>
+											</div>
+										)}
+									</div>
+
+									{/* Fijar en Catálogo */}
+									<div>
+										<h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-3">Fijar en Catálogo</h2>
+										<label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+											<input type="checkbox" {...form.register("fijado")} className="w-5 h-5 accent-blue-600" />
+											<div>
+												<span className="text-sm font-bold">📌 Fijar este perfume</span>
+												<p className="text-xs text-gray-500">Aparecerá siempre al inicio del catálogo y no se mueve de posición</p>
+											</div>
+										</label>
+										{form.watch("fijado") && (
+											<div className="mt-3">
+												<label className="block text-sm font-medium mb-1 text-gray-600">Orden de posición (menor = más arriba)</label>
+												<Input
+													type="number"
+													{...form.register("ordenFijado")}
+													placeholder="Ej: 1, 2, 3..."
+													min={0}
+												/>
+												<p className="text-xs text-gray-400 mt-1">Los perfumes fijados se ordenan por este número (1 primero, 2 segundo, etc.)</p>
+											</div>
+										)}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						{/* Vista Previa (columna derecha, junto a Información Básica) */}
+						<div>
+							<h2 className="text-sm font-semibold uppercase tracking-wide text-gray-900 mb-3">Vista Previa</h2>
+							<div className="bg-gray-50 p-4 rounded-lg lg:sticky lg:top-4">
+								<div className="max-w-sm mx-auto w-full">
+									<ProductCard product={preview} defaultUse={defaultUse} fixedUse={true} />
+								</div>
+							</div>
+						</div>
 					</div>
 
-					{/* O URL de imagen */}
-					<div>
-						<label className="block text-sm font-medium mb-1">O URL de imagen</label>
-						<Input {...form.register("mainImage")} placeholder="https://..." />
-						{form.formState.errors.mainImage && (
-							<p className="text-xs text-red-500 mt-1">{form.formState.errors.mainImage.message}</p>
-						)}
-						{(uploadedImageUrl || form.getValues("mainImage")) && (
-							<p className="text-xs text-gray-500 mt-1">
-								La imagen subida tiene prioridad sobre la URL
-							</p>
-						)}
+					{/* Botones */}
+					<div className="border-t border-[#ececef] mt-8 pt-5 flex justify-end gap-3">
+						<Button type="button" variant="outline" onClick={() => router.push("/admin")} disabled={uploading}>
+							Cancelar
+						</Button>
+						<Button
+							type="submit"
+							className="bg-black hover:bg-gray-800 text-white"
+							disabled={uploading}
+						>
+							{uploading ? "Guardando..." : "Guardar cambios"}
+						</Button>
 					</div>
 				</div>
-				{/* Tamaños y Precios */}
-				<div className="space-y-3">
-					<h3 className="text-sm font-semibold">Tamaños y Precios</h3>
-					<div className="grid grid-cols-1 gap-3">
-						{/* 30 ML */}
-						<div className="p-3 border rounded-lg">
-							<label className="flex items-center gap-2 cursor-pointer mb-2">
-								<input type="checkbox" {...form.register("size30")} />
-								<span className="text-sm font-bold">30 ML</span>
-							</label>
-							{form.watch("size30") && (
-								<div>
-									<label className="block text-xs font-medium mb-1 text-gray-600">Precio</label>
-									<Input 
-										{...form.register("precio30")} 
-										placeholder="Ej: 850 RD" 
-									/>
-								</div>
-							)}
-						</div>
-						{/* 50 ML */}
-						<div className="p-3 border rounded-lg">
-							<label className="flex items-center gap-2 cursor-pointer mb-2">
-								<input type="checkbox" {...form.register("size50")} />
-								<span className="text-sm font-bold">50 ML</span>
-							</label>
-							{form.watch("size50") && (
-								<div>
-									<label className="block text-xs font-medium mb-1 text-gray-600">Precio</label>
-									<Input 
-										{...form.register("precio50")} 
-										placeholder="Ej: 1,350 RD" 
-									/>
-								</div>
-							)}
-						</div>
-					</div>
-				</div>
-				<div className="grid grid-cols-3 gap-4">
-					<div>
-						<label className="block text-sm font-medium">Stock</label>
-						<Input type="number" {...form.register("stock")} />
-					</div>
-					<label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" {...form.register("highlight")} /> Destacado</label>
-					<label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" {...form.register("active")} /> Activo</label>
-				</div>
-		{/* Fijar Posición */}
-			<div className="space-y-3 border-t pt-4">
-				<h3 className="text-sm font-semibold">📌 Fijar en Catálogo</h3>
-				<p className="text-xs text-gray-500">Los perfumes fijados siempre aparecen primero en el catálogo.</p>
-				<label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
-					<input type="checkbox" {...form.register("fijado")} className="w-5 h-5 accent-blue-600" />
-					<div>
-						<span className="text-sm font-bold">Fijar este perfume</span>
-						<p className="text-xs text-gray-500">Aparecerá siempre al inicio</p>
-					</div>
-				</label>
-				{form.watch("fijado") && (
-					<div>
-						<label className="block text-xs font-medium mb-1 text-gray-600">Orden de posición (menor = más arriba)</label>
-						<Input 
-							type="number" 
-							{...form.register("ordenFijado")} 
-							placeholder="Ej: 1, 2, 3..." 
-							min={0}
-						/>
-						<p className="text-xs text-gray-400 mt-1">1 = primero, 2 = segundo, etc.</p>
-					</div>
-				)}
-			</div>
-		<div className="space-y-4 border-t pt-4">
-			<h3 className="text-sm font-semibold">Configuración de Uso y Lanzamiento</h3>
-				<div className="grid grid-cols-2 gap-4">
-					<div>
-						<label className="block text-sm font-medium mb-2">Uso por Defecto</label>
-						<select className="border rounded-md h-10 px-3 w-full" {...form.register("usoPorDefecto")}>
-							<option value="DIA">DIA</option>
-							<option value="NOCHE">NOCHE</option>
-							<option value="AMBOS">AMBOS</option>
-						</select>
-					</div>
-				<div>
-					<label className="block text-sm font-medium mb-2">Etiqueta</label>
-					<select className="border rounded-md h-10 px-3 w-full" {...form.register("tipoLanzamiento")}>
-						<option value="NINGUNO">Ninguna</option>
-						<option value="NUEVO">🔴 MÁS VENDIDO</option>
-						<option value="RESTOCK">🔵 RE-STOCK</option>
-						<option value="LANZAMIENTO">NUEVO</option>
-					</select>
-				</div>
-				</div>
-			</div>
-				<div className="pt-2"><Button type="submit">Guardar cambios</Button></div>
 			</form>
-			<div>
-				<h2 className="text-sm font-medium mb-2">Vista previa</h2>
-				<div className="max-w-sm mx-auto w-full">
-					<ProductCard product={preview} defaultUse={defaultUse} fixedUse={true} />
-				</div>
-			</div>
 		</div>
 	)
 }
