@@ -82,11 +82,14 @@ model Visita {
   pais        String?
   ciudad      String?
   dispositivo String?
+  visitorId   String?
+  duracion    Int?
   createdAt   DateTime @default(now())
 
   @@index([createdAt])
   @@index([dispositivo])
   @@index([path])
+  @@index([visitorId])
 }
 
 model eventos_carrito {

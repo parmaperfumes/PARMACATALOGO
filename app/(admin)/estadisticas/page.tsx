@@ -1,10 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BarChart3, Smartphone, Monitor, Globe, Calendar, Eye, ShoppingCart, XCircle, CheckCircle2 } from "lucide-react"
+import { BarChart3, Smartphone, Monitor, Globe, Calendar, Eye, ShoppingCart, XCircle, CheckCircle2, Users, Repeat, Clock } from "lucide-react"
 
 interface Estadisticas {
 	totalVisitas: number
+	visitantesUnicos: number
+	promedioVisitasPorUsuario: string
+	tiempoPromedioSegundos: number
 	visitasPorDia: Record<string, number>
 	visitasPorDispositivo: Record<string, number>
 	visitasPorPagina: Record<string, number>
@@ -99,6 +102,14 @@ export default function EstadisticasPage() {
 
 	const obtenerPorcentaje = (valor: number) => {
 		return ((valor / estadisticas.totalVisitas) * 100).toFixed(1)
+	}
+
+	// Formatea segundos como "2m 43s" (o "43s" si es menos de un minuto)
+	const formatearDuracion = (segundos: number) => {
+		if (!segundos || segundos <= 0) return "0s"
+		const min = Math.floor(segundos / 60)
+		const seg = segundos % 60
+		return min > 0 ? `${min}m ${seg}s` : `${seg}s`
 	}
 
 	const formatearFecha = (fecha: string) => {
@@ -222,6 +233,55 @@ export default function EstadisticasPage() {
 							</p>
 						</div>
 						<Globe className="h-10 w-10 text-orange-600" />
+					</div>
+				</div>
+			</div>
+
+			{/* Audiencia: visitantes únicos, recurrencia y tiempo en página */}
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+				{/* Visitantes únicos */}
+				<div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-6 shadow-sm">
+					<div className="flex items-center justify-between">
+						<div>
+							<p className="text-sm text-indigo-700 font-medium mb-1">Visitantes Únicos</p>
+							<p className="text-3xl font-bold text-indigo-900">{estadisticas.visitantesUnicos}</p>
+							<p className="text-xs text-indigo-600 mt-2">
+								de {estadisticas.totalVisitas} visitas totales
+							</p>
+						</div>
+						<Users className="h-10 w-10 text-indigo-600" />
+					</div>
+				</div>
+
+				{/* Promedio de visitas por usuario */}
+				<div className="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-6 shadow-sm">
+					<div className="flex items-center justify-between">
+						<div>
+							<p className="text-sm text-teal-700 font-medium mb-1">Visitas por Usuario</p>
+							<p className="text-3xl font-bold text-teal-900">{estadisticas.promedioVisitasPorUsuario}</p>
+							<p className="text-xs text-teal-600 mt-2">
+								Promedio de veces que vuelven
+							</p>
+						</div>
+						<Repeat className="h-10 w-10 text-teal-600" />
+					</div>
+				</div>
+
+				{/* Tiempo promedio en la página */}
+				<div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-6 shadow-sm">
+					<div className="flex items-center justify-between">
+						<div>
+							<p className="text-sm text-amber-700 font-medium mb-1">Tiempo Promedio</p>
+							<p className="text-3xl font-bold text-amber-900">
+								{formatearDuracion(estadisticas.tiempoPromedioSegundos)}
+							</p>
+							<p className="text-xs text-amber-600 mt-2">
+								{estadisticas.tiempoPromedioSegundos > 0
+									? "En la página del catálogo"
+									: "Aún sin datos de duración"}
+							</p>
+						</div>
+						<Clock className="h-10 w-10 text-amber-600" />
 					</div>
 				</div>
 			</div>
