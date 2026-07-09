@@ -62,7 +62,7 @@ export function Header() {
 				<div className="header-content">
 					{/* Logo - Izquierda */}
 					{config && (
-						<Link href="/perfumes" className="header-logo">
+						<Link href="/perfumes" className="header-logo" onClick={() => setSearchQuery("")}>
 							{config.logoImage ? (
 								<Image
 									src={config.logoImage}
@@ -126,7 +126,7 @@ export function Header() {
 							<div className="relative w-full">
 								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
 								<input
-									type="search"
+									type="text"
 									placeholder="Buscar perfumes..."
 									className="w-full h-10 pl-10 pr-10 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
 									value={searchQuery}
@@ -134,7 +134,10 @@ export function Header() {
 									autoFocus
 								/>
 								<button
-									onClick={() => setIsMobileSearchOpen(false)}
+									onClick={() => {
+										setSearchQuery("")
+										setIsMobileSearchOpen(false)
+									}}
 									className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors touch-manipulation"
 									aria-label="Cerrar búsqueda"
 								>
