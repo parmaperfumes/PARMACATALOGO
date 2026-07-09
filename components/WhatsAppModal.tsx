@@ -1,9 +1,7 @@
 "use client"
 
 import { useWhatsApp, type CartItem } from "@/context/WhatsAppContext"
-import { X, Truck, Wallet, CheckCircle } from "lucide-react"
-import { MessageCircle } from "lucide-react"
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, type CSSProperties } from "react"
 
 type WhatsAppModalProps = {
 	isOpen: boolean
@@ -33,8 +31,26 @@ async function registrarEventoCarrito(tipo: "click_continuar" | "carrito_abandon
 	}
 }
 
+// Devuelve una miniatura nítida y liviana desde Cloudinary (128px = 58px @2x),
+// insertando la transformación tras "/upload/". Si no es Cloudinary, deja la URL igual.
+const thumbUrl = (src?: string): string | undefined => {
+	if (!src) return src
+	const marker = "/upload/"
+	const i = src.indexOf(marker)
+	if (i === -1) return src
+	const after = src.slice(i + marker.length)
+	// Evitar duplicar transformación si ya viene con una
+	if (/^[a-z]_[^/]+(,[a-z]_[^/]+)*\//.test(after)) return src
+	return `${src.slice(0, i + marker.length)}c_fill,w_128,h_128,q_auto,f_auto,dpr_2/${after}`
+}
+
+// Precio "1,350 RD" -> 1350
+const parsePrice = (s?: string): number => (s ? parseInt(s.replace(/[^\d]/g, ""), 10) || 0 : 0)
+// 1350 -> "1,350 RD"
+const formatPrice = (n: number): string => `${n.toLocaleString("en-US")} RD`
+
 export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
-	const { items, removeItem, clearItems } = useWhatsApp()
+	const { items, addItem, removeItem, clearItems } = useWhatsApp()
 	const clickContinuarRef = useRef(false)
 	const itemsAlAbrirRef = useRef(0)
 
@@ -49,7 +65,6 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 	// Detectar cuando se cierra el modal sin hacer clic en continuar
 	useEffect(() => {
 		return () => {
-			// Si el modal se está cerrando y había items pero NO se hizo clic en continuar
 			if (!isOpen && itemsAlAbrirRef.current > 0 && !clickContinuarRef.current) {
 				registrarEventoCarrito("carrito_abandonado", items)
 			}
@@ -75,152 +90,366 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 		[]
 	)
 
+	const totalUnits = items.length
+	const subtotal = groupedItems.reduce((acc, it) => acc + parsePrice(it.price) * it.quantity, 0)
+
 	const buildMessage = () => {
 		if (items.length === 0) {
 			return "Buenas 👋, me gustaria ordenar este perfume:"
 		}
-
-		// Si es un solo perfume (una sola unidad)
 		if (groupedItems.length === 1 && groupedItems[0].quantity === 1) {
 			const item = groupedItems[0]
 			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${item.name} - ${item.size} ML`
 		}
-
-		// Si son varios perfumes o varias unidades
 		let message = "Buenas 👋, me gustaria ordenar estos perfumes:\n\n"
 		groupedItems.forEach((item) => {
 			message += `${item.name} - ${item.size} ML${item.quantity > 1 ? ` x${item.quantity}` : ""}\n`
 		})
 		return message
 	}
-	
+
 	const text = encodeURIComponent(buildMessage())
 	const whatsappUrl = `https://wa.me/${phoneNumber}?text=${text}`
 
 	const handleContinue = () => {
-		// Marcar que se hizo clic en continuar
 		clickContinuarRef.current = true
-		
-		// Registrar el evento de click en continuar (sin bloquear el flujo)
 		registrarEventoCarrito("click_continuar", items).catch(err => {
 			console.error("Error al registrar evento (no crítico):", err)
 		})
-		
-		// Continuar con el pedido independientemente del resultado del registro
-		window.open(whatsappUrl, '_blank')
+		window.open(whatsappUrl, "_blank")
 		clearItems()
 		onClose()
 	}
 
 	const handleClose = () => {
-		// Si hay items y no se hizo clic en continuar, registrar abandono
 		if (items.length > 0 && !clickContinuarRef.current) {
 			registrarEventoCarrito("carrito_abandonado", items)
 		}
 		onClose()
 	}
 
+	// ---- Estilos (valores exactos del diseño) ----
+	const NAVY = "linear-gradient(160deg, #16255c 0%, #0d1b3d 100%)"
+
+	const pillBase: CSSProperties = {
+		display: "inline-flex",
+		alignItems: "center",
+		borderRadius: 999,
+		fontSize: 9.5,
+		fontWeight: 700,
+		lineHeight: 1,
+		padding: "4px 9px",
+		letterSpacing: ".02em",
+		whiteSpace: "nowrap",
+	}
+
+	const qtyBtn: CSSProperties = {
+		width: 26,
+		height: 26,
+		borderRadius: 999,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		fontSize: 16,
+		lineHeight: 1,
+		cursor: "pointer",
+		flexShrink: 0,
+		userSelect: "none",
+	}
+
 	return (
-		<div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
+		<div
+			style={{
+				position: "fixed",
+				inset: 0,
+				zIndex: 200,
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				padding: 16,
+			}}
+		>
 			{/* Backdrop */}
-			<div 
-				className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+			<div
 				onClick={handleClose}
+				style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(2px)" }}
 			/>
-			
-			{/* Modal Panel */}
-			<div className="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+
+			{/* Modal */}
+			<div
+				style={{
+					position: "relative",
+					width: 440,
+					maxWidth: "calc(100vw - 32px)",
+					maxHeight: "92vh",
+					background: "#fff",
+					borderRadius: 4,
+					overflow: "hidden",
+					boxShadow: "0 24px 60px -12px rgba(0,0,0,.35)",
+					display: "flex",
+					flexDirection: "column",
+					fontFamily: "Inter, system-ui, sans-serif",
+					color: "#111",
+				}}
+			>
 				{/* Header */}
-				<div className="flex items-center justify-between p-4 sm:p-6 border-b">
-					<h2 className="text-lg sm:text-2xl font-bold text-gray-800">Perfumes Seleccionados</h2>
+				<div style={{ position: "relative", background: NAVY, padding: "26px 28px 22px", flexShrink: 0 }}>
+					<div style={{ fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.15 }}>
+						Perfumes Seleccionados
+					</div>
 					<button
 						onClick={handleClose}
-						className="text-gray-500 hover:text-gray-700 active:text-gray-900 transition-colors p-1 touch-manipulation"
 						aria-label="Cerrar"
+						style={{
+							position: "absolute",
+							top: 22,
+							right: 24,
+							width: 32,
+							height: 32,
+							borderRadius: 999,
+							background: "rgba(255,255,255,.12)",
+							color: "#fff",
+							border: "none",
+							cursor: "pointer",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							fontSize: 15,
+							lineHeight: 1,
+						}}
 					>
-						<X className="w-5 h-5 sm:w-6 sm:h-6" />
+						✕
 					</button>
 				</div>
 
-				{/* Content */}
-				<div className="flex-1 overflow-y-auto p-4 sm:p-6">
-					{/* Selected Items List */}
-					<div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-						{groupedItems.length === 0 ? (
-							<p className="text-gray-400 text-center py-6 sm:py-8 text-sm sm:text-base">No hay perfumes seleccionados</p>
-						) : (
-							groupedItems.map((item, index) => (
-								<div key={`${item.name}-${item.size}-${item.use}-${index}`} className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-lg">
-									<div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-										<CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-										<div className="flex-1 min-w-0">
-											<p className="text-xs sm:text-sm font-medium text-gray-800 truncate">
-												{item.name}
-												{item.quantity > 1 && (
-													<span className="ml-1.5 text-green-600 font-bold">x{item.quantity}</span>
-												)}
-											</p>
-											<p className="text-[10px] sm:text-xs text-gray-500">
+				{/* Lista de productos (scroll) */}
+				<div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+					{groupedItems.length === 0 ? (
+						<div style={{ padding: "40px 28px", textAlign: "center", color: "#9aa0ab", fontSize: 14 }}>
+							No hay perfumes seleccionados
+						</div>
+					) : (
+						groupedItems.map((item, index) => {
+							const unit = parsePrice(item.price)
+							const unitOriginal = parsePrice(item.priceOriginal)
+							const lineTotal = unit * item.quantity
+							const lineOriginal = unitOriginal * item.quantity
+							return (
+								<div
+									key={`${item.name}-${item.size}-${item.use}-${index}`}
+									style={{
+										display: "flex",
+										alignItems: "flex-start",
+										gap: 14,
+										padding: "20px 28px",
+										borderBottom: "1px solid #eef0f4",
+									}}
+								>
+									{/* Thumbnail */}
+									<div
+										style={{
+											position: "relative",
+											width: 58,
+											height: 58,
+											borderRadius: 8,
+											background: NAVY,
+											flexShrink: 0,
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											overflow: "hidden",
+										}}
+									>
+										{item.image ? (
+											<img
+												src={thumbUrl(item.image)}
+												alt={item.name}
+												style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
+												loading="lazy"
+												decoding="async"
+											/>
+										) : (
+											<div style={{ width: 20, height: 32, borderRadius: 3, background: "rgba(6,12,32,.75)" }} />
+										)}
+										{item.tipoLanzamiento && (
+											<span
+												style={{
+													position: "absolute",
+													top: 4,
+													right: 4,
+													background: "#1fb15b",
+													color: "#fff",
+													fontSize: 7,
+													fontWeight: 700,
+													letterSpacing: ".03em",
+													padding: "2px 4px",
+													borderRadius: 4,
+													lineHeight: 1,
+												}}
+											>
+												NUEVO
+											</span>
+										)}
+									</div>
+
+									{/* Info */}
+									<div style={{ flex: 1, minWidth: 0 }}>
+										<div
+											style={{
+												fontSize: 15,
+												fontWeight: 700,
+												color: "#111",
+												lineHeight: 1.2,
+												whiteSpace: "nowrap",
+												overflow: "hidden",
+												textOverflow: "ellipsis",
+											}}
+										>
+											{item.name}
+										</div>
+
+										{/* Pills */}
+										<div style={{ display: "flex", gap: 6, margin: "8px 0 10px", flexWrap: "wrap" }}>
+											{item.gender && (
+												<span style={{ ...pillBase, background: "#fff", color: "#111", border: "1px solid #111" }}>
+													{item.gender}
+												</span>
+											)}
+											<span style={{ ...pillBase, background: "#111", color: "#fff", border: "1px solid #111" }}>
 												{item.size} ML
-											</p>
+											</span>
+										</div>
+
+										{/* Selector de cantidad */}
+										<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+											<button
+												onClick={() => removeItem(item)}
+												aria-label="Quitar una unidad"
+												style={{ ...qtyBtn, background: "#fff", color: "#111", border: "1px solid #d5d8e0" }}
+											>
+												−
+											</button>
+											<span style={{ minWidth: 18, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#111" }}>
+												{item.quantity}
+											</span>
+											<button
+												onClick={() => addItem(item)}
+												aria-label="Agregar una unidad"
+												style={{ ...qtyBtn, background: "#111", color: "#fff", border: "1px solid #111" }}
+											>
+												+
+											</button>
 										</div>
 									</div>
-									<button
-										onClick={() => removeItem(item)}
-										className="text-red-500 hover:text-red-700 active:text-red-800 transition-colors ml-2 flex-shrink-0 p-1 touch-manipulation"
-										aria-label="Eliminar"
-									>
-										<X className="w-4 h-4 sm:w-5 sm:h-5" />
-									</button>
-								</div>
-							))
-						)}
-					</div>
 
-					{/* Service Options */}
-					<div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-						<div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700">
-							<Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-							<span>Envío gratis (ZONA METROPOLITANA)</span>
-						</div>
-						<div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700">
-							<Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-							<span>Pago contra entrega</span>
-						</div>
-						<div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700">
-							<CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-							<span>Garantía de devolución de tu dinero</span>
-						</div>
+									{/* Precio + eliminar */}
+									<div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
+										<div style={{ textAlign: "right" }}>
+											{lineOriginal > lineTotal && (
+												<div style={{ fontSize: 11.5, color: "#9aa0ab", textDecoration: "line-through", lineHeight: 1.2 }}>
+													{formatPrice(lineOriginal)}
+												</div>
+											)}
+											<div style={{ fontSize: 15, fontWeight: 700, color: "#1fb15b", lineHeight: 1.2 }}>
+												{formatPrice(lineTotal)}
+											</div>
+										</div>
+										<button
+											onClick={() => {
+												// Elimina todas las unidades de este ítem
+												for (let i = 0; i < item.quantity; i++) removeItem(item)
+											}}
+											aria-label="Eliminar producto"
+											style={{ background: "none", border: "none", color: "#d84a3e", fontSize: 15, lineHeight: 1, cursor: "pointer", padding: 2 }}
+										>
+											✕
+										</button>
+									</div>
+								</div>
+							)
+						})
+					)}
+				</div>
+
+				{/* Beneficios */}
+				<div style={{ padding: "18px 28px", display: "flex", flexDirection: "column", gap: 14, flexShrink: 0 }}>
+					<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+						<span style={{ width: 30, height: 30, borderRadius: 9, background: "#fdeceb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>🚚</span>
+						<span style={{ fontSize: 13.5, fontWeight: 500, color: "#333" }}>Envío gratis (ZONA METROPOLITANA)</span>
+					</div>
+					<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+						<span style={{ width: 30, height: 30, borderRadius: 9, background: "#fbf3dd", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>💵</span>
+						<span style={{ fontSize: 13.5, fontWeight: 500, color: "#333" }}>Pago contra entrega</span>
+					</div>
+					<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+						<span style={{ width: 30, height: 30, borderRadius: 9, background: "#e4f6ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>✅</span>
+						<span style={{ fontSize: 13.5, fontWeight: 500, color: "#333" }}>Garantía de devolución de tu dinero</span>
 					</div>
 				</div>
 
 				{/* Footer */}
-				<div className="border-t p-4 sm:p-6 bg-gray-50">
-					<div className="flex items-center justify-center mb-3 sm:mb-4">
-						<button
-							onClick={() => {
-								clearItems()
-								handleClose()
-							}}
-							className="text-red-600 hover:text-red-700 active:text-red-800 text-xs sm:text-sm font-medium transition-colors touch-manipulation flex items-center gap-1.5"
-						>
-							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-							</svg>
-							BORRAR TODO
-						</button>
+				<div style={{ borderTop: "1px solid #eef0f4", padding: "18px 28px 22px", flexShrink: 0 }}>
+					{/* Subtotal */}
+					<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+						<span style={{ fontSize: 13, color: "#555" }}>
+							Subtotal ({totalUnits} producto{totalUnits !== 1 ? "s" : ""})
+						</span>
+						<span style={{ fontSize: 20, fontWeight: 700, color: "#1fb15b" }}>{formatPrice(subtotal)}</span>
 					</div>
+
+					{/* Borrar todo */}
+					{groupedItems.length > 0 && (
+						<div style={{ textAlign: "center", marginBottom: 14 }}>
+							<button
+								onClick={() => {
+									clearItems()
+									handleClose()
+								}}
+								style={{
+									background: "none",
+									border: "none",
+									color: "#d84a3e",
+									fontSize: 11.5,
+									fontWeight: 700,
+									letterSpacing: ".04em",
+									cursor: "pointer",
+									textTransform: "uppercase",
+								}}
+							>
+								🗑 Borrar todo
+							</button>
+						</div>
+					)}
+
+					{/* CTA */}
 					<button
 						onClick={handleContinue}
 						disabled={items.length === 0}
-						className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-3.5 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base touch-manipulation"
+						className="cart-cta"
+						style={{
+							width: "100%",
+							border: "none",
+							borderRadius: 999,
+							padding: "14px 22px",
+							background: items.length === 0 ? "#c7d3cc" : "linear-gradient(180deg, #3aa76a, #2f9660)",
+							color: "#fff",
+							fontSize: 15,
+							fontWeight: 700,
+							cursor: items.length === 0 ? "not-allowed" : "pointer",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							gap: 10,
+						}}
 					>
-						Continuar con el pedido
-						<MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+						<span>Enviar pedido a WhatsApp</span>
+						{/* Ícono genérico de burbuja de chat (no el logo de WhatsApp) */}
+						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+							<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+						</svg>
 					</button>
 				</div>
 			</div>
 		</div>
 	)
 }
-

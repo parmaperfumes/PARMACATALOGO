@@ -59,8 +59,9 @@
   }
 }
 
-/* Degradado moderno con blobs pastel difuminados */
+/* Degradado moderno con blobs pastel difuminados (desactivado: fondo blanco) */
 body::before {
+  display: none;
   content: "";
   position: fixed;
   top: 0;
@@ -103,6 +104,7 @@ body::before {
 /* Blobs adicionales con animación sutil para más profundidad */
 /* Optimizado para Android: deshabilitar animación y background-attachment fixed */
 body::after {
+  display: none;
   content: "";
   position: fixed;
   top: 0;
@@ -621,6 +623,51 @@ header {
 @media (min-width: 1024px) {
   .mobile-nav-bar {
     display: none;
+  }
+}
+
+/* Botón CTA del modal de carrito: brillo diagonal en loop + hover */
+.cart-cta {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.cart-cta::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-18deg) translateX(-130%);
+  animation: cartCtaShine 2.8s linear infinite;
+  pointer-events: none;
+}
+
+.cart-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cart-cta:hover {
+  transform: translateY(-2px) scale(1.015);
+}
+
+@keyframes cartCtaShine {
+  0% {
+    transform: skewX(-18deg) translateX(-130%);
+  }
+  100% {
+    transform: skewX(-18deg) translateX(230%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-cta::after {
+    animation: none;
+    opacity: 0;
   }
 }
 

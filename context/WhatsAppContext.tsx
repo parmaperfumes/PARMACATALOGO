@@ -6,6 +6,12 @@ export type CartItem = {
 	name: string
 	size: number
 	use: "DIA" | "NOCHE" | "AMBOS"
+	// Datos opcionales para el modal de carrito (retrocompatibles)
+	gender?: "HOMBRE" | "MUJER" | "UNISEX"
+	image?: string // imagen principal del perfume (para el thumbnail)
+	price?: string // precio final del tamaño, ej "1,350 RD"
+	priceOriginal?: string // precio tachado (solo si hay descuento)
+	tipoLanzamiento?: "NUEVO" | "RESTOCK" | "LANZAMIENTO" | null
 }
 
 type WhatsAppContextType = {

@@ -71,6 +71,24 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		selectedDia ? "DIA" :
 		selectedNoche ? "NOCHE" : "DIA"
 
+	// Precio final para un tamaño dado (usa precio personalizado o por defecto)
+	const priceFor = (size: ProductSizeMl | null): string => {
+		if (size === 30) return product.precio30 || "850 RD"
+		if (size === 50) return product.precio50 || "1,350 RD"
+		return ""
+	}
+
+	// Datos extra que viajan con el ítem para poder mostrarlos en el modal de carrito
+	const buildCartItem = (size: ProductSizeMl, use: "DIA" | "NOCHE" | "AMBOS") => ({
+		name: product.name,
+		size,
+		use,
+		gender: product.gender,
+		image: product.images?.[0],
+		price: priceFor(size),
+		tipoLanzamiento: product.tipoLanzamiento,
+	})
+
 	// Cantidad de unidades de este producto (mismo tamaño y uso) ya en el carrito
 	const quantity = items.filter(
 		item => item.name === product.name &&
@@ -79,7 +97,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 	).length
 
 	return (
-		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
+		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border border-gray-400 bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
 			{/* Header visual con imagen */}
 			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
 				{/* Etiqueta MÁS VENDIDO / RE-STOCK / NUEVO */}
@@ -323,11 +341,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 								aria-label="Agregar una unidad"
 								onClick={() => {
 									if (selectedSize === null) return
-									addItem({
-										name: product.name,
-										size: selectedSize,
-										use: currentUse,
-									})
+									addItem(buildCartItem(selectedSize, currentUse))
 									onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 								}}
 								className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-green-500 hover:bg-green-600 text-white text-base sm:text-lg font-bold flex items-center justify-center active:scale-95 touch-manipulation transition-colors duration-150 flex-shrink-0"
@@ -341,11 +355,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 								// Requiere que el cliente haya seleccionado un tamaño
 								if (selectedSize === null) return
 								// Cada clic agrega una unidad más al carrito de WhatsApp
-								addItem({
-									name: product.name,
-									size: selectedSize,
-									use: currentUse,
-								})
+								addItem(buildCartItem(selectedSize, currentUse))
 								// Llamar al callback original si existe
 								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 							}}
