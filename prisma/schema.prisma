@@ -8,12 +8,13 @@ datasource db {
 }
 
 model HeaderConfig {
-  id        String    @id @default("main")
-  logoText  String?   @default("parma")
-  logoImage String?
-  navLinks  Json?     @default("[]")
-  createdAt DateTime? @default(now()) @db.Timestamp(6)
-  updatedAt DateTime? @default(now()) @db.Timestamp(6)
+  id            String    @id @default("main")
+  logoText      String?   @default("parma")
+  logoImage     String?
+  navLinks      Json?     @default("[]")
+  announcements Json?     @default("[]")
+  createdAt     DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime? @default(now()) @db.Timestamp(6)
 }
 
 model CatalogPopupConfig {

@@ -11,10 +11,16 @@ type NavLink = {
 	href: string
 }
 
+type Announcement = {
+	emoji: string
+	text: string
+}
+
 type HeaderConfig = {
 	logoText: string
 	logoImage: string | null
 	navLinks: NavLink[]
+	announcements: Announcement[]
 }
 
 export default function HeaderEditPage() {
@@ -24,6 +30,10 @@ export default function HeaderEditPage() {
 		navLinks: [
 			{ label: "Catálogo", href: "/perfumes" },
 			{ label: "Garantía", href: "/garantia" },
+		],
+		announcements: [
+			{ emoji: "🚚", text: "ENVÍO GRATIS (ZONA METROPOLITANA)" },
+			{ emoji: "💵", text: "PAGO CONTRA ENTREGA" },
 		],
 	})
 	const [loading, setLoading] = useState(true)
@@ -36,7 +46,12 @@ export default function HeaderEditPage() {
 				const res = await fetch("/api/header")
 				if (res.ok) {
 					const data = await res.json()
-					setConfig(data)
+					setConfig((prev) => ({
+						logoText: data.logoText ?? prev.logoText,
+						logoImage: data.logoImage ?? null,
+						navLinks: Array.isArray(data.navLinks) ? data.navLinks : prev.navLinks,
+						announcements: Array.isArray(data.announcements) ? data.announcements : prev.announcements,
+					}))
 				}
 			} catch (error) {
 				console.error("Error al cargar configuración:", error)
@@ -94,6 +109,29 @@ export default function HeaderEditPage() {
 			...prev,
 			navLinks: prev.navLinks.map((link, i) =>
 				i === index ? { ...link, [field]: value } : link
+			),
+		}))
+	}
+
+	function addAnnouncement() {
+		setConfig((prev) => ({
+			...prev,
+			announcements: [...prev.announcements, { emoji: "", text: "" }],
+		}))
+	}
+
+	function removeAnnouncement(index: number) {
+		setConfig((prev) => ({
+			...prev,
+			announcements: prev.announcements.filter((_, i) => i !== index),
+		}))
+	}
+
+	function updateAnnouncement(index: number, field: "emoji" | "text", value: string) {
+		setConfig((prev) => ({
+			...prev,
+			announcements: prev.announcements.map((a, i) =>
+				i === index ? { ...a, [field]: value } : a
 			),
 		}))
 	}
@@ -224,6 +262,73 @@ export default function HeaderEditPage() {
 							</div>
 						))}
 					</div>
+				</div>
+
+				{/* Barra de anuncios */}
+				<div className="border rounded-lg p-6 space-y-4">
+					<div className="flex items-center justify-between">
+						<div>
+							<h2 className="text-lg font-semibold">Barra de Anuncios</h2>
+							<p className="text-xs text-gray-500 mt-1">
+								La franja negra que se desplaza arriba del header. Cada mensaje puede tener un emoji y un texto.
+							</p>
+						</div>
+						<Button type="button" onClick={addAnnouncement} variant="outline" size="sm">
+							<Plus className="w-4 h-4 mr-2" />
+							Agregar Mensaje
+						</Button>
+					</div>
+
+					{config.announcements.length === 0 ? (
+						<p className="text-sm text-gray-500">
+							Sin mensajes. Se mostrarán los valores por defecto. Agrega uno para personalizar.
+						</p>
+					) : (
+						<div className="space-y-3">
+							{config.announcements.map((a, index) => (
+								<div key={index} className="flex gap-2 items-start">
+									<Input
+										placeholder="Emoji"
+										value={a.emoji}
+										onChange={(e) => updateAnnouncement(index, "emoji", e.target.value)}
+										className="w-20 text-center"
+									/>
+									<Input
+										placeholder="Texto del anuncio (ej: ENVÍO GRATIS)"
+										value={a.text}
+										onChange={(e) => updateAnnouncement(index, "text", e.target.value)}
+										className="flex-1"
+									/>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={() => removeAnnouncement(index)}
+										className="text-red-600 hover:text-red-700"
+									>
+										<X className="w-4 h-4" />
+									</Button>
+								</div>
+							))}
+						</div>
+					)}
+
+					{/* Vista previa */}
+					{config.announcements.some((a) => a.emoji || a.text) && (
+						<div className="mt-2 rounded-md overflow-hidden">
+							<p className="text-xs text-gray-600 mb-1">Vista previa:</p>
+							<div className="bg-[#16181d] text-white text-[12px] font-bold py-2 px-3 flex gap-6 overflow-x-auto whitespace-nowrap">
+								{config.announcements
+									.filter((a) => a.emoji || a.text)
+									.map((a, i) => (
+										<span key={i} className="inline-flex items-center gap-1.5">
+											{a.emoji && <span>{a.emoji}</span>}
+											{a.text}
+										</span>
+									))}
+							</div>
+						</div>
+					)}
 				</div>
 
 				{/* Guardar */}
