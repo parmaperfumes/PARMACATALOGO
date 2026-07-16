@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 const DEFAULTS = {
-	mensajeTitulo: "¿Necesitas ayuda personalizada?",
-	mensajeTexto: "Te ayudamos a encontrar el perfume ideal para ti. ¿Hablamos por WhatsApp?",
+	mensajeTitulo: "¿Necesitas ayuda para elegir tu perfume?",
+	mensajeTexto: "¿No sabes cuál elegir? Te ayudamos a encontrar tu fragancia ideal, gratis y sin compromiso. 💬",
 	mensajeWhatsApp: "Hola 👋, necesito ayuda personalizada para elegir mi perfume.",
 }
 

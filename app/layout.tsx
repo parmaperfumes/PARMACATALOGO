@@ -1,10 +1,15 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Inter, Poppins } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/components/providers/AuthProvider"
 import { VisitTracker } from "@/components/VisitTracker"
 
 const inter = Inter({ subsets: ["latin"] })
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+})
 
 export const metadata: Metadata = {
   title: "Catálogo de Perfumes",
@@ -26,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className={`${inter.className} ${poppins.variable}`} suppressHydrationWarning>
         <AuthProvider>
           <VisitTracker />
           {children}

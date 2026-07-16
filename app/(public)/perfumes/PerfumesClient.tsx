@@ -32,8 +32,8 @@ type PerfumesClientProps = {
 }
 
 const DEFAULT_CONFIG = {
-	mensajeTitulo: "¿Necesitas ayuda personalizada?",
-	mensajeTexto: "Te ayudamos a encontrar el perfume ideal para ti. ¿Hablamos por WhatsApp?",
+	mensajeTitulo: "¿Necesitas ayuda para elegir tu perfume?",
+	mensajeTexto: "¿No sabes cuál elegir? Te ayudamos a encontrar tu fragancia ideal, gratis y sin compromiso. 💬",
 	mensajeWhatsApp: "Hola 👋, necesito ayuda personalizada para elegir mi perfume.",
 }
 
@@ -77,6 +77,25 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 			cancelled = true
 			if (timer) clearTimeout(timer)
 		}
+	}, [])
+
+	// Trigger por intención de salida: scroll hacia arriba (una vez por sesión)
+	useEffect(() => {
+		if (typeof window === "undefined") return
+		let lastY = window.scrollY
+		const onScroll = () => {
+			try {
+				if (sessionStorage.getItem(STORAGE_KEY)) return
+			} catch {}
+			const y = window.scrollY
+			// Scroll hacia arriba deliberado = posible intención de salida
+			if (y < lastY - 40) {
+				setShowHelpOffer(true)
+			}
+			lastY = y
+		}
+		window.addEventListener("scroll", onScroll, { passive: true })
+		return () => window.removeEventListener("scroll", onScroll)
 	}, [])
 
 	const handleCloseHelpOffer = () => {
