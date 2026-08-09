@@ -99,12 +99,13 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 		}
 		if (groupedItems.length === 1 && groupedItems[0].quantity === 1) {
 			const item = groupedItems[0]
-			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${item.name} - ${item.size} ML`
+			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${item.name} - ${item.size} ML\n\n*Total: ${formatPrice(subtotal)}*`
 		}
 		let message = "Buenas 👋, me gustaria ordenar estos perfumes:\n\n"
 		groupedItems.forEach((item) => {
 			message += `${item.name} - ${item.size} ML${item.quantity > 1 ? ` x${item.quantity}` : ""}\n`
 		})
+		message += `\n*Total: ${formatPrice(subtotal)}*`
 		return message
 	}
 
