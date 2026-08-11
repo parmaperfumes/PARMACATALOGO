@@ -93,17 +93,24 @@ export function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
 	const totalUnits = items.length
 	const subtotal = groupedItems.reduce((acc, it) => acc + parsePrice(it.price) * it.quantity, 0)
 
+	// Línea de un producto: "Nombre - 100 ML - 1,350 RD  x2"
+	const buildItemLine = (item: CartItem & { quantity: number }) => {
+		const unit = parsePrice(item.price)
+		const priceStr = unit > 0 ? ` - ${formatPrice(unit)}` : ""
+		const qtyStr = item.quantity > 1 ? `  x${item.quantity}` : ""
+		return `${item.name} - ${item.size} ML${priceStr}${qtyStr}`
+	}
+
 	const buildMessage = () => {
 		if (items.length === 0) {
 			return "Buenas 👋, me gustaria ordenar este perfume:"
 		}
 		if (groupedItems.length === 1 && groupedItems[0].quantity === 1) {
-			const item = groupedItems[0]
-			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${item.name} - ${item.size} ML\n\n*Total: ${formatPrice(subtotal)}*`
+			return `Buenas 👋, me gustaria ordenar este perfume:\n\n${buildItemLine(groupedItems[0])}\n\n*Total: ${formatPrice(subtotal)}*`
 		}
 		let message = "Buenas 👋, me gustaria ordenar estos perfumes:\n\n"
 		groupedItems.forEach((item) => {
-			message += `${item.name} - ${item.size} ML${item.quantity > 1 ? ` x${item.quantity}` : ""}\n`
+			message += `${buildItemLine(item)}\n`
 		})
 		message += `\n*Total: ${formatPrice(subtotal)}*`
 		return message
