@@ -19,11 +19,19 @@ async function fetchStockStatus(
 		const res = await fetch(url, { next: { revalidate: 0 } })
 		if (!res.ok) return null
 
-		const data = (await res.json()) as { success?: boolean; products?: Record<string, { stock_status?: string }> }
+		const data = (await res.json()) as {
+			success?: boolean
+			products?: Record<string, { nombre?: string; stock_status?: string }>
+		}
 		if (!data?.success || !data.products) return null
 
+		// Solo confiamos en entradas donde la API realmente encontró el producto
+		// (nombre no vacío). Si viene vacío, el servicio no matcheó el SKU y NO
+		// debemos ocultar el perfume por un dato poco fiable.
 		const map = new Map<string, "instock" | "outofstock">()
 		for (const [sku, info] of Object.entries(data.products)) {
+			const nombre = info?.nombre ? String(info.nombre).trim() : ""
+			if (!nombre) continue // dato no confiable → tratar como desconocido
 			const status = info?.stock_status === "instock" ? "instock" : "outofstock"
 			map.set(sku.trim(), status)
 		}
@@ -103,8 +111,9 @@ export default async function PerfumesPage() {
 			perfumes = perfumes.filter((p) => {
 				const sku = p.sku ? String(p.sku).trim() : null
 				if (!sku) return true // Sin SKU: mostrar siempre
-				const status = stockMap.get(sku)
-				return status === "instock" // Solo mostrar si hay stock
+				// Ocultar SOLO si la API confirma con dato confiable que está agotado.
+				// Desconocido (SKU no encontrado / dato no fiable) → mostrar, como en el admin.
+				return stockMap.get(sku) !== "outofstock"
 			})
 		}
 		// Si stockMap es null (API falló), no filtramos y mostramos todos
