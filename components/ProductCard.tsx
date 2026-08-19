@@ -47,8 +47,15 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		if (defaultUse === "NOCHE") return true
 		return false
 	})
-	// Ningún tamaño preseleccionado: la marca verde aparece solo cuando el cliente elige uno
-	const [selectedSize, setSelectedSize] = useState<ProductSizeMl | null>(null)
+	// 30 ml preseleccionado por defecto para que el botón AGREGAR esté siempre activo.
+	// Si 30 ml está agotado o no existe, se cae a 50 ml; si ninguno está disponible, queda sin selección.
+	const [selectedSize, setSelectedSize] = useState<ProductSizeMl | null>(() => {
+		const has = (s: ProductSizeMl) => product.sizes.includes(s)
+		const agotado = (s: ProductSizeMl) => (s === 30 ? product.agotado30 === true : product.agotado50 === true)
+		if (has(30) && !agotado(30)) return 30
+		if (has(50) && !agotado(50)) return 50
+		return null
+	})
 	const { addItem, removeItem, items } = useWhatsApp()
 
 	// Actualizar cuando cambie defaultUse
