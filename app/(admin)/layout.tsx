@@ -49,6 +49,9 @@ export default async function AdminLayout({
 						<Link href="/ajustes-catalogo" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
 							Ajustes Catálogo
 						</Link>
+						<Link href="/ruleta" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
+							Ruleta
+						</Link>
 					</div>
 					<LogoutButton />
 				</div>

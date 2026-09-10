@@ -62,6 +62,21 @@ model Perfume {
   @@index([slug], map: "idx_perfume_slug")
 }
 
+model RuletaDescuento {
+  id        String    @id @default(cuid())
+  codigo    String    @unique
+  correo    String    @unique
+  descuento Int
+  usado     Boolean   @default(false)
+  telefono  String?
+  usadoEn   DateTime? @db.Timestamp(6)
+  createdAt DateTime  @default(now())
+
+  @@index([codigo])
+  @@index([correo])
+  @@index([usado])
+}
+
 model User {
   id           String    @id @default(cuid())
   name         String?
