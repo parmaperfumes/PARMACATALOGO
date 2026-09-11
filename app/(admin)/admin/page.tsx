@@ -81,11 +81,11 @@ export default function AdminDashboardPage() {
 	const [showHidden, setShowHidden] = useState(false)
 	const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
 	const { data, mutate, isLoading, error } = useSWR(
-		`/api/perfumes?includeInactive=true`, 
+		`/api/perfumes?includeInactive=true`,
 		fetcher,
 		{ revalidateOnFocus: false }
 	)
-	
+
 	const displayData = data ?? []
 
 	async function handleDelete(id: string) {

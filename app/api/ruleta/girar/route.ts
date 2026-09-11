@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
+import { promises as dns } from "dns"
 import { prisma } from "@/lib/prisma"
 import { enviarCodigoDescuento, mailerConfigurado } from "@/lib/mailer"
 
@@ -38,6 +39,25 @@ function correoValido(correo: string): boolean {
 	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)
 }
 
+// Comprueba que el DOMINIO del correo realmente pueda recibir emails (tiene MX).
+// Atrapa dominios mal escritos o inventados (gmal.com, dominio-que-no-existe.com).
+// No puede saber si el buzón exacto existe, pero descarta la mayoría de la basura.
+// Ante un error de red/DNS transitorio NO bloquea al cliente (fail-open).
+async function dominioRecibeCorreo(correo: string): Promise<boolean> {
+	const dominio = correo.split("@")[1]?.trim().toLowerCase()
+	if (!dominio || dominio.includes("..") || dominio.startsWith(".") || dominio.endsWith(".")) {
+		return false
+	}
+	try {
+		const mx = await dns.resolveMx(dominio)
+		return Array.isArray(mx) && mx.length > 0
+	} catch (e: any) {
+		// Dominio inexistente o sin correo => inválido. Otros errores => no bloquear.
+		if (e?.code === "ENOTFOUND" || e?.code === "ENODATA") return false
+		return true
+	}
+}
+
 export async function POST(req: NextRequest) {
 	try {
 		const { correo: correoRaw } = await req.json()
@@ -46,6 +66,14 @@ export async function POST(req: NextRequest) {
 		if (!correoValido(correo)) {
 			return NextResponse.json(
 				{ error: "Correo inválido" },
+				{ status: 400 }
+			)
+		}
+
+		// El dominio debe poder recibir correos (descarta typos y dominios inventados).
+		if (!(await dominioRecibeCorreo(correo))) {
+			return NextResponse.json(
+				{ error: "Ese correo no parece válido. Revísalo e inténtalo de nuevo." },
 				{ status: 400 }
 			)
 		}

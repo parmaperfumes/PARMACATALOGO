@@ -71,10 +71,13 @@ model RuletaDescuento {
   telefono  String?
   usadoEn   DateTime? @db.Timestamp(6)
   createdAt DateTime  @default(now())
+  rebotado    Boolean   @default(false)
+  rebotadoEn  DateTime? @db.Timestamp(6)
 
   @@index([codigo])
   @@index([correo])
   @@index([usado])
+  @@index([rebotado])
 }
 
 model User {
