@@ -1,10 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { RuletaModal } from "./RuletaModal"
 
 export function RuletaButton() {
 	const [isOpen, setIsOpen] = useState(false)
+	// null = aún no sabemos; true/false = visible/oculto según el admin.
+	const [activa, setActiva] = useState<boolean | null>(null)
+
+	useEffect(() => {
+		let vivo = true
+		fetch("/api/ruleta/config")
+			.then((r) => r.json())
+			.then((d) => vivo && setActiva(d.activa !== false))
+			.catch(() => vivo && setActiva(true)) // ante error, mostrar (comportamiento por defecto)
+		return () => {
+			vivo = false
+		}
+	}, [])
+
+	// Mientras carga (null) u oculto (false), no renderizar nada.
+	if (activa !== true) return null
 
 	return (
 		<>

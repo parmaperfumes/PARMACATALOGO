@@ -65,6 +65,10 @@ export default function RuletaAdminPage() {
 	const [filtro, setFiltro] = useState<"todos" | "usados" | "no-usados">("todos")
 	const [loading, setLoading] = useState(true)
 
+	// Interruptor: juego "Juega y Gana" visible u oculto en el sitio.
+	const [juegoActivo, setJuegoActivo] = useState<boolean | null>(null)
+	const [guardandoJuego, setGuardandoJuego] = useState(false)
+
 	// Reloj que avanza cada segundo para la cuenta regresiva.
 	const [now, setNow] = useState(() => Date.now())
 	useEffect(() => {
@@ -116,6 +120,33 @@ export default function RuletaAdminPage() {
 		const id = setInterval(cargarStats, 60000)
 		return () => clearInterval(id)
 	}, [])
+
+	// Carga el estado del interruptor del juego.
+	useEffect(() => {
+		fetch("/api/ruleta/config")
+			.then((r) => r.json())
+			.then((d) => setJuegoActivo(d.activa !== false))
+			.catch(() => setJuegoActivo(true))
+	}, [])
+
+	async function toggleJuego() {
+		if (juegoActivo === null || guardandoJuego) return
+		const nuevo = !juegoActivo
+		setGuardandoJuego(true)
+		try {
+			const res = await fetch("/api/ruleta/config", {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ activa: nuevo }),
+			})
+			const data = await res.json()
+			if (res.ok) setJuegoActivo(data.activa)
+		} catch {
+			// noop
+		} finally {
+			setGuardandoJuego(false)
+		}
+	}
 
 	async function validar() {
 		setMsg("")
@@ -176,6 +207,44 @@ export default function RuletaAdminPage() {
 			<p className="text-[13px] text-[#6c6e78] mb-6">
 				Verifica los códigos de los clientes. Cada código vale por 24 horas.
 			</p>
+
+			{/* Interruptor: mostrar/ocultar el juego en el sitio */}
+			<div className="flex items-center justify-between gap-4 border border-[#ececef] rounded-xl p-4 mb-6">
+				<div>
+					<div className="text-[14px] font-bold text-black">
+						Juego “Juega y Gana” en el sitio
+					</div>
+					<div className="text-[12px] text-[#6c6e78]">
+						{juegoActivo === null
+							? "Cargando…"
+							: juegoActivo
+							? "Visible — los clientes ven el botón y pueden jugar."
+							: "Oculto — el botón no aparece en el sitio."}
+					</div>
+				</div>
+				<div className="flex items-center gap-3">
+					<span className="text-[13px] font-semibold text-[#6c6e78] min-w-[74px] text-right">
+						{juegoActivo === null ? "" : juegoActivo ? "Activado" : "Desactivado"}
+					</span>
+					<button
+						type="button"
+						role="switch"
+						aria-checked={juegoActivo === true}
+						onClick={toggleJuego}
+						disabled={juegoActivo === null || guardandoJuego}
+						className={`relative w-14 h-8 rounded-full transition-colors disabled:opacity-50 ${
+							juegoActivo ? "bg-green-600" : "bg-[#ccced6]"
+						}`}
+						aria-label="Mostrar u ocultar el juego Juega y Gana"
+					>
+						<span
+							className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+								juegoActivo ? "translate-x-6" : ""
+							}`}
+						/>
+					</button>
+				</div>
+			</div>
 
 			{/* Resumen */}
 			<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">

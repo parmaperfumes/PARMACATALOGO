@@ -62,6 +62,12 @@ model Perfume {
   @@index([slug], map: "idx_perfume_slug")
 }
 
+model RuletaConfig {
+  id        String    @id @default("main")
+  activa    Boolean   @default(true)
+  updatedAt DateTime? @default(now()) @db.Timestamp(6)
+}
+
 model RuletaDescuento {
   id        String    @id @default(cuid())
   codigo    String    @unique
