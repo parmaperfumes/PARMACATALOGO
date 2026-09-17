@@ -33,6 +33,20 @@ export default function JuegosPage() {
 				Administra los juegos del sitio. Entra a cada uno para configurarlo.
 			</p>
 
+			{/* Resultados — bloque aparte, centrado */}
+			<Link
+				href="/resultados"
+				className="block border-2 border-[#16255c] bg-[#eef1f9] hover:bg-[#e4e9f6] rounded-xl p-5 mb-8 text-center transition-colors"
+			>
+				<div className="text-3xl mb-1">📋</div>
+				<div className="text-[16px] font-bold text-[#16255c]">Resultados</div>
+				<div className="text-[12px] text-[#6c6e78] mt-1 max-w-md mx-auto">
+					Todos los códigos ganados (correo, juego y premio). Verifica y marca los que ya se usaron.
+				</div>
+			</Link>
+
+			<h2 className="text-[12px] font-bold text-[#9a9ba3] uppercase tracking-wide mb-3">Juegos</h2>
+
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				{JUEGOS.map((j) => {
 					const contenido = (
