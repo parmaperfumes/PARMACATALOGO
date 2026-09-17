@@ -65,7 +65,31 @@ model Perfume {
 model RuletaConfig {
   id        String    @id @default("main")
   activa    Boolean   @default(true)
+  premios   Json      @default("[{\"valor\":5,\"peso\":51},{\"valor\":10,\"peso\":48},{\"valor\":15,\"peso\":1}]")
   updatedAt DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model CrucigramaConfig {
+  id        String    @id @default("main")
+  activa    Boolean   @default(false)
+  descuento Int       @default(10)
+  filas     Int       @default(8)
+  columnas  Int       @default(8)
+  entradas  Json      @default("[]")
+  updatedAt DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model SopaConfig {
+  id           String    @id @default("main")
+  activa       Boolean   @default(false)
+  descuento    Int       @default(10)
+  filas        Int       @default(12)
+  columnas     Int       @default(12)
+  palabras     Json      @default("[]")
+  letras       Json      @default("[]")
+  colocaciones Json      @default("[]")
+  premios      Json      @default("[{\"etiqueta\":\"10% de descuento\",\"descuento\":10},{\"etiqueta\":\"15% de descuento\",\"descuento\":15}]")
+  updatedAt    DateTime? @default(now()) @db.Timestamp(6)
 }
 
 model RuletaDescuento {
@@ -79,11 +103,14 @@ model RuletaDescuento {
   createdAt DateTime  @default(now())
   rebotado    Boolean   @default(false)
   rebotadoEn  DateTime? @db.Timestamp(6)
+  premio      String?
+  juego       String    @default("ruleta")
 
   @@index([codigo])
   @@index([correo])
   @@index([usado])
   @@index([rebotado])
+  @@index([juego])
 }
 
 model User {

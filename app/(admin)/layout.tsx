@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { auth } from "@/auth"
+import { obtenerSesion } from "@/lib/session"
 import { LogoutButton } from "@/components/LogoutButton"
 import Link from "next/link"
 
@@ -8,8 +8,8 @@ export default async function AdminLayout({
 }: {
 	children: React.ReactNode
 }) {
-	// Verificación de autenticación CRÍTICA
-	const session = await auth()
+	// Verificación de autenticación CRÍTICA (en localhost se salta; ver lib/session)
+	const session = await obtenerSesion()
 	
 	console.log("🔒 AdminLayout - Verificando sesión:", {
 		hasSession: !!session,
@@ -49,8 +49,8 @@ export default async function AdminLayout({
 						<Link href="/ajustes-catalogo" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
 							Ajustes Catálogo
 						</Link>
-						<Link href="/ruleta" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
-							Ruleta
+						<Link href="/juegos" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
+							Juegos
 						</Link>
 					</div>
 					<LogoutButton />

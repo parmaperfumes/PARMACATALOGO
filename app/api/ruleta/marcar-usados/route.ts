@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { obtenerSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import { estaVencido } from "@/lib/ruleta"
 
 // Marca VARIOS códigos como usados de una sola vez.
 // Salta los que ya estaban usados o están vencidos (informa cuáles).
 export async function POST(req: NextRequest) {
-	const session = await auth()
+	const session = await obtenerSesion()
 	if (!session?.user) {
 		return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 	}

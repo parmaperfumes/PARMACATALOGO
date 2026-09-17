@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { obtenerSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import { estaVencido } from "@/lib/ruleta"
 
 // Valida un codigo para el vendedor: dice si es real, el %, y si ya se uso.
 export async function GET(req: NextRequest) {
-	const session = await auth()
+	const session = await obtenerSesion()
 	if (!session?.user) {
 		return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 	}

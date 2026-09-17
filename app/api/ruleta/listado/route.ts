@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { obtenerSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import { estaVencido } from "@/lib/ruleta"
 import { revisarRebotesEnSegundoPlano } from "@/lib/rebotes"
@@ -7,7 +7,7 @@ import { revisarRebotesEnSegundoPlano } from "@/lib/rebotes"
 // Lista todos los descuentos generados por la ruleta (para el panel admin).
 // Filtro opcional: ?filtro=usados | no-usados
 export async function GET(req: NextRequest) {
-	const session = await auth()
+	const session = await obtenerSesion()
 	if (!session?.user) {
 		return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 	}

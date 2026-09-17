@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { obtenerSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 // Métricas de la ruleta para el dashboard:
@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma"
 // - total / usados
 // - porDia: cuántos códigos entraron cada día (hora de RD), últimos 14 días.
 export async function GET() {
-	const session = await auth()
+	const session = await obtenerSesion()
 	if (!session?.user) {
 		return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 	}

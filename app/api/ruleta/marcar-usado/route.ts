@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { obtenerSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import { estaVencido } from "@/lib/ruleta"
 
 // Marca un codigo como USADO (lo "quema"). Opcionalmente guarda el telefono
 // del cliente que lo canjeo. Solo funciona si el codigo existe y no esta usado.
 export async function POST(req: NextRequest) {
-	const session = await auth()
+	const session = await obtenerSesion()
 	if (!session?.user) {
 		return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 	}

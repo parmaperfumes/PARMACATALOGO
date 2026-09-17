@@ -1,14 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { construirGajos, PREMIOS_DEFAULT, type Premio } from "@/lib/ruleta-premios"
 
-// Gajos visibles de la ruleta (el resultado real lo decide el servidor;
-// esto es solo la animacion). Debe haber al menos un gajo por cada premio.
-const GAJOS = [5, 10, 5, 10, 5, 10, 15, 10]
-const GRADOS = 360 / GAJOS.length
-
-function colorGajo(valor: number, i: number): string {
-	if (valor === 15) return "#3b6fe0" // azul brillante para el premio grande
+function colorGajo(valor: number, i: number, maxValor: number): string {
+	if (valor === maxValor) return "#3b6fe0" // azul brillante para el premio grande
 	return i % 2 === 0 ? "#16255c" : "#24357d" // azul marino de la marca
 }
 
@@ -18,12 +14,12 @@ function polar(cx: number, cy: number, r: number, grados: number) {
 	return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) }
 }
 
-function pathGajo(i: number): string {
+function pathGajo(i: number, grados: number): string {
 	const cx = 150,
 		cy = 150,
 		r = 145
-	const ini = i * GRADOS
-	const fin = ini + GRADOS
+	const ini = i * grados
+	const fin = ini + grados
 	const p1 = polar(cx, cy, r, ini)
 	const p2 = polar(cx, cy, r, fin)
 	return `M ${cx} ${cy} L ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y} Z`
@@ -45,6 +41,20 @@ export function RuletaModal({
 	const [descuento, setDescuento] = useState<number | null>(null)
 	const [codigo, setCodigo] = useState("")
 	const [correoEnviado, setCorreoEnviado] = useState(true)
+	const [premios, setPremios] = useState<Premio[]>(PREMIOS_DEFAULT)
+
+	// Carga los premios configurados para dibujar la rueda.
+	useEffect(() => {
+		if (!isOpen) return
+		fetch("/api/ruleta/config")
+			.then((r) => r.json())
+			.then((d) => Array.isArray(d.premios) && d.premios.length > 0 && setPremios(d.premios))
+			.catch(() => {})
+	}, [isOpen])
+
+	const gajos = construirGajos(premios)
+	const grados = 360 / gajos.length
+	const maxValor = Math.max(...gajos)
 
 	if (!isOpen) return null
 
@@ -89,11 +99,11 @@ export function RuletaModal({
 			setCorreoEnviado(data.correoEnviado)
 
 			// Elige un gajo que coincida con el premio y calcula la rotacion.
-			const candidatos = GAJOS.map((v, i) => (v === premio ? i : -1)).filter(
-				(i) => i >= 0
-			)
-			const idx = candidatos[Math.floor(Math.random() * candidatos.length)]
-			const centro = idx * GRADOS + GRADOS / 2
+			const candidatos = gajos
+				.map((v, i) => (v === premio ? i : -1))
+				.filter((i) => i >= 0)
+			const idx = candidatos.length > 0 ? candidatos[Math.floor(Math.random() * candidatos.length)] : 0
+			const centro = idx * grados + grados / 2
 			const vueltas = 6
 			const objetivo = 360 * vueltas - centro
 
@@ -173,14 +183,14 @@ export function RuletaModal({
 									: "none",
 						}}
 					>
-						{GAJOS.map((valor, i) => {
-							const mid = i * GRADOS + GRADOS / 2
+						{gajos.map((valor, i) => {
+							const mid = i * grados + grados / 2
 							const pos = polar(150, 150, 95, mid)
 							return (
 								<g key={i}>
 									<path
-										d={pathGajo(i)}
-										fill={colorGajo(valor, i)}
+										d={pathGajo(i, grados)}
+										fill={colorGajo(valor, i, maxValor)}
 										stroke="#fff"
 										strokeWidth={2}
 									/>

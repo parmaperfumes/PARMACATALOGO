@@ -3,6 +3,7 @@ import crypto from "crypto"
 import { promises as dns } from "dns"
 import { prisma } from "@/lib/prisma"
 import { enviarCodigoDescuento, mailerConfigurado } from "@/lib/mailer"
+import { normalizarPremios, PREMIOS_DEFAULT, type Premio } from "@/lib/ruleta-premios"
 
 // Correos que SIEMPRE pueden participar (pruebas). Configurable por env
 // RULETA_ALLOWLIST (separados por coma). Incluye por defecto el del dueño.
@@ -27,12 +28,30 @@ function generarCodigo(): string {
 }
 
 // Sorteo del lado del SERVIDOR (el navegador nunca decide el premio).
-// 5% -> 51 de probabilidad | 10% -> 48 | 15% -> 1  (suman 100)
-function sortearDescuento(): number {
-	const n = crypto.randomInt(0, 100) // 0..99
-	if (n <= 50) return 5 // 0..50  -> 51 casos
-	if (n <= 98) return 10 // 51..98 -> 48 casos
-	return 15 // 99 -> 1 caso
+// Elige un premio según su peso (probabilidad relativa). Configurable desde el admin.
+function sortearDescuento(premios: Premio[]): number {
+	const pesos = premios.map((p) => Math.max(0, Math.round(p.peso)))
+	const total = pesos.reduce((a, b) => a + b, 0)
+	if (total <= 0) return premios[0]?.valor ?? 5
+	let n = crypto.randomInt(0, total)
+	for (let i = 0; i < premios.length; i++) {
+		if (n < pesos[i]) return premios[i].valor
+		n -= pesos[i]
+	}
+	return premios[premios.length - 1].valor
+}
+
+// Lee la config de la ruleta (si el juego está activo y sus premios).
+async function leerConfigRuleta(): Promise<{ activa: boolean; premios: Premio[] }> {
+	try {
+		const rows = await prisma.$queryRawUnsafe<Array<any>>(
+			`SELECT "activa", "premios" FROM "RuletaConfig" WHERE id = 'main' LIMIT 1`
+		)
+		const row = rows?.[0]
+		return { activa: row?.activa !== false, premios: normalizarPremios(row?.premios) }
+	} catch {
+		return { activa: true, premios: PREMIOS_DEFAULT }
+	}
 }
 
 function correoValido(correo: string): boolean {
@@ -70,6 +89,15 @@ export async function POST(req: NextRequest) {
 			)
 		}
 
+		// Config de la ruleta: si el juego está apagado, no se puede jugar.
+		const { activa, premios } = await leerConfigRuleta()
+		if (!activa) {
+			return NextResponse.json(
+				{ error: "El juego no está disponible en este momento." },
+				{ status: 403 }
+			)
+		}
+
 		// El dominio debe poder recibir correos (descarta typos y dominios inventados).
 		if (!(await dominioRecibeCorreo(correo))) {
 			return NextResponse.json(
@@ -100,7 +128,7 @@ export async function POST(req: NextRequest) {
 			? correo.replace("@", `+r${Date.now().toString(36)}@`)
 			: correo
 
-		const descuento = sortearDescuento()
+		const descuento = sortearDescuento(premios)
 
 		// Genera un código único; reintenta si (muy raro) colisiona.
 		let codigo = ""

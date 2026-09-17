@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { PREMIOS_DEFAULT, type Premio } from "@/lib/ruleta-premios"
 
 type Registro = {
 	id: string
@@ -69,6 +70,12 @@ export default function RuletaAdminPage() {
 	const [juegoActivo, setJuegoActivo] = useState<boolean | null>(null)
 	const [guardandoJuego, setGuardandoJuego] = useState(false)
 
+	// Opciones: premios de la ruleta (valor % + probabilidad).
+	const [premios, setPremios] = useState<Premio[]>(PREMIOS_DEFAULT)
+	const [guardandoPremios, setGuardandoPremios] = useState(false)
+	const [msgPremios, setMsgPremios] = useState("")
+	const [mostrarOpciones, setMostrarOpciones] = useState(false)
+
 	// Reloj que avanza cada segundo para la cuenta regresiva.
 	const [now, setNow] = useState(() => Date.now())
 	useEffect(() => {
@@ -121,13 +128,62 @@ export default function RuletaAdminPage() {
 		return () => clearInterval(id)
 	}, [])
 
-	// Carga el estado del interruptor del juego.
+	// Carga el estado del interruptor y los premios.
 	useEffect(() => {
 		fetch("/api/ruleta/config")
 			.then((r) => r.json())
-			.then((d) => setJuegoActivo(d.activa !== false))
+			.then((d) => {
+				setJuegoActivo(d.activa !== false)
+				if (Array.isArray(d.premios) && d.premios.length > 0) setPremios(d.premios)
+			})
 			.catch(() => setJuegoActivo(true))
 	}, [])
+
+	function actualizarPremio(i: number, campo: "valor" | "peso", valor: string) {
+		const n = Math.max(0, Math.round(Number(valor) || 0))
+		setPremios((prev) => prev.map((p, idx) => (idx === i ? { ...p, [campo]: n } : p)))
+	}
+	function agregarPremio() {
+		setPremios((prev) => [...prev, { valor: 20, peso: 1 }])
+	}
+	function quitarPremio(i: number) {
+		setPremios((prev) => prev.filter((_, idx) => idx !== i))
+	}
+
+	async function guardarPremios() {
+		setMsgPremios("")
+		// Validación mínima: al menos un premio con valor válido.
+		const limpios = premios.filter((p) => p.valor > 0 && p.valor <= 100)
+		if (limpios.length === 0) {
+			setMsgPremios("❌ Agrega al menos un premio con un porcentaje válido (1–100).")
+			return
+		}
+		if (limpios.reduce((s, p) => s + p.peso, 0) <= 0) {
+			setMsgPremios("❌ Al menos un premio debe tener probabilidad mayor a 0.")
+			return
+		}
+		setGuardandoPremios(true)
+		try {
+			const res = await fetch("/api/ruleta/config", {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ premios: limpios }),
+			})
+			const data = await res.json()
+			if (res.ok) {
+				setPremios(data.premios ?? limpios)
+				setMsgPremios("✅ Premios guardados.")
+			} else {
+				setMsgPremios(`❌ ${data.error || "No se pudo guardar."}`)
+			}
+		} catch {
+			setMsgPremios("❌ Error de conexión.")
+		} finally {
+			setGuardandoPremios(false)
+		}
+	}
+
+	const pesoTotal = premios.reduce((s, p) => s + (p.peso > 0 ? p.peso : 0), 0)
 
 	async function toggleJuego() {
 		if (juegoActivo === null || guardandoJuego) return
@@ -244,6 +300,93 @@ export default function RuletaAdminPage() {
 						/>
 					</button>
 				</div>
+			</div>
+
+			{/* Opciones de la ruleta: premios y probabilidades (desplegable) */}
+			<div className="border border-[#ececef] rounded-xl mb-8">
+				<button
+					type="button"
+					onClick={() => setMostrarOpciones((v) => !v)}
+					aria-expanded={mostrarOpciones}
+					className="w-full flex items-center justify-between p-5 text-left"
+				>
+					<span className="text-[15px] font-bold text-black">Opciones de la ruleta</span>
+					<span className="flex items-center gap-2 text-[12px] font-semibold text-[#6c6e78]">
+						{mostrarOpciones ? "Ocultar" : "Editar premios"}
+						<span
+							className={`transition-transform text-[10px] ${mostrarOpciones ? "rotate-180" : ""}`}
+						>
+							▼
+						</span>
+					</span>
+				</button>
+
+				{mostrarOpciones && (
+				<div className="px-5 pb-5">
+				<div className="flex items-center justify-end mb-1">
+					<button
+						onClick={agregarPremio}
+						className="text-[12px] font-semibold text-[#16255c] hover:underline"
+					>
+						+ Agregar premio
+					</button>
+				</div>
+				<p className="text-[12px] text-[#6c6e78] mb-4">
+					Define los porcentajes de descuento y su probabilidad. Entre más peso, más
+					seguido le toca a los clientes.
+				</p>
+
+				<div className="space-y-2">
+					<div className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 items-center text-[11px] text-[#6c6e78] font-semibold px-1">
+						<span>Descuento (%)</span>
+						<span>Probabilidad (peso)</span>
+						<span className="w-16 text-right">Prob. real</span>
+						<span className="w-6" />
+					</div>
+					{premios.map((p, i) => (
+						<div key={i} className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 items-center">
+							<input
+								type="number"
+								min={1}
+								max={100}
+								value={p.valor}
+								onChange={(e) => actualizarPremio(i, "valor", e.target.value)}
+								className="border border-[#ececef] rounded-lg px-3 py-2 text-sm text-black outline-none focus:border-black"
+							/>
+							<input
+								type="number"
+								min={0}
+								value={p.peso}
+								onChange={(e) => actualizarPremio(i, "peso", e.target.value)}
+								className="border border-[#ececef] rounded-lg px-3 py-2 text-sm text-black outline-none focus:border-black"
+							/>
+							<span className="w-16 text-right text-[12px] text-[#6c6e78] tabular-nums">
+								{pesoTotal > 0 ? Math.round((p.peso / pesoTotal) * 100) : 0}%
+							</span>
+							<button
+								onClick={() => quitarPremio(i)}
+								disabled={premios.length <= 1}
+								className="w-6 text-red-500 hover:text-red-700 disabled:opacity-30 disabled:cursor-not-allowed text-lg leading-none"
+								aria-label="Quitar premio"
+							>
+								✕
+							</button>
+						</div>
+					))}
+				</div>
+
+				<div className="flex items-center gap-3 mt-4">
+					<button
+						onClick={guardarPremios}
+						disabled={guardandoPremios}
+						className="bg-black hover:bg-[#222] text-white font-semibold rounded-lg px-5 py-2.5 text-sm disabled:opacity-50"
+					>
+						{guardandoPremios ? "Guardando…" : "Guardar premios"}
+					</button>
+					{msgPremios && <span className="text-sm">{msgPremios}</span>}
+				</div>
+				</div>
+				)}
 			</div>
 
 			{/* Resumen */}

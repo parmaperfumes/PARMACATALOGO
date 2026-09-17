@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { obtenerSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import { revisarRebotes } from "@/lib/rebotes"
 
 // Revisa la bandeja por rebotes y marca como "rebotado" los códigos cuyos
 // correos no existen (destinatario no encontrado). Esos dejan de mostrarse.
 export async function POST() {
-	const session = await auth()
+	const session = await obtenerSesion()
 	if (!session?.user) {
 		return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 	}

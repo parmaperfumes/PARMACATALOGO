@@ -24,8 +24,8 @@ export function RuletaButton() {
 
 	return (
 		<>
-			{/* Móvil: arriba de la barra de navegación. Escritorio: esquina inferior izquierda. */}
-			<div className="fixed left-4 bottom-24 lg:bottom-6 z-[1000]">
+			{/* Apilada encima de la Sopa de Letras para no solaparse. */}
+			<div className="fixed left-4 bottom-40 lg:bottom-24 z-[1000]">
 				<button
 					onClick={() => setIsOpen(true)}
 					style={{ letterSpacing: "-0.025em" }}
