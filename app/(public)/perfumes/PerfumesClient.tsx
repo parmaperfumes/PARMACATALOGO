@@ -23,6 +23,9 @@ export type PerfumeFromDB = {
 	tipoLanzamiento?: string | null
 	precio30?: string | null
 	precio50?: string | null
+	// Los pone la página según el inventario de Labs; no son columnas de la base.
+	agotado30?: boolean
+	agotado50?: boolean
 	fijado?: boolean
 	ordenFijado?: number
 	sku?: string | null
@@ -120,6 +123,8 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 		tipoLanzamiento: (p.tipoLanzamiento as "NUEVO" | "RESTOCK" | "LANZAMIENTO" | null) || null,
 		precio30: p.precio30 || null,
 		precio50: p.precio50 || null,
+		agotado30: p.agotado30 === true,
+		agotado50: p.agotado50 === true,
 	}))
 
 	// Filtrar perfumes según el género seleccionado y la búsqueda

@@ -13,10 +13,14 @@ const PATRON_SKU = /^[A-Za-z0-9._-]{1,32}$/
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 
-/** Obtiene el estado de stock por SKU. Retorna null si falla (para no ocultar perfumes por error de API). */
+// Qué tamaños hay en inventario. Parma vende 30 y 50 ml: mirar sólo «hay o no hay»
+// escondía los perfumes que sólo tienen de 50 y ofrecía de 50 los que no tienen.
+type TamanosEnStock = { hay30: boolean; hay50: boolean }
+
+/** Obtiene el stock por SKU y tamaño. Retorna null si falla (para no ocultar perfumes por error de API). */
 async function fetchStockStatus(
 	skus: string[]
-): Promise<Map<string, "instock" | "outofstock"> | null> {
+): Promise<Map<string, TamanosEnStock> | null> {
 	const limpios = [...new Set(skus.map((s) => String(s ?? "").trim()).filter(Boolean))]
 	const uniqueSkus = limpios.filter((s) => PATRON_SKU.test(s))
 	const descartados = limpios.filter((s) => !PATRON_SKU.test(s))
@@ -34,19 +38,22 @@ async function fetchStockStatus(
 
 		const data = (await res.json()) as {
 			success?: boolean
-			products?: Record<string, { nombre?: string; stock_status?: string }>
+			products?: Record<string, { nombre?: string; stock_status?: string; tamanos?: { "30"?: boolean; "50"?: boolean } }>
 		}
 		if (!data?.success || !data.products) return null
 
 		// Solo confiamos en entradas donde la API realmente encontró el producto
 		// (nombre no vacío). Si viene vacío, el servicio no matcheó el SKU y NO
 		// debemos ocultar el perfume por un dato poco fiable.
-		const map = new Map<string, "instock" | "outofstock">()
+		const map = new Map<string, TamanosEnStock>()
 		for (const [sku, info] of Object.entries(data.products)) {
 			const nombre = info?.nombre ? String(info.nombre).trim() : ""
 			if (!nombre) continue // dato no confiable → tratar como desconocido
-			const status = info?.stock_status === "instock" ? "instock" : "outofstock"
-			map.set(sku.trim(), status)
+			// `stock_status` sólo mira los de 30 ml: vale como respaldo si la función
+			// todavía no manda `tamanos`.
+			const hay30 = info?.tamanos ? info.tamanos["30"] === true : info?.stock_status === "instock"
+			const hay50 = info?.tamanos ? info.tamanos["50"] === true : false
+			map.set(sku.trim(), { hay30, hay50 })
 		}
 		return map
 	} catch (e) {
@@ -121,13 +128,21 @@ export default async function PerfumesPage() {
 	if (skus.length > 0) {
 		const stockMap = await fetchStockStatus(skus)
 		if (stockMap) {
-			perfumes = perfumes.filter((p) => {
-				const sku = p.sku ? String(p.sku).trim() : null
-				if (!sku) return true // Sin SKU: mostrar siempre
-				// Ocultar SOLO si la API confirma con dato confiable que está agotado.
-				// Desconocido (SKU no encontrado / dato no fiable) → mostrar, como en el admin.
-				return stockMap.get(sku) !== "outofstock"
-			})
+			perfumes = perfumes
+				.map((p) => {
+					const sku = p.sku ? String(p.sku).trim() : null
+					const stock = sku ? stockMap.get(sku) : undefined
+					// Sin SKU o desconocido → se deja como viene del admin.
+					if (!stock) return p
+					return {
+						...p,
+						agotado30: !stock.hay30,
+						agotado50: !stock.hay50,
+						sinStock: !stock.hay30 && !stock.hay50,
+					}
+				})
+				// Se esconde SOLO si el inventario confirma que no hay de ningún tamaño.
+				.filter((p) => (p as { sinStock?: boolean }).sinStock !== true)
 		}
 		// Si stockMap es null (API falló), no filtramos y mostramos todos
 	}
