@@ -33,6 +33,13 @@ export const IconoNoche = (p: IconoProps) => (
 	</Trazo>
 )
 
+// Un aro con su pico: el globo de conversación, en el trazo de la casa.
+export const IconoWhatsApp = (p: IconoProps) => (
+	<Trazo {...p}>
+		<path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.9L3.5 20.5l4.3-1.1A8.5 8.5 0 1 0 12 3.5Z" />
+	</Trazo>
+)
+
 export const IconoHombre = (p: IconoProps) => (
 	<Trazo {...p}>
 		<circle cx="10" cy="14" r="6" />

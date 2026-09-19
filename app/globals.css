@@ -173,9 +173,30 @@ body::after {
   overflow: hidden;
   display: flex;
   align-items: center;
-  /* Los avisos entran y salen desvaneciendose, no cortados contra el borde. */
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
-  mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+}
+
+/* Los avisos entran y salen desvaneciendose, no cortados contra el borde. Va como
+   velo del color del fondo y NO como mascara: la mascara volvia transparente la
+   cinta entera en las puntas y se veia el catalogo por detras. */
+.announcement-bar::before,
+.announcement-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.announcement-bar::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-noche), transparent);
+}
+
+.announcement-bar::after {
+  right: 0;
+  background: linear-gradient(to left, var(--color-noche), transparent);
 }
 
 .announcement-bar:hover .announcement-track {
@@ -423,22 +444,29 @@ header {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.96);
-  border-top: 1px solid rgba(15, 24, 33, 0.12);
-  padding: 8px 16px;
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  padding: 0 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   z-index: 100;
+  /* La franja no tapa nada: solo la pastilla recibe el dedo, y el catalogo
+     se sigue viendo y tocando a los costados. */
+  pointer-events: none;
 }
 
 .mobile-nav-container {
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 480px;
+  max-width: 400px;
   margin: 0 auto;
   padding: 4px;
-  background: var(--color-niebla);
+  pointer-events: auto;
+  /* Vidrio esmerilado, el mismo material que los sellos sobre las fotos. */
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.64);
   border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(15, 24, 33, 0.08), 0 8px 32px rgba(15, 24, 33, 0.16);
 }
 
 .mobile-nav-indicator {

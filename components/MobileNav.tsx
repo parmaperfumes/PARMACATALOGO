@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MessageCircle } from "lucide-react"
+import { IconoWhatsApp } from "@/components/IconosParma"
 import { useWhatsApp } from "@/context/WhatsAppContext"
 import { WhatsAppModal } from "./WhatsAppModal"
 
@@ -78,7 +78,7 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 							{items.length > 99 ? '99+' : items.length}
 						</span>
 					) : (
-						<MessageCircle className="mobile-nav-icon" />
+						<IconoWhatsApp className="mobile-nav-icon" />
 					)}
 					<span className="mobile-nav-label">WhatsApp</span>
 				</button>
