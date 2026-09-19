@@ -3,33 +3,6 @@
 import { useEffect, useState } from "react"
 import { SopaModal } from "./SopaModal"
 
-// La sopa dibujada, no fotografiada: letras nítidas en cualquier pantalla y sin
-// peso de imagen. La palabra encontrada es la marca, rodeada como un aro del logo.
-const FILAS = ["KAROM", "PARMA", "TNOCH", "ELUZS"]
-const FILA_ENCONTRADA = 1
-
-function SopaDibujada() {
-	return (
-		<div className="relative grid grid-rows-4 gap-1 select-none" aria-hidden="true">
-			{FILAS.map((fila, i) => (
-				<div key={fila} className="relative grid grid-cols-5 gap-1">
-					{i === FILA_ENCONTRADA && <span className="absolute -inset-x-1.5 -inset-y-0.5 rounded-full border border-white" />}
-					{fila.split("").map((letra, j) => (
-						<span
-							key={j}
-							className={`w-4 h-4 flex items-center justify-center text-xs leading-none font-semibold ${
-								i === FILA_ENCONTRADA ? "text-white" : "text-white/32"
-							}`}
-						>
-							{letra}
-						</span>
-					))}
-				</div>
-			))}
-		</div>
-	)
-}
-
 // Banda en el tope del catálogo. Reemplaza al botón flotante, que tapaba
 // «Agregar» en la columna izquierda del teléfono.
 export function SopaBanner() {
@@ -54,16 +27,28 @@ export function SopaBanner() {
 			<button
 				onClick={() => setIsOpen(true)}
 				aria-label="Juega y gana con la Sopa de Letras"
-				className="w-full mb-2 sm:mb-6 px-4 sm:px-6 py-3 rounded-xl bg-noche text-white text-left flex items-center justify-between gap-4 overflow-hidden active:scale-[0.99] transition-transform"
+				className="relative w-full h-28 sm:h-40 mb-2 sm:mb-6 px-4 sm:px-8 rounded-xl bg-noche text-white text-left flex items-center overflow-hidden active:scale-[0.99] transition-transform"
 			>
-				<span className="min-w-0">
+				{/* Render 3D generado para la marca (original en brand/sopa-banner-original.png).
+				    Se ancla a la derecha: ahí está PARMA; la izquierda de la imagen es fondo liso. */}
+				<img
+					src="/sopa-banner.webp"
+					alt=""
+					width={1600}
+					height={686}
+					className="absolute inset-0 w-full h-full object-cover object-[78%_44%] sm:object-[right_44%]"
+					decoding="async"
+				/>
+				{/* Velo para que el texto se lea sobre las fichas en pantallas angostas */}
+				<span className="absolute inset-y-0 left-0 w-3/5 bg-gradient-to-r from-noche via-noche/80 to-transparent" aria-hidden="true" />
+
+				<span className="relative min-w-0">
 					<span className="block text-xs font-medium tracking-[0.16em] text-white/64">JUEGA Y GANA</span>
-					<span className="block font-serif text-2xl font-medium leading-none mt-1.5">Sopa de Letras</span>
-					<span className="inline-flex items-center h-6 px-3 mt-2.5 rounded-full bg-white text-noche text-xs font-semibold">
+					<span className="block font-serif text-2xl sm:text-4xl font-medium leading-none mt-1.5">Sopa de Letras</span>
+					<span className="inline-flex items-center h-6 sm:h-8 px-3 sm:px-4 mt-2.5 rounded-full bg-white text-noche text-xs sm:text-sm font-semibold">
 						Jugar
 					</span>
 				</span>
-				<SopaDibujada />
 			</button>
 
 			<SopaModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
