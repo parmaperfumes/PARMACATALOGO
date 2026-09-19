@@ -60,3 +60,34 @@ export const IconoUnisex = (p: IconoProps) => (
 		<path d="M14.6 7.9 19.5 3M15.5 3h4v4M11 16.5v5M8.5 19h5" />
 	</Trazo>
 )
+
+// --- Carrito ---
+
+export const IconoCerrar = (p: IconoProps) => (
+	<Trazo {...p}>
+		<path d="M6 6l12 12M18 6 6 18" />
+	</Trazo>
+)
+
+export const IconoEnvio = (p: IconoProps) => (
+	<Trazo {...p}>
+		<path d="M2.5 6.5h11v10h-11zM13.5 9.5h4l3 3.5v3.5h-7" />
+		<circle cx="7" cy="17.5" r="2" />
+		<circle cx="17" cy="17.5" r="2" />
+	</Trazo>
+)
+
+export const IconoPago = (p: IconoProps) => (
+	<Trazo {...p}>
+		<rect x="2.5" y="6.5" width="19" height="11" rx="2" />
+		<circle cx="12" cy="12" r="2.5" />
+		<path d="M6 12h.01M18 12h.01" />
+	</Trazo>
+)
+
+export const IconoGarantia = (p: IconoProps) => (
+	<Trazo {...p}>
+		<circle cx="12" cy="12" r="9" />
+		<path d="m8 12.5 2.8 2.8L16 9.5" />
+	</Trazo>
+)
