@@ -104,6 +104,15 @@ footer p+p{margin-top:8px}
   h2{font-size:24px}
   .portada{padding:64px 24px}
 }
+/* Iconos */
+.ico{width:16px;height:16px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ico.grande{width:48px;height:48px;stroke-width:1.5}
+.chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 12px 0 8px;border-radius:var(--r-pastilla);border:1px solid var(--noche);font:600 12px/1 var(--sans)}
+.chip.solo{width:28px;padding:0;justify-content:center}
+.chip.llena{background:var(--noche);color:var(--blanco)}
+.lamina{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;text-align:center}
+.lamina div{display:grid;justify-items:center;gap:12px}
+@media (max-width:720px){.lamina{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
@@ -114,6 +123,11 @@ footer p+p{margin-top:8px}
       <rect width="378" height="245" fill="#fff"/>
       <circle cx="123" cy="122.5" r="109" fill="none" stroke="#000" stroke-width="59"/>
     </mask>
+    <symbol id="i-dia" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+    <symbol id="i-noche" viewBox="0 0 24 24"><path d="M9.1 5.23A8 8 0 1 0 18.77 14.9 7 7 0 0 1 9.1 5.23Z"/></symbol>
+    <symbol id="i-hombre" viewBox="0 0 24 24"><circle cx="10" cy="14" r="6"/><path d="M14.3 9.7 20 4M15 4h5v5"/></symbol>
+    <symbol id="i-mujer" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M12 15v6.5M9 18.5h6"/></symbol>
+    <symbol id="i-unisex" viewBox="0 0 24 24"><circle cx="11" cy="11.5" r="5"/><path d="M14.6 7.9 19.5 3M15.5 3h4v4M11 16.5v5M8.5 19h5"/></symbol>
     <symbol id="aros" viewBox="0 0 378 245">
       <g fill="none" stroke="currentColor">
         <circle cx="268" cy="122" r="95.5" stroke-width="27" mask="url(#detras)"/>
@@ -299,6 +313,33 @@ footer p+p{margin-top:8px}
     <li><b>B</b><span><strong>Cormorant Garamond es una propuesta.</strong> Se eligió por parecido con el logo. Si el logo usa otra letra y se consigue, manda esa.</span></li>
     <li><b>C</b><span><strong>El juego.</strong> «Sopa de Letras» usa otra letra y otro verde. Se decide si se viste de Parma o si se queda como pieza aparte.</span></li>
   </ul>
+</section>
+
+<section>
+  <span class="num">10 · Íconos</span>
+  <h2>Cinco íconos con el trazo del logo.</h2>
+  <p class="bajada">Trazo de grosor parejo, puntas redondas y formas hechas de aros, como el logo. La luna es la misma media luna que se forma donde el aro chico cruza al grande. No se usan íconos de librería al lado de estos.</p>
+  <div class="caja lamina">
+    <div><svg class="ico grande"><use href="#i-dia"/></svg><span class="rotulo" style="margin:0">Día</span></div>
+    <div><svg class="ico grande"><use href="#i-noche"/></svg><span class="rotulo" style="margin:0">Noche</span></div>
+    <div><svg class="ico grande"><use href="#i-hombre"/></svg><span class="rotulo" style="margin:0">Hombre</span></div>
+    <div><svg class="ico grande"><use href="#i-mujer"/></svg><span class="rotulo" style="margin:0">Mujer</span></div>
+    <div><svg class="ico grande"><use href="#i-unisex"/></svg><span class="rotulo" style="margin:0">Unisex</span></div>
+  </div>
+
+  <h3>Cómo van en la tarjeta</h3>
+  <div class="rejilla dos">
+    <div class="caja">
+      <div class="fila"><span class="chip solo"><svg class="ico"><use href="#i-hombre"/></svg></span><span class="chip solo llena"><svg class="ico"><use href="#i-dia"/></svg></span><span class="chip solo llena"><svg class="ico"><use href="#i-noche"/></svg></span></div>
+      <p class="rotulo">Descartada · sólo íconos</p>
+      <p style="font-size:14px;color:var(--gris);margin-top:8px">La más limpia. Ocupa poco. Pide que el cliente entienda el símbolo sin ayuda.</p>
+    </div>
+    <div class="caja">
+      <div class="fila"><span class="chip"><svg class="ico"><use href="#i-hombre"/></svg>Hombre</span><span class="chip solo llena"><svg class="ico"><use href="#i-dia"/></svg></span><span class="chip solo llena"><svg class="ico"><use href="#i-noche"/></svg></span></div>
+      <p class="rotulo">Elegida el 19-09-2026 · género con palabra, momento con ícono</p>
+      <p style="font-size:14px;color:var(--gris);margin-top:8px">El sol y la luna se entienden solos. El género lleva la palabra, que es por lo que la gente filtra. Día y noche van los dos juntos en una sola pastilla. Viven en <code>components/IconosParma.tsx</code>.</p>
+    </div>
+  </div>
 </section>
 
 </main>

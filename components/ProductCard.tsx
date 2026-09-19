@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useWhatsApp } from "@/context/WhatsAppContext"
 import Image from "next/image"
 import { nombreDePerfume, precioRD } from "@/lib/formato"
+import { IconoDia, IconoNoche, IconoHombre, IconoMujer, IconoUnisex } from "@/components/IconosParma"
 
 export type ProductSizeMl = 30 | 50
 
@@ -157,7 +158,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 				{/* Género y Uso: Día/Noche - Altura fija */}
 				<div className="h-[26px] sm:h-[32px] flex items-center gap-1.5 sm:gap-2 lg:gap-3 mb-1.5 sm:mb-2">
 					{product.gender ? (
-						<span className="h-6 sm:h-7 lg:h-8 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold capitalize whitespace-nowrap bg-white text-noche border border-noche flex items-center justify-center flex-shrink-0">
+						<span className="h-6 sm:h-7 lg:h-8 pl-1.5 pr-2 sm:pl-2 sm:pr-3 gap-1 rounded-full text-xs font-semibold capitalize whitespace-nowrap bg-white text-noche border border-noche flex items-center justify-center flex-shrink-0">
+							{product.gender === "HOMBRE" ? <IconoHombre /> : product.gender === "MUJER" ? <IconoMujer /> : <IconoUnisex />}
 							{product.gender.toLowerCase()}
 						</span>
 					) : null}
@@ -167,39 +169,45 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 						<>
 							{defaultUse === "DIA" ? (
 								<div
-									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
+									className="px-1.5 sm:px-2 gap-0.5 rounded-full text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
 									style={{ userSelect: 'none' }}
 								>
-									Día
+									<IconoDia />
+									<span className="sr-only">Día</span>
 								</div>
 							) : defaultUse === "NOCHE" ? (
 								<div
-									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
+									className="px-1.5 sm:px-2 gap-0.5 rounded-full text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
 									style={{ userSelect: 'none' }}
 								>
-									Noche
+									<IconoNoche />
+									<span className="sr-only">Noche</span>
 								</div>
 							) : defaultUse === "AMBOS" ? (
 								<div
-									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
+									className="px-1.5 sm:px-2 gap-0.5 rounded-full text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
 									style={{ userSelect: 'none' }}
 								>
-									Día / Noche
+									<IconoDia />
+									<IconoNoche />
+									<span className="sr-only">Día y noche</span>
 								</div>
 							) : (
 								// Si no hay defaultUse, mostrar ambos con el mismo estilo (blanco con borde gris y texto negro)
 								<>
 									<div
-										className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-white border-noche/12 text-noche border cursor-default select-none pointer-events-none"
+										className="px-1.5 sm:px-2 gap-0.5 rounded-full text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-white border-noche/12 text-noche border cursor-default select-none pointer-events-none"
 										style={{ userSelect: 'none' }}
 									>
-										Día
+										<IconoDia />
+										<span className="sr-only">Día</span>
 									</div>
 									<div
-										className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-white border-noche/12 text-noche border cursor-default select-none pointer-events-none"
+										className="px-1.5 sm:px-2 gap-0.5 rounded-full text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-white border-noche/12 text-noche border cursor-default select-none pointer-events-none"
 										style={{ userSelect: 'none' }}
 									>
-										Noche
+										<IconoNoche />
+										<span className="sr-only">Noche</span>
 									</div>
 								</>
 							)}
@@ -211,28 +219,32 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 							{defaultUse === "DIA" && (
 								<button
 									type="button"
-									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
+									className="px-1.5 sm:px-2 gap-0.5 rounded-full border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
 									disabled
 								>
-									Día
+									<IconoDia />
+									<span className="sr-only">Día</span>
 								</button>
 							)}
 							{defaultUse === "NOCHE" && (
 								<button
 									type="button"
-									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
+									className="px-1.5 sm:px-2 gap-0.5 rounded-full border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
 									disabled
 								>
-									Noche
+									<IconoNoche />
+									<span className="sr-only">Noche</span>
 								</button>
 							)}
 							{defaultUse === "AMBOS" && (
 								<button
 									type="button"
-									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
+									className="px-1.5 sm:px-2 gap-0.5 rounded-full border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
 									disabled
 								>
-									Día / Noche
+									<IconoDia />
+									<IconoNoche />
+									<span className="sr-only">Día y noche</span>
 								</button>
 							)}
 							{!defaultUse && (
@@ -245,9 +257,10 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 											setSelectedDia(!selectedDia)
 										}}
 										disabled={isAmbos}
-										className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedDia ? "bg-noche text-white border-noche" : "bg-white border-noche/12 text-noche"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
+										className={`px-1.5 sm:px-2 gap-0.5 rounded-full border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedDia ? "bg-noche text-white border-noche" : "bg-white border-noche/12 text-noche"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
 									>
-										Día
+										<IconoDia />
+										<span className="sr-only">Día</span>
 									</button>
 									<button
 										type="button"
@@ -256,9 +269,10 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 											setSelectedNoche(!selectedNoche)
 										}}
 										disabled={isAmbos}
-										className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedNoche ? "bg-noche text-white border-noche" : "bg-white border-noche/12 text-noche"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
+										className={`px-1.5 sm:px-2 gap-0.5 rounded-full border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedNoche ? "bg-noche text-white border-noche" : "bg-white border-noche/12 text-noche"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
 									>
-										Noche
+										<IconoNoche />
+										<span className="sr-only">Noche</span>
 									</button>
 								</>
 							)}
