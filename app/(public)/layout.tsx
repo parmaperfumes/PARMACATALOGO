@@ -3,7 +3,6 @@ import { Header } from "@/components/Header"
 import { WhatsAppProvider } from "@/context/WhatsAppContext"
 import { WhatsAppButton } from "@/components/WhatsAppButton"
 import { RuletaButton } from "@/components/RuletaButton"
-import { SopaButton } from "@/components/SopaButton"
 import { SearchProvider } from "@/context/SearchContext"
 
 export default function PublicLayout({
@@ -19,7 +18,6 @@ export default function PublicLayout({
 				{children}
 				<WhatsAppButton />
 				<RuletaButton />
-				<SopaButton />
 			</WhatsAppProvider>
 		</SearchProvider>
 	)

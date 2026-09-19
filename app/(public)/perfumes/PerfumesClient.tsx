@@ -5,6 +5,7 @@ import { ProductCard, type Product } from "@/components/ProductCard"
 import { useSearch } from "@/context/SearchContext"
 import { MobileNav } from "@/components/MobileNav"
 import { HelpOfferModal } from "@/components/HelpOfferModal"
+import { SopaBanner } from "@/components/SopaBanner"
 
 const STORAGE_KEY = "perfumes-help-offer-shown"
 
@@ -170,6 +171,8 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 
 	return (
 		<div className="container mx-auto px-2 sm:px-4 py-2 sm:py-8 pb-20 lg:pb-8 max-w-6xl pt-[calc(5rem+36px)] sm:pt-[calc(6rem+36px)]">
+			<SopaBanner />
+
 			{/* Filtros de Género - Solo visible en desktop */}
 			<div className="hidden lg:flex justify-center mb-4 sm:mb-8">
 				<div className="flex gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm p-0.5 sm:p-1 rounded-full border border-gray-200 shadow-sm">
