@@ -1,7 +1,14 @@
 import { prisma } from "@/lib/prisma"
 import PerfumesClient, { type PerfumeFromDB } from "./PerfumesClient"
 
+// El inventario vive en Labs (QualiaBusiness). La misma función sirve a las dos
+// tiendas; sin `tienda=parma` contesta por Perfume Labs y ningún PAR-xx aparece.
 const STOCK_API_URL = "https://uzvnluxxaekmaqnuocvo.supabase.co/functions/v1/stock-woocommerce"
+const STOCK_TIENDA = "parma"
+// El mismo formato que acepta la función. Un solo SKU fuera de formato hace que
+// rechace el pedido ENTERO (400) y el catálogo deje de filtrar sin avisar: pasó
+// con un perfume cuyo SKU era su propio nombre, con un espacio.
+const PATRON_SKU = /^[A-Za-z0-9._-]{1,32}$/
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -10,12 +17,18 @@ export const revalidate = 0
 async function fetchStockStatus(
 	skus: string[]
 ): Promise<Map<string, "instock" | "outofstock"> | null> {
-	const uniqueSkus = [...new Set(skus.filter((s) => s && String(s).trim()))]
+	const limpios = [...new Set(skus.map((s) => String(s ?? "").trim()).filter(Boolean))]
+	const uniqueSkus = limpios.filter((s) => PATRON_SKU.test(s))
+	const descartados = limpios.filter((s) => !PATRON_SKU.test(s))
+	if (descartados.length > 0) {
+		// Se quedan visibles (dato desconocido), pero que conste: hay que corregirlos en el admin.
+		console.warn(`Stock: ${descartados.length} SKU con formato inválido, no se consultan: ${descartados.join(" | ")}`)
+	}
 	if (uniqueSkus.length === 0) return new Map()
 
 	try {
 		const skusParam = uniqueSkus.map(encodeURIComponent).join(",")
-		const url = `${STOCK_API_URL}?skus=${skusParam}`
+		const url = `${STOCK_API_URL}?tienda=${STOCK_TIENDA}&skus=${skusParam}`
 		const res = await fetch(url, { next: { revalidate: 0 } })
 		if (!res.ok) return null
 
