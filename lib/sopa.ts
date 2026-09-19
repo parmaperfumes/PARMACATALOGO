@@ -35,7 +35,7 @@ export type SopaConfig = {
 }
 
 export const PREMIOS_SOPA_DEFAULT: Premio[] = [
-	{ etiqueta: "2 Perfumes", descuento: 0, detalle: "30 ML cada uno · elegís los aromas", valor: "1,550 RD", masPedido: true },
+	{ etiqueta: "2 Perfumes", descuento: 0, detalle: "30 ML cada uno · eliges los aromas", valor: "1,550 RD", masPedido: true },
 	{ etiqueta: "1 Decant exclusivo", descuento: 0, detalle: "10 ML · en tu próxima compra", valor: "Regalo" },
 	{ etiqueta: "Envío gratis", descuento: 0, detalle: "Distrito Nacional & Santiago", valor: "0 RD" },
 ]

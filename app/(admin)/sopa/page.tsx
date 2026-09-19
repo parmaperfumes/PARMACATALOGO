@@ -207,7 +207,7 @@ export default function SopaAdminPage() {
 											className="w-6 text-red-500 hover:text-red-700 disabled:opacity-30 text-lg leading-none" aria-label="Quitar premio">✕</button>
 									</div>
 									<input value={p.detalle ?? ""} onChange={(e) => actualizarPremio(i, "detalle", e.target.value)}
-										placeholder="Detalle (ej. 30 ML cada uno · elegís los aromas)"
+										placeholder="Detalle (ej. 30 ML cada uno · eliges los aromas)"
 										className="w-full border border-[#ececef] rounded-lg px-3 py-2 text-sm text-black outline-none focus:border-black" />
 									<input value={p.valor ?? ""} onChange={(e) => actualizarPremio(i, "valor", e.target.value)}
 										placeholder="Valor (ej. 1,550 RD / Regalo / 0 RD)"

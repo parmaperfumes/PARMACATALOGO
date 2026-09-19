@@ -4,6 +4,7 @@ import { useState, useEffect, memo } from "react"
 import { Button } from "@/components/ui/button"
 import { useWhatsApp } from "@/context/WhatsAppContext"
 import Image from "next/image"
+import { nombreDePerfume, precioRD } from "@/lib/formato"
 
 export type ProductSizeMl = 30 | 50
 
@@ -104,18 +105,12 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 	).length
 
 	return (
-		<div className={`rounded-lg sm:rounded-2xl overflow-hidden border border-gray-400 bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
+		<div className={`rounded-xl overflow-hidden border border-noche/12 bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
 			{/* Header visual con imagen */}
-			<div className="relative bg-[#2c2f43] text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
+			<div className="relative bg-noche text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
 				{/* Etiqueta MÁS VENDIDO / RE-STOCK / NUEVO */}
 				{product.tipoLanzamiento && (
-					<div className={`absolute top-1 right-1 sm:top-2 sm:right-2 z-10 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[7px] sm:text-[10px] font-bold shadow-lg backdrop-blur-sm ${
-						product.tipoLanzamiento === "NUEVO" 
-							? "bg-gradient-to-r from-red-500 to-rose-600 text-white"
-							: product.tipoLanzamiento === "LANZAMIENTO"
-							? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white"
-							: "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
-					}`}>
+					<div className="absolute top-2 right-2 z-10 px-2 py-1 sm:px-3 rounded-full bg-white text-noche text-xs leading-none font-semibold tracking-wide">
 						{product.tipoLanzamiento === "NUEVO" ? "MÁS VENDIDO" : product.tipoLanzamiento === "LANZAMIENTO" ? "NUEVO" : "RE-STOCK"}
 					</div>
 				)}
@@ -145,15 +140,15 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 			<div className="p-2 sm:p-3 sm:p-4 flex flex-col flex-1 min-h-0">
 				{/* Título - Altura fija */}
 				<div className="h-[26px] sm:h-[32px] flex items-center mb-1 sm:mb-1.5">
-					<h3 className="text-sm sm:text-base lg:text-xl font-extrabold leading-tight uppercase line-clamp-1">
-						{product.name}
+					<h3 className="font-serif text-xl sm:text-2xl font-medium leading-tight text-noche line-clamp-1">
+						{nombreDePerfume(product.name)}
 					</h3>
 				</div>
 				
 				{/* Subtítulo - Altura fija */}
 				{product.subtitle ? (
 					<div className="h-[18px] sm:h-[24px] flex items-center mb-1.5 sm:mb-2">
-						<p className="text-[10px] sm:text-xs lg:text-sm tracking-wide text-gray-600 uppercase line-clamp-1">
+						<p className="text-xs lg:text-sm tracking-wide text-gris uppercase line-clamp-1">
 							{product.subtitle}
 						</p>
 					</div>
@@ -162,8 +157,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 				{/* Género y Uso: Día/Noche - Altura fija */}
 				<div className="h-[26px] sm:h-[32px] flex items-center gap-1.5 sm:gap-2 lg:gap-3 mb-1.5 sm:mb-2">
 					{product.gender ? (
-						<span className="h-6 sm:h-7 lg:h-8 px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-bold uppercase bg-white text-black border border-black flex items-center justify-center flex-shrink-0">
-							{product.gender}
+						<span className="h-6 sm:h-7 lg:h-8 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold capitalize whitespace-nowrap bg-white text-noche border border-noche flex items-center justify-center flex-shrink-0">
+							{product.gender.toLowerCase()}
 						</span>
 					) : null}
 					{isFixed ? (
@@ -172,39 +167,39 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 						<>
 							{defaultUse === "DIA" ? (
 								<div
-									className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-black text-white border-black border cursor-default select-none pointer-events-none"
+									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
 									style={{ userSelect: 'none' }}
 								>
-									DIA
+									Día
 								</div>
 							) : defaultUse === "NOCHE" ? (
 								<div
-									className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-black text-white border-black border cursor-default select-none pointer-events-none"
+									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
 									style={{ userSelect: 'none' }}
 								>
-									NOCHE
+									Noche
 								</div>
 							) : defaultUse === "AMBOS" ? (
 								<div
-									className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-black text-white border-black border cursor-default select-none pointer-events-none"
+									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche border cursor-default select-none pointer-events-none"
 									style={{ userSelect: 'none' }}
 								>
-									DIA / NOCHE
+									Día / Noche
 								</div>
 							) : (
 								// Si no hay defaultUse, mostrar ambos con el mismo estilo (blanco con borde gris y texto negro)
 								<>
 									<div
-										className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-white border-gray-300 text-black border cursor-default select-none pointer-events-none"
+										className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-white border-noche/12 text-noche border cursor-default select-none pointer-events-none"
 										style={{ userSelect: 'none' }}
 									>
-										DIA
+										Día
 									</div>
 									<div
-										className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-white border-gray-300 text-black border cursor-default select-none pointer-events-none"
+										className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-white border-noche/12 text-noche border cursor-default select-none pointer-events-none"
 										style={{ userSelect: 'none' }}
 									>
-										NOCHE
+										Noche
 									</div>
 								</>
 							)}
@@ -216,28 +211,28 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 							{defaultUse === "DIA" && (
 								<button
 									type="button"
-									className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md border text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-black text-white border-black cursor-pointer hover:border-gray-400 active:scale-95"
+									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
 									disabled
 								>
-									DIA
+									Día
 								</button>
 							)}
 							{defaultUse === "NOCHE" && (
 								<button
 									type="button"
-									className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md border text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-black text-white border-black cursor-pointer hover:border-gray-400 active:scale-95"
+									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
 									disabled
 								>
-									NOCHE
+									Noche
 								</button>
 							)}
 							{defaultUse === "AMBOS" && (
 								<button
 									type="button"
-									className="px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md border text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-black text-white border-black cursor-pointer hover:border-gray-400 active:scale-95"
+									className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center bg-noche text-white border-noche cursor-pointer hover:border-gray-400 active:scale-95"
 									disabled
 								>
-									DIA / NOCHE
+									Día / Noche
 								</button>
 							)}
 							{!defaultUse && (
@@ -250,9 +245,9 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 											setSelectedDia(!selectedDia)
 										}}
 										disabled={isAmbos}
-										className={`px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md border text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedDia ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
+										className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedDia ? "bg-noche text-white border-noche" : "bg-white border-noche/12 text-noche"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
 									>
-										DIA
+										Día
 									</button>
 									<button
 										type="button"
@@ -261,9 +256,9 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 											setSelectedNoche(!selectedNoche)
 										}}
 										disabled={isAmbos}
-										className={`px-1.5 sm:px-2 lg:px-3 py-0.5 sm:py-1 rounded-md border text-[10px] sm:text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedNoche ? "bg-black text-white border-black" : "bg-white border-gray-300"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
+										className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap border text-xs font-semibold h-6 sm:h-7 lg:h-8 flex items-center justify-center ${selectedNoche ? "bg-noche text-white border-noche" : "bg-white border-noche/12 text-noche"} ${isAmbos ? "cursor-not-allowed" : "cursor-pointer hover:border-gray-400 active:scale-95"}`}
 									>
-										NOCHE
+										Noche
 									</button>
 								</>
 							)}
@@ -272,7 +267,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 				</div>
 
 			{/* Tamaños - barra segmentada: la opción activa se ve como píldora negra flotante */}
-			<div className="flex items-stretch gap-2.5 rounded-2xl bg-[#f3f3f5] p-1.5 mb-2 sm:mb-3">
+			<div className="flex items-stretch gap-1 rounded-xl bg-niebla p-1 mb-2 sm:mb-3">
 				{product.sizes.filter(s => s === 30 || s === 50).map((s) => {
 						// Función para obtener el precio según el tamaño (usa precio personalizado o por defecto)
 						const getPrice = (size: ProductSizeMl): string => {
@@ -292,28 +287,18 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 									setSelectedSize(s)
 								}}
 								disabled={isAgotado}
-								className={`relative h-9 sm:h-10 lg:h-11 rounded-xl px-1.5 sm:px-2 lg:px-2.5 py-0.5 text-[10px] sm:text-[11px] lg:text-xs font-semibold flex flex-col items-center justify-center flex-1 min-w-0 touch-manipulation ${
+								className={`relative h-10 lg:h-11 rounded-xl px-0.5 sm:px-2 py-0.5 text-xs font-semibold flex flex-col items-center justify-center flex-1 min-w-0 touch-manipulation ${
 									isAgotado
-										? "bg-[#f5f5f7] text-[#9a9ca3] cursor-not-allowed"
+										? "bg-transparent text-gris/60 cursor-not-allowed"
 										: isSelected
-										? "bg-[#16181d] text-white shadow-[0_4px_12px_rgba(16,18,24,0.18)] active:scale-95"
-										: "bg-transparent text-[#16181d] active:scale-95"
+										? "bg-noche text-white active:scale-95"
+										: "bg-transparent text-noche active:scale-95"
 								}`}
 							>
-								{isSelected && !isAgotado && (
-									<span className="absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-green-500 border-2 border-white flex items-center justify-center">
-										<svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-										</svg>
-									</span>
-								)}
-								{isAgotado && (
-									<span className="absolute top-0.5 right-1 text-[7px] sm:text-[8px] font-bold tracking-wide text-[#9a9ca3]">AGOTADO</span>
-								)}
-								<span>{s} ML</span>
-								<span className={`text-[9px] sm:text-[10px] lg:text-[11px] font-semibold mt-0.5 leading-tight ${
-									isAgotado ? "text-[#b3b5bc] line-through" : isSelected ? "text-[#8fe6b8]" : "text-green-600"
-								}`}>{getPrice(s)}</span>
+								<span>{s} ml</span>
+								<span className={`text-xs font-medium leading-tight tabular-nums whitespace-nowrap ${
+									isAgotado ? "text-gris/60" : isSelected ? "text-white/64" : "text-gris"
+								}`}>{isAgotado ? "Agotado" : precioRD(getPrice(s))}</span>
 							</button>
 						)
 					})}
@@ -323,7 +308,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 				<div className="mt-auto">
 					{quantity > 0 ? (
 						// Selector de cantidad: el cliente ve claramente que puede agregar o quitar unidades
-						<div className="w-full h-9 sm:h-10 lg:h-11 rounded-lg sm:rounded-xl bg-green-50 flex items-center justify-between px-1 sm:px-1.5">
+						<div className="w-full h-9 sm:h-10 lg:h-11 rounded-full bg-senal/10 flex items-center justify-between px-1 sm:px-1.5">
 							<button
 								type="button"
 								aria-label="Quitar una unidad"
@@ -335,13 +320,13 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 										use: currentUse,
 									})
 								}}
-								className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-green-500 hover:bg-green-600 text-white text-base sm:text-lg font-bold flex items-center justify-center active:scale-95 touch-manipulation transition-colors duration-150 flex-shrink-0"
+								className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-senal hover:bg-senal/90 text-white text-base sm:text-lg font-bold flex items-center justify-center active:scale-95 touch-manipulation transition-colors duration-150 flex-shrink-0"
 							>
 								−
 							</button>
-							<div className="flex items-center justify-center gap-1 sm:gap-1.5 text-green-600 text-xs sm:text-sm lg:text-base font-bold select-none">
+							<div className="flex items-center justify-center gap-1 sm:gap-1.5 text-senal text-xs sm:text-sm font-semibold select-none">
 								{quantity}
-								<span className="text-[10px] sm:text-xs lg:text-sm">EN CARRITO</span>
+								<span className="text-xs tracking-wide">EN CARRITO</span>
 							</div>
 							<button
 								type="button"
@@ -351,7 +336,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 									addItem(buildCartItem(selectedSize, currentUse))
 									onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 								}}
-								className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-green-500 hover:bg-green-600 text-white text-base sm:text-lg font-bold flex items-center justify-center active:scale-95 touch-manipulation transition-colors duration-150 flex-shrink-0"
+								className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full bg-senal hover:bg-senal/90 text-white text-base sm:text-lg font-bold flex items-center justify-center active:scale-95 touch-manipulation transition-colors duration-150 flex-shrink-0"
 							>
 								+
 							</button>
@@ -367,7 +352,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 								onAdd?.({ productId: product.id, size: selectedSize, use: currentUse })
 							}}
 							disabled={selectedSize === null}
-							className={`w-full h-9 sm:h-10 lg:h-11 rounded-full text-xs sm:text-sm lg:text-base font-bold transition-colors duration-150 border flex items-center justify-center touch-manipulation active:scale-95 ${selectedSize === null ? "bg-white text-gray-400 border-gray-300 cursor-not-allowed" : "bg-white hover:bg-green-50 text-green-600 border-green-500"}`}
+							className={`w-full h-9 sm:h-10 lg:h-11 rounded-full text-xs sm:text-sm font-semibold tracking-wide transition-colors duration-150 border flex items-center justify-center touch-manipulation active:scale-95 ${selectedSize === null ? "bg-white text-gris/60 border-noche/12 cursor-not-allowed" : "bg-noche hover:bg-noche/90 text-white border-noche"}`}
 						>
 							<span className="inline-flex items-center justify-center gap-1.5 sm:gap-2">
 								AGREGAR

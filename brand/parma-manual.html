@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google" content="notranslate">
+<title>Parma · Manual de marca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Manual de marca de PARMA. Marca propia, con sus propios elementos. Todo valor sale de esta lista y de ninguna
+   otra: si la web necesita uno que no esta aca, primero entra al manual. */
+:root{
+  --noche:#0F1821;      /* medido en el logo original */
+  --blanco:#FFFFFF;
+  --niebla:#F3F3F5;     /* ya vive en la web: fondo del selector de tamano */
+  --gris:#6B7280;       /* ya vive en la web: texto secundario */
+  --linea:rgba(15,24,33,.12);
+  --senal:#16A34A;      /* ya vive en la web. Solo ESTADO, nunca decoracion */
+
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --sans:Inter,system-ui,sans-serif;
+
+  --r-caja:12px;
+  --r-pastilla:999px;
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:var(--sans);font-size:16px;line-height:1.5;color:var(--noche);background:var(--blanco);-webkit-font-smoothing:antialiased}
+.hoja{max-width:960px;margin:0 auto;padding:0 24px}
+section{padding:64px 0;border-top:1px solid var(--linea)}
+h1,h2,h3{font-family:var(--serif);font-weight:500;line-height:1.1}
+h2{font-size:32px;margin-bottom:8px}
+h3{font-size:24px;margin:32px 0 8px}
+p{max-width:60ch}
+p+p{margin-top:16px}
+.num{font:600 12px/1 var(--sans);letter-spacing:.08em;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:16px}
+.bajada{color:var(--gris);margin-bottom:32px}
+code{font:600 14px/1.5 var(--sans);font-variant-numeric:tabular-nums}
+.rejilla{display:grid;gap:16px}
+.dos{grid-template-columns:repeat(2,1fr)}
+.tres{grid-template-columns:repeat(3,1fr)}
+.caja{border:1px solid var(--linea);border-radius:var(--r-caja);padding:24px;min-width:0}
+.caja.noche{background:var(--noche);color:var(--blanco);border-color:var(--noche)}
+.caja.niebla{background:var(--niebla);border-color:var(--niebla)}
+.rotulo{font:600 12px/1.4 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin-top:16px}
+.noche .rotulo{color:rgba(255,255,255,.64)}
+ul.llana{list-style:none;padding:0}
+ul.llana li{padding:12px 0;border-bottom:1px solid var(--linea);display:flex;gap:16px}
+ul.llana li:last-child{border-bottom:0}
+ul.llana b{font:600 14px/1.5 var(--sans);min-width:24px;color:var(--gris)}
+
+/* Portada */
+.portada{background:var(--noche);color:var(--blanco);padding:96px 24px;text-align:center}
+.portada img{width:320px;max-width:80%;height:auto;display:block;margin:0 auto}
+.portada p{margin:0 auto;color:rgba(255,255,255,.64);font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase}
+
+/* Logo */
+.muestra{display:flex;align-items:center;justify-content:center;height:200px}
+.muestra svg{width:160px}
+.muestra.chica svg{width:24px}
+.no{position:relative}
+.no::after{content:"";position:absolute;inset:0;background:linear-gradient(to top right,transparent calc(50% - 1px),var(--noche) calc(50% - 1px),var(--noche) calc(50% + 1px),transparent calc(50% + 1px));opacity:.4;border-radius:var(--r-caja)}
+
+/* Color */
+.color{height:120px;border-radius:var(--r-caja);border:1px solid var(--linea)}
+.barra{display:flex;height:48px;border-radius:var(--r-caja);overflow:hidden;border:1px solid var(--linea);margin-top:32px}
+.barra i{display:block}
+
+/* Letra */
+.espec{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px solid var(--linea)}
+.espec:last-child{border-bottom:0}
+.espec span:last-child{font:500 12px/1 var(--sans);color:var(--gris);white-space:nowrap}
+
+/* Piezas */
+.boton{font:600 14px/1 var(--sans);letter-spacing:.04em;text-transform:uppercase;border-radius:var(--r-pastilla);padding:16px 24px;border:1px solid var(--noche);background:var(--noche);color:var(--blanco);cursor:pointer}
+.boton.linea{background:transparent;color:var(--noche)}
+.boton.hecho{background:var(--blanco);color:var(--senal);border-color:var(--senal)}
+.pastilla{display:inline-block;font:600 12px/1 var(--sans);border-radius:var(--r-pastilla);padding:8px 12px;border:1px solid var(--noche)}
+.pastilla.llena{background:var(--noche);color:var(--blanco)}
+.fila{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tamanos{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--niebla);border-radius:var(--r-caja);padding:4px}
+.tamanos div{border-radius:var(--r-caja);padding:8px;text-align:center;font:600 12px/1.4 var(--sans)}
+.tamanos div.on{background:var(--noche);color:var(--blanco)}
+.tamanos small{display:block;font:500 12px/1.4 var(--sans);font-variant-numeric:tabular-nums;color:var(--gris)}
+.tamanos .on small{color:rgba(255,255,255,.64)}
+.tarjeta{border:1px solid var(--linea);border-radius:var(--r-caja);overflow:hidden;max-width:320px}
+.tarjeta .foto{background:var(--noche);height:200px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.32)}
+.tarjeta .foto svg{width:96px}
+.tarjeta .cuerpo{padding:16px;display:grid;gap:12px}
+.tarjeta h4{font:500 24px/1.1 var(--serif)}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:12px 16px 12px 0;border-bottom:1px solid var(--linea);vertical-align:top}
+th{font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+
+footer{padding:48px 24px;text-align:center;border-top:1px solid var(--linea)}
+footer p{margin:0 auto;font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+footer p+p{margin-top:8px}
+
+@media (max-width:720px){
+  .dos,.tres{grid-template-columns:1fr}
+  section{padding:48px 0}
+  h2{font-size:24px}
+  .portada{padding:64px 24px}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="detras" maskUnits="userSpaceOnUse" x="0" y="0" width="378" height="245">
+      <rect width="378" height="245" fill="#fff"/>
+      <circle cx="123" cy="122.5" r="109" fill="none" stroke="#000" stroke-width="59"/>
+    </mask>
+    <symbol id="aros" viewBox="0 0 378 245">
+      <g fill="none" stroke="currentColor">
+        <circle cx="268" cy="122" r="95.5" stroke-width="27" mask="url(#detras)"/>
+        <circle cx="123" cy="122.5" r="109" stroke-width="26"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="portada">
+  <img src="parma-logo-original.png" alt="Parma">
+  <p>Manual de marca · versión 1 · 19 de septiembre de 2026</p>
+</header>
+
+<main class="hoja">
+
+<section style="border-top:0">
+  <span class="num">01 · La idea</span>
+  <h2>Un perfume caro se elige con calma.</h2>
+  <p class="bajada">Parma vende extractos de alta concentración, inspirados en perfumes de diseñador, en 30, 50 y 100 ml. El logo ya lo dice: dos aros que se cruzan, el original y el tuyo. Azul noche, blanco y una letra fina. Nada grita.</p>
+  <div class="rejilla tres">
+    <div class="caja"><h3 style="margin-top:0">Serena</h3><p>Mucho aire. Pocos colores. Una sola cosa importante por pantalla.</p></div>
+    <div class="caja"><h3 style="margin-top:0">Precisa</h3><p>El precio, el tamaño y la concentración se leen al instante, sin adornos.</p></div>
+    <div class="caja"><h3 style="margin-top:0">Cercana</h3><p>Habla de tú, como en la tienda. Ayuda a elegir. No apura.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="num">02 · Logo</span>
+  <h2>Dos aros y un nombre.</h2>
+  <p class="bajada">El aro grande va adelante. El chico pasa por detrás, y por eso tiene un corte. Ese corte es la marca: no se cierra nunca.</p>
+
+  <div class="rejilla dos">
+    <div class="caja noche"><div class="muestra"><svg><use href="#aros"/></svg></div><p class="rotulo">Principal · blanco sobre Noche</p></div>
+    <div class="caja"><div class="muestra"><svg><use href="#aros"/></svg></div><p class="rotulo">Inversa · Noche sobre blanco</p></div>
+  </div>
+
+  <h3>Medidas</h3>
+  <ul class="llana">
+    <li><b>A</b><span><strong>Aire.</strong> Alrededor del logo queda libre, como mínimo, el ancho del aro chico dividido entre dos. Nada entra en ese espacio.</span></li>
+    <li><b>B</b><span><strong>Tamaño mínimo.</strong> Los aros solos: <code>24 px</code> de ancho. Aros con nombre: <code>96 px</code> de ancho. Más chico que eso, van los aros solos.</span></li>
+    <li><b>C</b><span><strong>Sobre fotos.</strong> Siempre en blanco, arriba a la izquierda, como ya va en las fotos del catálogo.</span></li>
+  </ul>
+
+  <h3>Lo que no se hace</h3>
+  <div class="rejilla tres">
+    <div class="caja no"><div class="muestra" style="height:120px;color:var(--senal)"><svg style="width:96px"><use href="#aros"/></svg></div><p class="rotulo">Pintarlo de otro color</p></div>
+    <div class="caja no"><div class="muestra" style="height:120px"><svg style="width:96px;transform:scaleX(1.4)"><use href="#aros"/></svg></div><p class="rotulo">Estirarlo</p></div>
+    <div class="caja no"><div class="muestra" style="height:120px"><svg style="width:96px;transform:rotate(-16deg)"><use href="#aros"/></svg></div><p class="rotulo">Inclinarlo</p></div>
+  </div>
+  <p style="margin-top:24px">Tampoco se reescribe el nombre con otra letra, no se le pone sombra ni brillo, y no se separan los aros.</p>
+</section>
+
+<section>
+  <span class="num">03 · Color</span>
+  <h2>Dos colores. El resto es aire.</h2>
+  <p class="bajada">El logo tiene dos colores y la marca también. Los grises acompañan. El verde no es de Parma: es una señal, y sólo aparece cuando algo pasó.</p>
+
+  <div class="rejilla tres">
+    <div><div class="color" style="background:var(--noche)"></div><p class="rotulo">Noche</p><code>#0F1821</code><p style="font-size:14px;color:var(--gris);margin-top:8px">Texto, botones, fondo de fotos, pie.</p></div>
+    <div><div class="color" style="background:var(--blanco)"></div><p class="rotulo">Blanco</p><code>#FFFFFF</code><p style="font-size:14px;color:var(--gris);margin-top:8px">Fondo de toda la web.</p></div>
+    <div><div class="color" style="background:var(--niebla)"></div><p class="rotulo">Niebla</p><code>#F3F3F5</code><p style="font-size:14px;color:var(--gris);margin-top:8px">Cajas suaves: selector de tamaño, campos.</p></div>
+    <div><div class="color" style="background:var(--gris)"></div><p class="rotulo">Gris</p><code>#6B7280</code><p style="font-size:14px;color:var(--gris);margin-top:8px">Texto de segundo nivel.</p></div>
+    <div><div class="color" style="background:var(--linea)"></div><p class="rotulo">Línea</p><code>Noche al 12%</code><p style="font-size:14px;color:var(--gris);margin-top:8px">Bordes y separadores.</p></div>
+    <div><div class="color" style="background:var(--senal)"></div><p class="rotulo">Señal</p><code>#16A34A</code><p style="font-size:14px;color:var(--gris);margin-top:8px">Sólo estado: «agregado», «enviado». Y el botón de WhatsApp.</p></div>
+  </div>
+
+  <div class="barra" aria-hidden="true"><i style="flex:70;background:var(--blanco)"></i><i style="flex:25;background:var(--noche)"></i><i style="flex:5;background:var(--senal)"></i></div>
+  <p class="rotulo">Proporción en una pantalla · 70 blanco · 25 Noche · 5 señal, como máximo</p>
+</section>
+
+<section>
+  <span class="num">04 · Letra</span>
+  <h2>Una letra para nombrar, otra para leer.</h2>
+  <p class="bajada">Cormorant Garamond nombra: títulos y nombres de perfume. Es fina y con remates, de la familia del logo. Inter explica: precios, botones, etiquetas y texto. Las dos son libres. No hay una tercera.</p>
+
+  <div class="caja">
+    <div class="espec"><span style="font:500 32px/1.1 var(--serif)">City of Stars</span><span>Cormorant 500 · 32 · título</span></div>
+    <div class="espec"><span style="font:500 24px/1.1 var(--serif)">Bleu de Chanel Exclusif</span><span>Cormorant 500 · 24 · nombre en tarjeta</span></div>
+    <div class="espec"><span style="font:400 16px/1.5 var(--sans)">Extracto de alta concentración.</span><span>Inter 400 · 16 · texto</span></div>
+    <div class="espec"><span style="font:600 14px/1 var(--sans);letter-spacing:.04em;text-transform:uppercase">Agregar</span><span>Inter 600 · 14 · botón</span></div>
+    <div class="espec"><span style="font:600 12px/1 var(--sans)">Unisex · Día / Noche</span><span>Inter 600 · 12 · etiqueta</span></div>
+    <div class="espec"><span style="font:500 14px/1 var(--sans);font-variant-numeric:tabular-nums">RD$ 850</span><span>Inter 500 · 14 · precio, cifras parejas</span></div>
+  </div>
+  <ul class="llana" style="margin-top:24px">
+    <li><b>A</b><span><strong>Nada mide menos de 12.</strong> Hoy la web tiene etiquetas de 10 y 11. En el teléfono no se leen.</span></li>
+    <li><b>B</b><span><strong>Mayúsculas sólo en botones.</strong> Los nombres y las etiquetas van como se escriben: «City of Stars», «Día / Noche». En una tarjeta de teléfono, «DIA / NOCHE» a 12 no entra.</span></li>
+    <li><b>C</b><span><strong>El nombre «Parma» no se escribe con Cormorant.</strong> Siempre es el logo, como imagen.</span></li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">05 · Piezas</span>
+  <h2>Pocas piezas, siempre iguales.</h2>
+  <p class="bajada">Dos redondeos y ninguno más: <code>12 px</code> para cajas y <code>999 px</code> para botones y etiquetas. Todo el espacio es múltiplo de 8.</p>
+
+  <div class="rejilla dos">
+    <div class="caja">
+      <div class="fila"><button class="boton">Agregar</button><button class="boton linea">Ver detalle</button><button class="boton hecho">Agregado</button></div>
+      <p class="rotulo">Botón · principal, secundario, hecho</p>
+      <p style="font-size:14px;color:var(--gris);margin-top:8px">Un solo botón principal por tarjeta. El verde aparece sólo después de tocar.</p>
+    </div>
+    <div class="caja">
+      <div class="fila"><span class="pastilla">Unisex</span><span class="pastilla llena">Día</span><span class="pastilla">Nuevo</span></div>
+      <p class="rotulo">Etiqueta · género, momento, nuevo</p>
+      <p style="font-size:14px;color:var(--gris);margin-top:8px">«Nuevo» deja de ser verde: no es un estado, es un dato.</p>
+    </div>
+    <div class="caja">
+      <div class="tamanos"><div class="on">30 ml<small>RD$ 850</small></div><div>50 ml<small>RD$ 1,350</small></div></div>
+      <p class="rotulo">Selector de tamaño</p>
+      <p style="font-size:14px;color:var(--gris);margin-top:8px">El precio va con «RD$» adelante y cifras del mismo ancho. Sin verde.</p>
+    </div>
+    <div>
+      <div class="tarjeta">
+        <div class="foto"><svg><use href="#aros"/></svg></div>
+        <div class="cuerpo">
+          <h4>City of Stars</h4>
+          <div class="fila"><span class="pastilla">Unisex</span><span class="pastilla llena">Día</span></div>
+          <div class="tamanos"><div class="on">30 ml<small>RD$ 850</small></div><div>50 ml<small>RD$ 1,350</small></div></div>
+          <button class="boton">Agregar</button>
+        </div>
+      </div>
+      <p class="rotulo">Tarjeta de producto</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="num">06 · Foto de producto</span>
+  <h2>Tu frasco a la izquierda. El original a la derecha.</h2>
+  <p class="bajada">Esta regla ya existe en el catálogo y funciona. Se escribe para que no se pierda.</p>
+  <ul class="llana">
+    <li><b>A</b><span>Frasco de Parma a la izquierda, perfume original a la derecha, a la misma altura.</span></li>
+    <li><b>B</b><span>Fondo Noche liso. Las fotos de hoy tienen un fondo más violeta (<code>#2C2F43</code>): las nuevas van en Noche, las viejas se cambian de a poco.</span></li>
+    <li><b>C</b><span>Logo en blanco arriba a la izquierda. Nada más escrito sobre la foto.</span></li>
+    <li><b>D</b><span>Formato cuadrado. Los dos frascos ocupan el 70% del alto.</span></li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">07 · Voz</span>
+  <h2>Como en el mostrador.</h2>
+  <p class="bajada">Parma habla de tú, en dominicano llano, y dice las cosas una vez.</p>
+  <table>
+    <thead><tr><th>Hoy dice</th><th>Debe decir</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td>Jugá y ganá</td><td>Juega y gana</td><td>«Jugá» es voseo argentino. El cliente es dominicano.</td></tr>
+      <tr><td>CITY OF STARS LOUIS VUITTON</td><td>City of Stars</td><td>El nombre se lee mejor sin gritar. La casa va en gris, debajo.</td></tr>
+      <tr><td>850 RD</td><td>RD$ 850</td><td>Así se escribe el peso. El símbolo va adelante.</td></tr>
+      <tr><td>🚚 ENVÍO GRATIS | 💵 PAGO CONTRA ENTREGA</td><td>Envío gratis en Distrito Nacional y Santiago · Pago contra entrega</td><td>Sin emojis y sin mayúsculas: el dato ya es bueno solo.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <span class="num">08 · Qué cambia en la web</span>
+  <h2>Ocho arreglos, en este orden.</h2>
+  <p class="bajada">Salen de revisar <code>parmaperfume.com</code> el 19 de septiembre de 2026, en computadora y en teléfono.</p>
+  <ul class="llana">
+    <li><b>1</b><span><strong>El botón del juego tapa «Agregar» en el teléfono.</strong> Se mueve o se achica. Es el único que cuesta ventas hoy.</span></li>
+    <li><b>2</b><span><strong>El verde deja de mandar.</strong> Botones y precios pasan a Noche. El verde queda para «agregado» y WhatsApp.</span></li>
+    <li><b>3</b><span><strong>Nombres de perfume en Cormorant</strong>, sin mayúsculas sostenidas.</span></li>
+    <li><b>4</b><span><strong>Nada menor de 12.</strong> Suben las etiquetas de 10 y 11.</span></li>
+    <li><b>5</b><span><strong>Un solo azul oscuro.</strong> Hoy hay tres: el del logo, el de las fotos y el negro de los botones.</span></li>
+    <li><b>6</b><span><strong>Fuera el degradado durazno del encabezado.</strong> Fondo blanco, línea abajo.</span></li>
+    <li><b>7</b><span><strong>Dos redondeos en vez de cinco.</strong></span></li>
+    <li><b>8</b><span><strong>77 perfumes en una sola tira.</strong> Hace falta filtrar por género, momento y casa, y buscar por nombre.</span></li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">09 · Abierto</span>
+  <h2>Lo que falta decidir.</h2>
+  <ul class="llana">
+    <li><b>A</b><span><strong>El nombre en vectorial.</strong> Los aros ya están redibujados (<code>parma-isotipo.svg</code>). El nombre «Parma» sólo existe en PNG: falta el archivo original o saber qué letra es.</span></li>
+    <li><b>B</b><span><strong>Cormorant Garamond es una propuesta.</strong> Se eligió por parecido con el logo. Si el logo usa otra letra y se consigue, manda esa.</span></li>
+    <li><b>C</b><span><strong>El juego.</strong> «Sopa de Letras» usa otra letra y otro verde. Se decide si se viste de Parma o si se queda como pieza aparte.</span></li>
+  </ul>
+</section>
+
+</main>
+
+<footer>
+  <svg style="width:48px;color:var(--noche);display:block;margin:0 auto 16px" aria-hidden="true"><use href="#aros"/></svg>
+  <p>Parma · Manual de marca · versión 1</p>
+</footer>
+
+</body>
+</html>

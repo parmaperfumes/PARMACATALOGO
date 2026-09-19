@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 378 245" role="img" aria-label="Parma">
+  <!-- Redibujado sobre el logo original de 1080 px (2026-09-19).
+       Aro grande: centro 123,122.5 · radio medio 109 · trazo 26.
+       Aro chico:  centro 268,122   · radio medio 95.5 · trazo 27.
+       El aro chico pasa por DETRAS del grande: la mascara le abre un corte de
+       16.5 px a cada lado del trazo del grande. El color lo pone quien lo usa
+       (currentColor): blanco sobre Noche, Noche sobre blanco. -->
+  <defs>
+    <mask id="detras" maskUnits="userSpaceOnUse" x="0" y="0" width="378" height="245">
+      <rect width="378" height="245" fill="#fff"/>
+      <circle cx="123" cy="122.5" r="109" fill="none" stroke="#000" stroke-width="59"/>
+    </mask>
+  </defs>
+  <g fill="none" stroke="currentColor">
+    <circle cx="268" cy="122" r="95.5" stroke-width="27" mask="url(#detras)"/>
+    <circle cx="123" cy="122.5" r="109" stroke-width="26"/>
+  </g>
+</svg>

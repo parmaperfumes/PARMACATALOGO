@@ -1,10 +1,16 @@
 import type { Metadata } from "next"
-import { Inter, Poppins } from "next/font/google"
+import { Cormorant_Garamond, Inter, Poppins } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/components/providers/AuthProvider"
 import { VisitTracker } from "@/components/VisitTracker"
 
 const inter = Inter({ subsets: ["latin"] })
+// Letra de titulos y nombres de perfume (brand/parma-manual.html, seccion 04).
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  variable: "--font-cormorant",
+})
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -31,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.className} ${poppins.variable}`} suppressHydrationWarning>
+      <body className={`${inter.className} ${poppins.variable} ${cormorant.variable}`} suppressHydrationWarning>
         <AuthProvider>
           <VisitTracker />
           {children}

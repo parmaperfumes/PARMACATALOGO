@@ -25,12 +25,13 @@ export function SopaButton() {
 
 	return (
 		<>
-			{/* Flotante abajo-izquierda. */}
+			{/* Flotante abajo-izquierda. En teléfono va sólo el ícono: con el texto tapaba
+			    el botón Agregar de la columna izquierda. */}
 			<div className="fixed left-[18px] bottom-24 lg:bottom-[18px] z-[1000]">
 				<button
 					onClick={() => setIsOpen(true)}
 					className="sopa2-btn"
-					aria-label="Jugá y ganá con la Sopa de Letras"
+					aria-label="Juega y gana con la Sopa de Letras"
 				>
 					<span className="sopa2-ic" aria-hidden>
 						{Array.from({ length: 9 }).map((_, i) => (
@@ -38,7 +39,7 @@ export function SopaButton() {
 						))}
 					</span>
 					<span className="sopa2-txt">
-						<span className="sopa2-kicker">JUGÁ Y GANÁ</span>
+						<span className="sopa2-kicker">JUEGA Y GANA</span>
 						<span className="sopa2-title">Sopa de Letras</span>
 					</span>
 				</button>
@@ -49,42 +50,46 @@ export function SopaButton() {
 					display: inline-flex;
 					align-items: center;
 					gap: 12px;
-					padding: 10px 18px 10px 10px;
-					background: #12b76a;
+					padding: 8px;
+					background: var(--color-noche);
 					border: 0;
-					border-radius: 16px;
-					box-shadow: 0 12px 28px rgba(18,183,106,.35);
+					border-radius: 12px;
+					box-shadow: 0 8px 24px rgba(15,24,33,.24);
 					color: #fff;
 					text-align: left;
-					font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+					font-family: inherit;
 					cursor: pointer;
 					transition: background 160ms ease, transform 160ms ease;
 				}
-				.sopa2-btn:hover { background: #0ea05c; transform: translateY(-2px); }
+				.sopa2-btn:hover { transform: translateY(-2px); }
 				.sopa2-btn:active { transform: translateY(0); }
-				.sopa2-btn:focus-visible { outline: 2px solid #12b76a; outline-offset: 2px; }
+				.sopa2-btn:focus-visible { outline: 2px solid var(--color-noche); outline-offset: 2px; }
 
 				.sopa2-ic {
 					display: grid;
 					grid-template-columns: repeat(3, 6px);
 					gap: 3px;
 					padding: 9px;
-					background: rgba(255,255,255,.18);
-					border-radius: 10px;
+					background: rgba(255,255,255,.12);
+					border-radius: 12px;
 				}
 				.sopa2-ic i { width: 6px; height: 6px; border-radius: 1px; display: block; }
 
-				.sopa2-txt { display: flex; flex-direction: column; }
+				.sopa2-txt { display: none; flex-direction: column; }
+				@media (min-width: 1024px) {
+					.sopa2-btn { padding: 8px 16px 8px 8px; }
+					.sopa2-txt { display: flex; }
+				}
 				.sopa2-kicker {
-					font-size: 10px;
-					font-weight: 700;
-					letter-spacing: .14em;
+					font-size: 12px;
+					font-weight: 600;
+					letter-spacing: .08em;
 					color: rgba(255,255,255,.8);
 					line-height: 1;
 				}
 				.sopa2-title {
 					font-size: 14px;
-					font-weight: 800;
+					font-weight: 600;
 					line-height: 1.1;
 					color: #fff;
 					margin-top: 3px;
