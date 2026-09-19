@@ -25,8 +25,7 @@ export function SopaButton() {
 
 	return (
 		<>
-			{/* Flotante abajo-izquierda. En teléfono va sólo el ícono: con el texto tapaba
-			    el botón Agregar de la columna izquierda. */}
+			{/* Flotante abajo-izquierda. */}
 			<div className="fixed left-[18px] bottom-24 lg:bottom-[18px] z-[1000]">
 				<button
 					onClick={() => setIsOpen(true)}
@@ -50,11 +49,11 @@ export function SopaButton() {
 					display: inline-flex;
 					align-items: center;
 					gap: 12px;
-					padding: 8px;
+					padding: 10px 18px 10px 10px;
 					background: var(--color-noche);
-					border: 0;
+					border: 1px solid rgba(255,255,255,.16);
 					border-radius: 12px;
-					box-shadow: 0 8px 24px rgba(15,24,33,.24);
+					box-shadow: 0 8px 24px rgba(15,24,33,.28);
 					color: #fff;
 					text-align: left;
 					font-family: inherit;
@@ -75,24 +74,21 @@ export function SopaButton() {
 				}
 				.sopa2-ic i { width: 6px; height: 6px; border-radius: 1px; display: block; }
 
-				.sopa2-txt { display: none; flex-direction: column; }
-				@media (min-width: 1024px) {
-					.sopa2-btn { padding: 8px 16px 8px 8px; }
-					.sopa2-txt { display: flex; }
-				}
+				.sopa2-txt { display: flex; flex-direction: column; }
 				.sopa2-kicker {
 					font-size: 12px;
-					font-weight: 600;
-					letter-spacing: .08em;
-					color: rgba(255,255,255,.8);
+					font-weight: 500;
+					letter-spacing: .16em;
+					color: rgba(255,255,255,.64);
 					line-height: 1;
 				}
 				.sopa2-title {
-					font-size: 14px;
-					font-weight: 600;
-					line-height: 1.1;
+					font-family: var(--font-cormorant), Georgia, serif;
+					font-size: 20px;
+					font-weight: 500;
+					line-height: 1;
 					color: #fff;
-					margin-top: 3px;
+					margin-top: 4px;
 				}
 			`}</style>
 

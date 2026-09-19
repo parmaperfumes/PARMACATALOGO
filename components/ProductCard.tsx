@@ -110,8 +110,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 			<div className="relative bg-noche text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
 				{/* Etiqueta MÁS VENDIDO / RE-STOCK / NUEVO */}
 				{product.tipoLanzamiento && (
-					<div className="absolute top-2 right-2 z-10 px-2 py-1 sm:px-3 rounded-full bg-white text-noche text-xs leading-none font-semibold tracking-wide">
-						{product.tipoLanzamiento === "NUEVO" ? "MÁS VENDIDO" : product.tipoLanzamiento === "LANZAMIENTO" ? "NUEVO" : "RE-STOCK"}
+					<div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 h-5 px-2 rounded-full inline-flex items-center bg-white/16 border border-white/32 backdrop-blur-md text-white text-xs leading-none font-medium">
+						{product.tipoLanzamiento === "NUEVO" ? "Más vendido" : product.tipoLanzamiento === "LANZAMIENTO" ? "Nuevo" : "Re-stock"}
 					</div>
 				)}
 				

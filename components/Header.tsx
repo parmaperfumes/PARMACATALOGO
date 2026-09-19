@@ -74,10 +74,15 @@ export function Header() {
 									priority
 								/>
 							) : (
-								<span className="header-logo-text">
-									{config.logoText}
-									<span className="header-logo-dot">.</span>
-								</span>
+								// Sin logo cargado en el admin, va el de la marca: nunca un texto suelto.
+								<Image
+									src="/parma-logo-noche.png"
+									alt="Parma"
+									width={620}
+									height={466}
+									className="h-8 sm:h-10 w-auto object-contain"
+									priority
+								/>
 							)}
 						</Link>
 					)}

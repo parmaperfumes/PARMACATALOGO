@@ -173,6 +173,13 @@ body::after {
   overflow: hidden;
   display: flex;
   align-items: center;
+  /* Los avisos entran y salen desvaneciendose, no cortados contra el borde. */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+}
+
+.announcement-bar:hover .announcement-track {
+  animation-play-state: paused;
 }
 
 .announcement-track {
@@ -180,25 +187,34 @@ body::after {
   flex-wrap: nowrap;
   white-space: nowrap;
   will-change: transform;
-  animation: announcement-scroll 22s linear infinite;
+  animation: announcement-scroll 48s linear infinite;
 }
 
 .announcement-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 22px;
-  color: #ffffff;
+  gap: 24px;
+  padding-left: 24px;
+  color: rgba(255, 255, 255, 0.88);
   font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   line-height: 18px;
   white-space: nowrap;
 }
 
-.announcement-emoji {
-  font-size: 13px;
-  line-height: 1;
+.announcement-sep {
+  width: 16px;
+  height: auto;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .announcement-track {
+    animation: none;
+  }
 }
 
 @keyframes announcement-scroll {
@@ -398,182 +414,107 @@ header {
   }
 }
 
-/* Mobile Navigation Bar */
+/* Mobile Navigation Bar
+   Un control de tres partes IGUALES (brand/parma-manual.html, seccion 05). Como
+   miden lo mismo, la pastilla que marca el filtro calza por aritmetica y no hace
+   falta un ajuste por tamano de pantalla. */
 .mobile-nav-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: white;
-  border-top: 1px solid #e5e7eb;
-  padding: 8px 4px;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid rgba(15, 24, 33, 0.12);
+  padding: 8px 16px;
   padding-bottom: max(8px, env(safe-area-inset-bottom));
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
 }
 
 .mobile-nav-container {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 4px;
+  background: var(--color-niebla);
+  border-radius: 999px;
 }
 
 .mobile-nav-indicator {
   position: absolute;
-  top: 50%;
-  left: 0;
-  width: calc((100% - 24px) / 3);
-  height: 48px;
-  background: #0E1820;
-  border-radius: 8px;
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
-  transform: translateY(-50%);
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 3);
+  background: var(--color-noche);
+  border-radius: 999px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
   z-index: 0;
   pointer-events: none;
 }
 
-.mobile-nav-indicator.whatsapp-active {
-  background: #1DA851;
-}
-
 .mobile-nav-item {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 8px;
+  height: 40px;
+  min-width: 0;
   background: none;
   border: none;
-  color: #6b7280;
+  border-radius: 999px;
+  color: var(--color-noche);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  border-radius: 20px;
   position: relative;
   z-index: 1;
-  flex: 0 0 auto;
 }
 
 .mobile-nav-item:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
 }
 
 .mobile-nav-item-active {
-  background: transparent;
   color: #ffffff;
 }
 
-.mobile-nav-item-active .mobile-nav-icon {
-  color: #ffffff;
-  stroke-width: 2.5;
-}
-
-.mobile-nav-item-whatsapp {
-  color: #6b7280;
-}
-
+/* WhatsApp con perfumes elegidos: eso SI es un estado, lleva la senal. */
 .mobile-nav-item-whatsapp.mobile-nav-item-active {
-  background: transparent;
+  background: var(--color-senal);
   color: #ffffff;
-}
-
-.mobile-nav-item-whatsapp.mobile-nav-item-active .mobile-nav-icon {
-  color: #ffffff;
-}
-
-/* Indicador verde para WhatsApp cuando hay items pero el filtro está activo */
-.mobile-nav-item-whatsapp.mobile-nav-item-active::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: calc(100% - 8px);
-  height: 48px;
-  background: #1DA851;
-  border-radius: 8px;
-  z-index: -1;
-  opacity: 1;
-}
-
-/* Responsive para diferentes tamaños de móviles */
-@media (max-width: 375px) {
-  .mobile-nav-item-whatsapp.mobile-nav-item-active::before {
-    width: calc(100% - 6px);
-    height: 44px;
-    border-radius: 6px;
-  }
-  
-  .mobile-nav-indicator {
-    height: 44px;
-    border-radius: 6px;
-  }
-}
-
-@media (min-width: 376px) and (max-width: 414px) {
-  .mobile-nav-item-whatsapp.mobile-nav-item-active::before {
-    width: calc(100% - 8px);
-    height: 48px;
-    border-radius: 8px;
-  }
-  
-  .mobile-nav-indicator {
-    border-radius: 8px;
-  }
-}
-
-@media (min-width: 415px) {
-  .mobile-nav-item-whatsapp.mobile-nav-item-active::before {
-    width: calc(100% - 10px);
-    height: 52px;
-    border-radius: 10px;
-  }
-  
-  .mobile-nav-indicator {
-    height: 52px;
-    border-radius: 10px;
-  }
 }
 
 .mobile-nav-icon {
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
   stroke-width: 2;
   color: inherit;
-  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .mobile-nav-label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: inherit;
-  transition: color 0.2s ease;
   white-space: nowrap;
 }
 
 .mobile-nav-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: #ef4444;
-  color: white;
-  font-size: 10px;
-  font-weight: bold;
-  border-radius: 10px;
-  min-width: 18px;
-  height: 18px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--color-senal);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
-  border: 2px solid white;
-  z-index: 10;
 }
 
 /* Mobile Search Overlay */

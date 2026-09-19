@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { User, UserCircle, MessageCircle } from "lucide-react"
+import { MessageCircle } from "lucide-react"
 import { useWhatsApp } from "@/context/WhatsAppContext"
 import { WhatsAppModal } from "./WhatsAppModal"
 
@@ -21,19 +21,9 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 	// Determinar si WhatsApp está activo (tiene items o modal abierto)
 	const isWhatsAppActive = items.length > 0 || isWhatsAppModalOpen
 
-	// Determinar qué elemento está activo para la animación
-	// Priorizar el filtro activo, solo mover el indicador a WhatsApp si no hay filtro activo
-	const getActiveIndex = () => {
-		// Si hay un filtro activo, mantener el indicador ahí
-		if (currentFilter === "HOMBRES") return 0
-		if (currentFilter === "MUJERES") return 1
-		// Solo si no hay filtro activo y hay items, mostrar WhatsApp como activo
-		if (isWhatsAppActive) return 2
-		return -1
-	}
-
-	const activeIndex = getActiveIndex()
-	const isIndicatorOnWhatsApp = activeIndex === 2
+	// La pastilla marca sólo el filtro. WhatsApp se pinta solo cuando hay perfumes
+	// elegidos: son dos cosas distintas y pueden estar encendidas a la vez.
+	const activeIndex = currentFilter === "HOMBRES" ? 0 : currentFilter === "MUJERES" ? 1 : -1
 
 	return (
 		<>
@@ -42,12 +32,10 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 				<div className="mobile-nav-container">
 					{/* Indicador animado que se mueve al elemento activo */}
 					<div 
-						className={`mobile-nav-indicator ${isIndicatorOnWhatsApp ? 'whatsapp-active' : ''}`}
+						className="mobile-nav-indicator"
 						style={{
-							left: activeIndex >= 0 
-								? `calc(${activeIndex} * ((100% - 24px) / 3 + 12px))` 
-								: '0',
-							opacity: activeIndex >= 0 ? 1 : 0
+							transform: `translateX(${Math.max(activeIndex, 0) * 100}%)`,
+							opacity: activeIndex >= 0 ? 1 : 0,
 						}}
 					/>
 					
@@ -62,7 +50,6 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 					className={`mobile-nav-item ${currentFilter === "HOMBRES" ? "mobile-nav-item-active" : ""}`}
 					aria-label="Perfumes para hombres"
 				>
-					<User className="mobile-nav-icon" />
 					<span className="mobile-nav-label">Hombres</span>
 				</button>
 
@@ -77,7 +64,6 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 					className={`mobile-nav-item ${currentFilter === "MUJERES" ? "mobile-nav-item-active" : ""}`}
 					aria-label="Perfumes para mujeres"
 				>
-					<UserCircle className="mobile-nav-icon" />
 					<span className="mobile-nav-label">Mujeres</span>
 				</button>
 
@@ -86,14 +72,14 @@ export function MobileNav({ onFilterChange, currentFilter }: MobileNavProps) {
 					className={`mobile-nav-item mobile-nav-item-whatsapp ${isWhatsAppActive ? "mobile-nav-item-active" : ""}`}
 					aria-label="Contactar por WhatsApp"
 				>
-					<div className="relative">
+					{/* El número ocupa el lugar del ícono: los dos juntos no entran en un tercio. */}
+					{items.length > 0 ? (
+						<span className="mobile-nav-badge">
+							{items.length > 99 ? '99+' : items.length}
+						</span>
+					) : (
 						<MessageCircle className="mobile-nav-icon" />
-						{items.length > 0 && (
-							<span className="mobile-nav-badge">
-								{items.length > 99 ? '99+' : items.length}
-							</span>
-						)}
-					</div>
+					)}
 					<span className="mobile-nav-label">WhatsApp</span>
 				</button>
 				</div>
