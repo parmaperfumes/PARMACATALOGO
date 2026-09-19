@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 
 export async function GET() {
+  const bloqueo = await exigirSesion()
+  if (bloqueo) return bloqueo
+
   // Este endpoint solo debe estar disponible en desarrollo
   // NUNCA en producción con datos sensibles
   

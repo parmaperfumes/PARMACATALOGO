@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	const dbUrl = process.env.DATABASE_URL
 	
 	if (!dbUrl) {

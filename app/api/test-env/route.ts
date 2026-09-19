@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 
 export async function GET() {
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	const hasDbUrl = !!process.env.DATABASE_URL
 	const dbUrlPreview = process.env.DATABASE_URL 
 		? process.env.DATABASE_URL.substring(0, 50) + "..." 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { cloudinary } from "@/lib/cloudinary"
 
 export async function POST(req: NextRequest) {
+  const bloqueo = await exigirSesion()
+  if (bloqueo) return bloqueo
+
   try {
     // Verificar que Cloudinary esté configurado
     if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {

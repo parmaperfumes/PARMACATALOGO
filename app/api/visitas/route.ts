@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 export async function POST(req: NextRequest) {
@@ -84,6 +85,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+	// Estadísticas del negocio: sólo el admin. El POST de abajo sigue público.
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	try {
 		const { searchParams } = new URL(req.url)
 		const dias = parseInt(searchParams.get("dias") || "30")

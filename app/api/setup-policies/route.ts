@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { supabaseAdmin } from "@/lib/supabase"
 
 export async function POST(req: NextRequest) {
+  const bloqueo = await exigirSesion()
+  if (bloqueo) return bloqueo
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY

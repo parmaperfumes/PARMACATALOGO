@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 // Datos de respaldo si la base de datos falla
@@ -198,6 +199,9 @@ const FALLBACK_PERFUMES = [
 ]
 
 export async function PATCH(req: NextRequest) {
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	if (!process.env.DATABASE_URL) {
 		return new NextResponse("DATABASE_URL no configurada", { status: 501 })
 	}
@@ -339,6 +343,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	const data = await req.json()
 
 	if (!process.env.DATABASE_URL) {

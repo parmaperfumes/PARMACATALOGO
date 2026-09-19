@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 // Tipos
@@ -72,6 +73,10 @@ export async function POST(request: NextRequest) {
 
 // GET - Obtener estadísticas de eventos de carrito
 export async function GET(request: NextRequest) {
+	// Estadísticas del negocio: sólo el admin. El POST de abajo sigue público.
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	try {
 		const { searchParams } = new URL(request.url)
 		const dias = parseInt(searchParams.get("dias") || "30")

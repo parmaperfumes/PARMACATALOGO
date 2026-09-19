@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 const DEFAULT_NAV = [
@@ -62,6 +63,9 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	if (!process.env.DATABASE_URL) {
 		return new NextResponse("DB no configurada", { status: 501 })
 	}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -74,6 +75,9 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	const dbUrl = process.env.DATABASE_URL
 	if (!dbUrl) {
 		console.error("PUT: DATABASE_URL no está definida en process.env")
@@ -216,6 +220,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	const dbUrl = process.env.DATABASE_URL
 	if (!dbUrl) {
 		console.error("DELETE: DATABASE_URL no está definida en process.env")

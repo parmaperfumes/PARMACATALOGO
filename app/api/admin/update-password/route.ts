@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
+import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
 export async function POST(req: NextRequest) {
+	const bloqueo = await exigirSesion()
+	if (bloqueo) return bloqueo
+
 	if (!process.env.DATABASE_URL) {
 		return NextResponse.json({ error: "DATABASE_URL no configurada" }, { status: 500 })
 	}
