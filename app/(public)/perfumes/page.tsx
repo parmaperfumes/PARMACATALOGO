@@ -74,7 +74,7 @@ async function getPerfumes(): Promise<PerfumeFromDB[]> {
 				       "usoPorDefecto", "fijarUso", precio30, precio50,
 				       "tipoLanzamiento", fijado, "ordenFijado", sku
 				FROM "Perfume"
-				WHERE activo = true
+				WHERE 1 = 1
 				ORDER BY COALESCE(fijado, false) DESC, COALESCE("ordenFijado", 999) ASC, CASE WHEN "tipoLanzamiento" = 'LANZAMIENTO' THEN 0 WHEN "tipoLanzamiento" = 'RESTOCK' THEN 1 ELSE 2 END ASC, "createdAt" DESC
 			`)
 		} catch (e: any) {
@@ -85,7 +85,7 @@ async function getPerfumes(): Promise<PerfumeFromDB[]> {
 					       imagenes, stock, destacado, activo, "categoriaId", "marcaId", genero, 
 					       subtitulo, volumen, notas, sizes, "createdAt", "updatedAt"
 					FROM "Perfume"
-					WHERE activo = true
+					WHERE 1 = 1
 					ORDER BY "createdAt" DESC
 				`)
 			perfumes = perfumes.map(p => ({
@@ -123,29 +123,32 @@ async function getPerfumes(): Promise<PerfumeFromDB[]> {
 export default async function PerfumesPage() {
 	let perfumes = await getPerfumes()
 
-	// Filtrar por stock: ocultar perfumes con SKU que estén outofstock
+	// El inventario de LABS manda: se muestra lo que tenga stock (30 y/o 50 ml),
+	// AUNQUE en el admin esté "Oculto". Si no hay dato de Labs (perfume sin SKU,
+	// SKU no encontrado, o la API falla) → se respeta el interruptor del admin.
 	const skus = perfumes.map((p) => p.sku).filter(Boolean) as string[]
-	if (skus.length > 0) {
-		const stockMap = await fetchStockStatus(skus)
-		if (stockMap) {
-			perfumes = perfumes
-				.map((p) => {
-					const sku = p.sku ? String(p.sku).trim() : null
-					const stock = sku ? stockMap.get(sku) : undefined
-					// Sin SKU o desconocido → se deja como viene del admin.
-					if (!stock) return p
-					return {
-						...p,
-						agotado30: !stock.hay30,
-						agotado50: !stock.hay50,
-						sinStock: !stock.hay30 && !stock.hay50,
-					}
-				})
-				// Se esconde SOLO si el inventario confirma que no hay de ningún tamaño.
-				.filter((p) => (p as { sinStock?: boolean }).sinStock !== true)
-		}
-		// Si stockMap es null (API falló), no filtramos y mostramos todos
-	}
+	const stockMap = skus.length > 0 ? await fetchStockStatus(skus) : new Map()
+
+	perfumes = perfumes
+		.map((p) => {
+			const sku = p.sku ? String(p.sku).trim() : null
+			const stock = sku && stockMap ? stockMap.get(sku) : undefined
+			if (!stock) return p // sin dato de Labs → como viene del admin
+			return {
+				...p,
+				agotado30: !stock.hay30,
+				agotado50: !stock.hay50,
+				sinStock: !stock.hay30 && !stock.hay50,
+			}
+		})
+		.filter((p) => {
+			const sku = p.sku ? String(p.sku).trim() : null
+			const stock = sku && stockMap ? stockMap.get(sku) : undefined
+			// Labs decide: visible si hay de algún tamaño; escondido si no hay de ninguno.
+			if (stock) return stock.hay30 || stock.hay50
+			// Sin dato de Labs → se respeta "Activo/Oculto" del admin.
+			return p.activo !== false
+		})
 
 	return <PerfumesClient initialData={perfumes} />
 }
