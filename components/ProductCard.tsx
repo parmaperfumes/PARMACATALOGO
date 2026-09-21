@@ -4,7 +4,7 @@ import { useState, useEffect, memo } from "react"
 import { Button } from "@/components/ui/button"
 import { useWhatsApp } from "@/context/WhatsAppContext"
 import Image from "next/image"
-import { nombreDePerfume, precioRD } from "@/lib/formato"
+import { nombreDePerfume, precioRD, PRECIO_POR_DEFECTO } from "@/lib/formato"
 import { IconoDia, IconoNoche, IconoHombre, IconoMujer, IconoUnisex } from "@/components/IconosParma"
 
 export type ProductSizeMl = 30 | 50
@@ -82,8 +82,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 
 	// Precio final para un tamaño dado (usa precio personalizado o por defecto)
 	const priceFor = (size: ProductSizeMl | null): string => {
-		if (size === 30) return product.precio30 || "850 RD"
-		if (size === 50) return product.precio50 || "1,350 RD"
+		if (size === 30) return product.precio30 || PRECIO_POR_DEFECTO[30]
+		if (size === 50) return product.precio50 || PRECIO_POR_DEFECTO[50]
 		return ""
 	}
 
@@ -286,8 +286,8 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 						// Función para obtener el precio según el tamaño (usa precio personalizado o por defecto)
 						const getPrice = (size: ProductSizeMl): string => {
 							switch (size) {
-								case 30: return product.precio30 || "850 RD"
-								case 50: return product.precio50 || "1,350 RD"
+								case 30: return product.precio30 || PRECIO_POR_DEFECTO[30]
+								case 50: return product.precio50 || PRECIO_POR_DEFECTO[50]
 								default: return ""
 							}
 						}

@@ -38,3 +38,8 @@ export const precioRD = (crudo: string): string => {
 	const numero = crudo.match(/\d[\d.,]*/)
 	return numero ? `RD$ ${numero[0]}` : crudo
 }
+
+// El precio cuando la base no trae uno propio (28 de 79 perfumes el 2026-09-21).
+// Lo leen la tarjeta y los datos para buscadores: si cada uno tuviera su copia,
+// Google vería un precio y el cliente otro.
+export const PRECIO_POR_DEFECTO: Record<30 | 50, string> = { 30: "850 RD", 50: "1,350 RD" }

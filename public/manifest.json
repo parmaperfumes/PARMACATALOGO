@@ -1,7 +1,7 @@
 {
-  "name": "Catálogo de Perfumes",
-  "short_name": "Perfumes",
-  "description": "Descubre la mejor colección de perfumes",
+  "name": "Parma Perfumes",
+  "short_name": "Parma",
+  "description": "Extractos de alta concentración inspirados en perfumes de diseñador.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

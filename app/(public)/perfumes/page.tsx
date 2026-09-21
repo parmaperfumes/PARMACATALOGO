@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
+import { datosDelCatalogo, jsonLdSeguro } from "@/lib/datosEstructurados"
+import { NOMBRE_SITIO } from "@/lib/sitio"
 import PerfumesClient, { type PerfumeFromDB } from "./PerfumesClient"
 
 // El inventario vive en Labs (QualiaBusiness). La misma función sirve a las dos
@@ -9,6 +12,9 @@ const STOCK_TIENDA = "parma"
 // rechace el pedido ENTERO (400) y el catálogo deje de filtrar sin avisar: pasó
 // con un perfume cuyo SKU era su propio nombre, con un espacio.
 const PATRON_SKU = /^[A-Za-z0-9._-]{1,32}$/
+
+// `/` redirige acá: sin la canónica, Google duda entre las dos direcciones.
+export const metadata: Metadata = { alternates: { canonical: "/perfumes" } }
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -150,5 +156,15 @@ export default async function PerfumesPage() {
 			return p.activo !== false
 		})
 
-	return <PerfumesClient initialData={perfumes} />
+	return (
+		<>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: jsonLdSeguro(datosDelCatalogo(perfumes)) }}
+			/>
+			{/* La página no tenía título de primer nivel: lo leen los lectores de pantalla y los buscadores. */}
+			<h1 className="sr-only">{NOMBRE_SITIO} · Catálogo de perfumes inspirados</h1>
+			<PerfumesClient initialData={perfumes} />
+		</>
+	)
 }

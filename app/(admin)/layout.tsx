@@ -2,6 +2,10 @@ import { redirect } from "next/navigation"
 import { obtenerSesion } from "@/lib/session"
 import { LogoutButton } from "@/components/LogoutButton"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+// Las pantallas de administración no van a ningún buscador.
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 export default async function AdminLayout({
 	children,
