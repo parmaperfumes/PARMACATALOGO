@@ -6,6 +6,14 @@ import { useWhatsApp } from "@/context/WhatsAppContext"
 import Image from "next/image"
 import { nombreDePerfume, precioRD, PRECIO_POR_DEFECTO } from "@/lib/formato"
 import { IconoDia, IconoNoche, IconoHombre, IconoMujer, IconoUnisex } from "@/components/IconosParma"
+import { selloDe, type TonoSello } from "@/lib/sello"
+
+// Colores del sello (manual, 03 · Color). La letra cambia para que se lea sobre cada fondo.
+const COLOR_SELLO: Record<TonoSello, string> = {
+	quedan: "bg-sello-quedan text-white",
+	nuevo: "bg-sello-nuevo text-noche",
+	vendido: "bg-sello-vendido text-noche",
+}
 
 export type ProductSizeMl = 30 | 50
 
@@ -22,6 +30,8 @@ export type Product = {
 	precio50?: string | null // Precio personalizado para 50ml (ej: "1,350 RD")
 	agotado30?: boolean | null // Marca el tamaño 30ml como agotado
 	agotado50?: boolean | null // Marca el tamaño 50ml como agotado
+	quedan?: number | null // 1 a 3 frascos en Labs (30 + 50 ml): sello «Quedan N»
+	esNuevo?: boolean // Uno de los 3 agregados más recientes: sello «Nuevo»
 }
 
 export type ProductCardProps = {
@@ -105,14 +115,16 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		item.use === currentUse
 	).length
 
+	const sello = selloDe(product)
+
 	return (
 		<div className={`rounded-xl overflow-hidden border border-noche/12 bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
 			{/* Header visual con imagen */}
 			<div className="relative bg-noche text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
-				{/* Etiqueta MÁS VENDIDO / RE-STOCK / NUEVO */}
-				{product.tipoLanzamiento && (
-					<div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 h-5 px-2 rounded-full inline-flex items-center bg-white/16 border border-white/32 backdrop-blur-md text-white text-xs leading-none font-medium">
-						{product.tipoLanzamiento === "NUEVO" ? "Más vendido" : product.tipoLanzamiento === "LANZAMIENTO" ? "Nuevo" : "Re-stock"}
+				{/* Sello: QUEDAN N, si no NUEVO, si no MÁS VENDIDO (lib/sello.ts) */}
+				{sello && (
+					<div className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 h-5 px-2 rounded-full inline-flex items-center text-xs leading-none font-medium ${COLOR_SELLO[sello.tono]}`}>
+						{sello.texto}
 					</div>
 				)}
 				

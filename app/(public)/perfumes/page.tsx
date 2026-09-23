@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
 import { datosDelCatalogo, jsonLdSeguro } from "@/lib/datosEstructurados"
 import { NOMBRE_SITIO } from "@/lib/sitio"
+import { idsNuevos, quedanValido } from "@/lib/sello"
 import PerfumesClient, { type PerfumeFromDB } from "./PerfumesClient"
 
 // El inventario vive en Labs (QualiaBusiness). La misma función sirve a las dos
@@ -21,7 +22,9 @@ export const revalidate = 0
 
 // Qué tamaños hay en inventario. Parma vende 30 y 50 ml: mirar sólo «hay o no hay»
 // escondía los perfumes que sólo tienen de 50 y ofrecía de 50 los que no tienen.
-type TamanosEnStock = { hay30: boolean; hay50: boolean }
+// `quedan` es 1, 2 o 3 cuando quedan esos frascos sumando los dos tamaños (el
+// sello «Quedan N»); con más, o sin dato, null.
+type TamanosEnStock = { hay30: boolean; hay50: boolean; quedan: number | null }
 
 /** Obtiene el stock por SKU y tamaño. Retorna null si falla (para no ocultar perfumes por error de API). */
 async function fetchStockStatus(
@@ -44,7 +47,7 @@ async function fetchStockStatus(
 
 		const data = (await res.json()) as {
 			success?: boolean
-			products?: Record<string, { nombre?: string; stock_status?: string; tamanos?: { "30"?: boolean; "50"?: boolean } }>
+			products?: Record<string, { nombre?: string; stock_status?: string; tamanos?: { "30"?: boolean; "50"?: boolean }; quedan?: unknown }>
 		}
 		if (!data?.success || !data.products) return null
 
@@ -59,7 +62,7 @@ async function fetchStockStatus(
 			// todavía no manda `tamanos`.
 			const hay30 = info?.tamanos ? info.tamanos["30"] === true : info?.stock_status === "instock"
 			const hay50 = info?.tamanos ? info.tamanos["50"] === true : false
-			map.set(sku.trim(), { hay30, hay50 })
+			map.set(sku.trim(), { hay30, hay50, quedan: quedanValido(info?.quedan) })
 		}
 		return map
 	} catch (e) {
@@ -145,6 +148,7 @@ export default async function PerfumesPage() {
 				agotado30: !stock.hay30,
 				agotado50: !stock.hay50,
 				sinStock: !stock.hay30 && !stock.hay50,
+				quedan: stock.quedan,
 			}
 		})
 		.filter((p) => {
@@ -155,6 +159,10 @@ export default async function PerfumesPage() {
 			// Sin dato de Labs → se respeta "Activo/Oculto" del admin.
 			return p.activo !== false
 		})
+
+	// «Nuevo» lo llevan solos los 3 agregados más recientes, entre los que se ven.
+	const nuevos = idsNuevos(perfumes)
+	perfumes = perfumes.map((p) => ({ ...p, esNuevo: nuevos.has(p.id) }))
 
 	return (
 		<>

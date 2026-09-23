@@ -7,6 +7,10 @@
   --color-niebla: #F3F3F5;
   --color-gris: #6B7280;
   --color-senal: #16A34A;
+  /* Solo para el sello sobre la foto (manual, 03 · Color) */
+  --color-sello-quedan: #DC343B;
+  --color-sello-nuevo: #00D4FF;
+  --color-sello-vendido: #FBAE00;
 }
 
 @theme inline {
