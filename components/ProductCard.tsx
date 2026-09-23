@@ -32,6 +32,7 @@ export type Product = {
 	agotado50?: boolean | null // Marca el tamaño 50ml como agotado
 	quedan?: number | null // 1 a 3 frascos en Labs (30 + 50 ml): sello «Quedan N»
 	esNuevo?: boolean // Uno de los 3 agregados más recientes: sello «Nuevo»
+	masVendido?: boolean // Top 5 de ventas de Labs (el del Dashboard): sello «Más vendido»
 }
 
 export type ProductCardProps = {

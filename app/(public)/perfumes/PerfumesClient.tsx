@@ -27,6 +27,7 @@ export type PerfumeFromDB = {
 	agotado30?: boolean
 	agotado50?: boolean
 	quedan?: number | null
+	masVendido?: boolean
 	// Lo pone la página: los 3 agregados más recientes entre los que se ven.
 	esNuevo?: boolean
 	createdAt?: Date | string | null
@@ -131,6 +132,7 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 		agotado50: p.agotado50 === true,
 		quedan: p.quedan ?? null,
 		esNuevo: p.esNuevo === true,
+		masVendido: p.masVendido === true,
 	}))
 
 	// Filtrar perfumes según el género seleccionado y la búsqueda
