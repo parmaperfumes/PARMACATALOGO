@@ -3,6 +3,7 @@ import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 
 const DEFAULTS = {
+	activo: true,
 	mensajeTitulo: "¿Necesitas ayuda para elegir tu perfume?",
 	mensajeTexto: "¿No sabes cuál elegir? Te ayudamos a encontrar tu fragancia ideal, gratis y sin compromiso. 💬",
 	mensajeWhatsApp: "Hola 👋, necesito ayuda personalizada para elegir mi perfume.",
@@ -15,7 +16,7 @@ export async function GET() {
 
 	try {
 		const config = await prisma.$queryRawUnsafe<Array<any>>(
-			`SELECT "mensajeTitulo", "mensajeTexto", "mensajeWhatsApp"
+			`SELECT "activo", "mensajeTitulo", "mensajeTexto", "mensajeWhatsApp"
 			 FROM "CatalogPopupConfig"
 			 WHERE id = 'main'
 			 LIMIT 1`
@@ -25,6 +26,7 @@ export async function GET() {
 		}
 		const row = config[0]
 		return NextResponse.json({
+			activo: row.activo !== false,
 			mensajeTitulo: row.mensajeTitulo ?? DEFAULTS.mensajeTitulo,
 			mensajeTexto: row.mensajeTexto ?? DEFAULTS.mensajeTexto,
 			mensajeWhatsApp: row.mensajeWhatsApp ?? DEFAULTS.mensajeWhatsApp,
@@ -48,22 +50,17 @@ export async function PUT(req: NextRequest) {
 
 	try {
 		const data = await req.json()
+		const activo = data.activo !== false
 		const mensajeTitulo = data.mensajeTitulo ?? DEFAULTS.mensajeTitulo
 		const mensajeTexto = data.mensajeTexto ?? DEFAULTS.mensajeTexto
 		const mensajeWhatsApp = data.mensajeWhatsApp ?? DEFAULTS.mensajeWhatsApp
 
 		try {
 			await prisma.$executeRawUnsafe(
-				`UPDATE "CatalogPopupConfig" SET "mensajeTitulo" = $1, "mensajeTexto" = $2, "mensajeWhatsApp" = $3, "updatedAt" = NOW() WHERE id = 'main'`,
-				mensajeTitulo,
-				mensajeTexto,
-				mensajeWhatsApp
-			)
-			// Si no hubo filas afectadas, insertar
-			await prisma.$executeRawUnsafe(
-				`INSERT INTO "CatalogPopupConfig" (id, "mensajeTitulo", "mensajeTexto", "mensajeWhatsApp", "createdAt", "updatedAt")
-				 VALUES ('main', $1, $2, $3, NOW(), NOW())
-				 ON CONFLICT (id) DO UPDATE SET "mensajeTitulo" = $1, "mensajeTexto" = $2, "mensajeWhatsApp" = $3, "updatedAt" = NOW()`,
+				`INSERT INTO "CatalogPopupConfig" (id, "activo", "mensajeTitulo", "mensajeTexto", "mensajeWhatsApp", "createdAt", "updatedAt")
+				 VALUES ('main', $1, $2, $3, $4, NOW(), NOW())
+				 ON CONFLICT (id) DO UPDATE SET "activo" = $1, "mensajeTitulo" = $2, "mensajeTexto" = $3, "mensajeWhatsApp" = $4, "updatedAt" = NOW()`,
+				activo,
 				mensajeTitulo,
 				mensajeTexto,
 				mensajeWhatsApp
@@ -71,7 +68,7 @@ export async function PUT(req: NextRequest) {
 		} catch (sqlError: any) {
 			if (sqlError.message?.includes("does not exist") || sqlError.message?.includes("relation")) {
 				return new NextResponse(
-					"La tabla 'CatalogPopupConfig' no existe. Ejecuta el script SQL 'scripts/agregar_catalog_popup_config.sql' en Supabase.",
+					"Falta la tabla 'CatalogPopupConfig' o su columna 'activo'. Ejecuta el script SQL 'scripts/agregar_catalog_popup_config.sql' en Supabase.",
 					{ status: 500 }
 				)
 			}

@@ -1,13 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { ProductCard, type Product } from "@/components/ProductCard"
 import { useSearch } from "@/context/SearchContext"
 import { MobileNav } from "@/components/MobileNav"
-import { HelpOfferModal } from "@/components/HelpOfferModal"
+import { HelpBanner } from "@/components/HelpBanner"
 import { SopaBanner } from "@/components/SopaBanner"
-
-const STORAGE_KEY = "perfumes-help-offer-shown"
 
 export type PerfumeFromDB = {
 	id: string
@@ -40,79 +38,9 @@ type PerfumesClientProps = {
 	initialData: PerfumeFromDB[]
 }
 
-const DEFAULT_CONFIG = {
-	mensajeTitulo: "¿Necesitas ayuda para elegir tu perfume?",
-	mensajeTexto: "¿No sabes cuál elegir? Te ayudamos a encontrar tu fragancia ideal, gratis y sin compromiso. 💬",
-	mensajeWhatsApp: "Hola 👋, necesito ayuda personalizada para elegir mi perfume.",
-}
-
 export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 	const { searchQuery } = useSearch()
 	const [selectedFilter, setSelectedFilter] = useState<"TODOS" | "HOMBRES" | "MUJERES">("TODOS")
-	const [showHelpOffer, setShowHelpOffer] = useState(false)
-	const [popupConfig, setPopupConfig] = useState(DEFAULT_CONFIG)
-
-	// Cargar config y decidir si mostrar popup (una vez por sesión, con 1s de delay)
-	useEffect(() => {
-		if (typeof window === "undefined") return
-		if (sessionStorage.getItem(STORAGE_KEY)) return
-
-		let cancelled = false
-		let timer: ReturnType<typeof setTimeout> | null = null
-
-		async function load() {
-			try {
-				const res = await fetch("/api/catalog-popup")
-				if (res.ok) {
-					const data = await res.json()
-					setPopupConfig({
-						mensajeTitulo: data.mensajeTitulo || DEFAULT_CONFIG.mensajeTitulo,
-						mensajeTexto: data.mensajeTexto || DEFAULT_CONFIG.mensajeTexto,
-						mensajeWhatsApp: data.mensajeWhatsApp || DEFAULT_CONFIG.mensajeWhatsApp,
-					})
-				}
-			} catch {
-				// Usar defaults
-			}
-			if (!cancelled) {
-				timer = setTimeout(() => {
-					if (!cancelled) setShowHelpOffer(true)
-				}, 1000)
-			}
-		}
-		load()
-
-		return () => {
-			cancelled = true
-			if (timer) clearTimeout(timer)
-		}
-	}, [])
-
-	// Trigger por intención de salida: scroll hacia arriba (una vez por sesión)
-	useEffect(() => {
-		if (typeof window === "undefined") return
-		let lastY = window.scrollY
-		const onScroll = () => {
-			try {
-				if (sessionStorage.getItem(STORAGE_KEY)) return
-			} catch {}
-			const y = window.scrollY
-			// Scroll hacia arriba deliberado = posible intención de salida
-			if (y < lastY - 40) {
-				setShowHelpOffer(true)
-			}
-			lastY = y
-		}
-		window.addEventListener("scroll", onScroll, { passive: true })
-		return () => window.removeEventListener("scroll", onScroll)
-	}, [])
-
-	const handleCloseHelpOffer = () => {
-		setShowHelpOffer(false)
-		try {
-			sessionStorage.setItem(STORAGE_KEY, "1")
-		} catch {}
-	}
 
 	const perfumesData: PerfumeFromDB[] = Array.isArray(initialData) ? initialData : []
 
@@ -184,6 +112,7 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 
 	return (
 		<div className="container mx-auto px-2 sm:px-4 py-2 sm:py-8 pb-20 lg:pb-8 max-w-6xl pt-[calc(5rem+36px)] sm:pt-[calc(6rem+36px)]">
+			<HelpBanner />
 			<SopaBanner />
 
 			{/* Filtros de Género - Solo visible en desktop */}
@@ -253,15 +182,6 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 
 			{/* Navegación móvil */}
 			<MobileNav onFilterChange={setSelectedFilter} currentFilter={selectedFilter} />
-
-			{/* Popup ayuda personalizada */}
-			<HelpOfferModal
-				isOpen={showHelpOffer}
-				onClose={handleCloseHelpOffer}
-				mensajeTitulo={popupConfig.mensajeTitulo}
-				mensajeTexto={popupConfig.mensajeTexto}
-				mensajeWhatsApp={popupConfig.mensajeWhatsApp}
-			/>
 		</div>
 	)
 }

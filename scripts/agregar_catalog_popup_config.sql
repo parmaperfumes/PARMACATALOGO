@@ -19,4 +19,8 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+-- Interruptor para mostrar/ocultar el popup en /perfumes (arranca activado).
+ALTER TABLE "CatalogPopupConfig"
+  ADD COLUMN IF NOT EXISTS "activo" BOOLEAN NOT NULL DEFAULT true;
+
 SELECT * FROM "CatalogPopupConfig";

@@ -19,6 +19,7 @@ model HeaderConfig {
 
 model CatalogPopupConfig {
   id              String   @id @default("main")
+  activo          Boolean  @default(true)
   mensajeTitulo   String?
   mensajeTexto    String?
   mensajeWhatsApp String?

@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 type CatalogPopupConfig = {
+	activo: boolean
 	mensajeTitulo: string
 	mensajeTexto: string
 	mensajeWhatsApp: string
 }
 
 const DEFAULT_CONFIG: CatalogPopupConfig = {
+	activo: true,
 	mensajeTitulo: "¿Necesitas ayuda personalizada?",
 	mensajeTexto: "Te ayudamos a encontrar el perfume ideal para ti. ¿Hablamos por WhatsApp?",
 	mensajeWhatsApp: "Hola 👋, necesito ayuda personalizada para elegir mi perfume.",
@@ -28,6 +30,7 @@ export default function AjustesCatalogoPage() {
 				if (res.ok) {
 					const data = await res.json()
 					setConfig({
+						activo: data.activo !== false,
 						mensajeTitulo: data.mensajeTitulo ?? DEFAULT_CONFIG.mensajeTitulo,
 						mensajeTexto: data.mensajeTexto ?? DEFAULT_CONFIG.mensajeTexto,
 						mensajeWhatsApp: data.mensajeWhatsApp ?? DEFAULT_CONFIG.mensajeWhatsApp,
@@ -77,28 +80,27 @@ export default function AjustesCatalogoPage() {
 		<div className="container mx-auto px-4 py-8 max-w-2xl">
 			<h1 className="text-2xl font-bold mb-6">Ajustes del Catálogo</h1>
 			<p className="text-gray-600 text-sm mb-6">
-				Configura el mensaje del popup que aparece al entrar a /perfumes y el mensaje predeterminado para WhatsApp.
+				Configura el banner de ayuda personalizada que aparece al inicio de /perfumes y el mensaje que se envía por WhatsApp.
 			</p>
 
 			<div className="space-y-6 border rounded-lg p-6">
-				<div>
-					<label className="block text-sm font-medium mb-2">Título del popup</label>
-					<Input
-						value={config.mensajeTitulo}
-						onChange={(e) => setConfig((prev) => ({ ...prev, mensajeTitulo: e.target.value }))}
-						placeholder="¿Necesitas ayuda personalizada?"
-					/>
-				</div>
-
-				<div>
-					<label className="block text-sm font-medium mb-2">Texto del popup (descripción)</label>
-					<textarea
-						value={config.mensajeTexto}
-						onChange={(e) => setConfig((prev) => ({ ...prev, mensajeTexto: e.target.value }))}
-						placeholder="Te ayudamos a encontrar el perfume ideal para ti. ¿Hablamos por WhatsApp?"
-						className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						rows={3}
-					/>
+				<div className="flex items-center justify-between gap-4">
+					<div>
+						<div className="text-sm font-medium">Banner de ayuda personalizada</div>
+						<div className="text-xs text-gray-500">
+							{config.activo ? "Activado: aparece al inicio de /perfumes." : "Desactivado: no aparece en el sitio."}
+						</div>
+					</div>
+					<button
+						type="button"
+						role="switch"
+						aria-checked={config.activo}
+						onClick={() => setConfig((prev) => ({ ...prev, activo: !prev.activo }))}
+						className={`relative w-14 h-8 shrink-0 rounded-full transition-colors ${config.activo ? "bg-green-600" : "bg-[#ccced6]"}`}
+						aria-label="Activar o desactivar el banner de ayuda personalizada"
+					>
+						<span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${config.activo ? "translate-x-6" : ""}`} />
+					</button>
 				</div>
 
 				<div>
@@ -111,7 +113,7 @@ export default function AjustesCatalogoPage() {
 						rows={3}
 					/>
 					<p className="text-xs text-gray-500 mt-1">
-						Este texto se enviará automáticamente cuando el usuario haga clic en &quot;Sí, ayúdame&quot; en el popup.
+						Este texto se escribe automáticamente en WhatsApp cuando el cliente toca &quot;Escríbenos&quot; en el banner.
 					</p>
 				</div>
 

@@ -658,45 +658,32 @@ header {
   }
 }
 
-/* Modal de ayuda personalizada */
-.help-backdrop {
-  animation: helpFade 0.5s ease both;
+/* Banner de ayuda personalizada: las burbujas entran como mensajes, el botón late. */
+.help-burbuja {
+  animation: helpBurbuja 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
 }
 
-.help-modal-card {
-  animation: helpSlideUp 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+.help-burbuja-2 {
+  animation-delay: 1.1s;
 }
 
 .help-pulse {
   animation: helpPulse 2s ease-out infinite;
 }
 
-@keyframes helpFade {
+@keyframes helpBurbuja {
   from {
     opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes helpSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translateY(10px) scale(0.92);
   }
 }
 
 @keyframes helpPulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.45);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55);
   }
   70% {
-    box-shadow: 0 0 0 16px rgba(37, 211, 102, 0);
+    box-shadow: 0 0 0 12px rgba(37, 211, 102, 0);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
@@ -704,13 +691,11 @@ header {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .help-modal-card,
-  .help-pulse,
-  .help-backdrop {
+  .help-burbuja,
+  .help-pulse {
     animation: none;
   }
 }
-
 
 /* Carrito de WhatsApp: la hoja sube, el velo aparece. */
 .pedido-velo {
