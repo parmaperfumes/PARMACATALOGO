@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Upload, X } from "lucide-react"
+import { skuEnUso } from "@/lib/skuEnUso"
 
 const perfumeSchema = z.object({
 	name: z.string().min(2, "El nombre es requerido"),
@@ -18,9 +19,7 @@ const perfumeSchema = z.object({
 	stock: z.coerce.number().int().nonnegative(),
 	highlight: z.boolean().optional(),
 	active: z.boolean(),
-	volumen: z.string().optional(),
-	notas: z.string().optional(), // comma separated
-	sku: z.string().optional(),
+	sku: z.string().trim().min(1, "El SKU es obligatorio."),
 	size30: z.boolean(),
 	size50: z.boolean(),
 	precio30: z.string().optional(),
@@ -188,9 +187,24 @@ export default function AdminNewPerfumePage() {
 		}
 	}, [formValues.name, formValues.subtitle, formValues.gender, formValues.size30, formValues.size50, formValues.mainImage, uploadedImageUrl, formValues.precio30, formValues.precio50, formValues.tipoLanzamiento])
 
+	// Avisa en pantalla si el SKU ya lo tiene otro perfume. Devuelve true si está libre.
+	async function validarSku(sku: string): Promise<boolean> {
+		const error = await skuEnUso(sku)
+		if (error) {
+			form.setError("sku", { type: "repetido", message: error })
+			return false
+		}
+		if (form.formState.errors.sku?.type === "repetido") form.clearErrors("sku")
+		return true
+	}
+
 	async function onSubmit(data: PerfumeForm) {
 		try {
 			setUploading(true)
+			if (!(await validarSku(data.sku))) {
+				form.setFocus("sku")
+				return
+			}
 
 			// Generar slug automáticamente desde el nombre
 			const slug = data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
@@ -198,7 +212,7 @@ export default function AdminNewPerfumePage() {
 			const payload = {
 				name: data.name,
 				slug: slug,
-				sku: data.sku || null,
+				sku: data.sku,
 				precio: 0, // Valor por defecto
 				imagenPrincipal: data.mainImage,
 				imagenes: [data.mainImage],
@@ -207,8 +221,6 @@ export default function AdminNewPerfumePage() {
 				activo: !!data.active,
 				genero: data.gender,
 				subtitulo: data.subtitle || null, // Guardar el subtítulo
-				volumen: data.volumen,
-				notas: data.notas ? data.notas.split(",").map(s => s.trim()) : [],
 				categoriaId: data.categoria || undefined,
 				marcaId: data.marca || undefined,
 				sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
@@ -236,7 +248,12 @@ export default function AdminNewPerfumePage() {
 				router.refresh() // Forzar recarga de datos
 			} else {
 				const msg = await res.text()
-				alert(`❌ Error al guardar: ${msg}`)
+				if (msg.includes("SKU")) {
+					form.setError("sku", { type: "repetido", message: msg })
+					form.setFocus("sku")
+				} else {
+					alert(`❌ Error al guardar: ${msg}`)
+				}
 			}
 		} finally {
 			setUploading(false)
@@ -266,8 +283,16 @@ export default function AdminNewPerfumePage() {
 										)}
 									</div>
 									<div>
-										<label className="block text-sm font-medium mb-1">SKU (Código único)</label>
-										<Input {...form.register("sku")} placeholder="Ej: PF-001" />
+										<label className="block text-sm font-medium mb-1">SKU (Código único) *</label>
+										<Input
+											{...form.register("sku", { onBlur: (e) => validarSku(e.target.value) })}
+											placeholder="Ej: PAR-127"
+											aria-invalid={!!form.formState.errors.sku}
+											className={form.formState.errors.sku ? "border-red-500 focus-visible:ring-red-500" : undefined}
+										/>
+										{form.formState.errors.sku && (
+											<p className="text-xs text-red-500 mt-1">{form.formState.errors.sku.message}</p>
+										)}
 									</div>
 									<div>
 										<label className="block text-sm font-medium mb-1">Subtítulo/Tipo</label>
@@ -309,18 +334,9 @@ export default function AdminNewPerfumePage() {
 
 							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<label className="block text-sm font-medium mb-1">Volumen</label>
-									<Input {...form.register("volumen")} placeholder="Ej: 50ml, 100ml" />
-								</div>
-								<div>
 									<label className="block text-sm font-medium mb-1">Stock</label>
 									<Input type="number" {...form.register("stock")} />
 								</div>
-							</div>
-
-							<div>
-								<label className="block text-sm font-medium mb-1">Notas Olfativas</label>
-								<Input {...form.register("notas")} placeholder="Separadas por coma: cítrico, amaderado, floral" />
 							</div>
 
 							<div className="grid grid-cols-2 gap-4">

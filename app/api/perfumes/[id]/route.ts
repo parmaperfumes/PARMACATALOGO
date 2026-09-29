@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
+import { mensajePerfumeDuplicado } from "@/lib/perfumeDuplicado"
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	const dbUrl = process.env.DATABASE_URL
@@ -83,9 +84,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		console.error("PUT: DATABASE_URL no está definida en process.env")
 		return new NextResponse("DB no configurada. DATABASE_URL no encontrada en variables de entorno.", { status: 501 })
 	}
+	const { id } = await params
+	let data: any = null
 	try {
-		const { id } = await params
-		const data = await req.json()
+		data = await req.json()
+
+		// El SKU conecta el perfume con su inventario en Labs: sin él no hay stock.
+		data.sku = typeof data.sku === "string" ? data.sku.trim() : ""
+		if (!data.sku) {
+			return new NextResponse("El SKU es obligatorio.", { status: 400 })
+		}
 		
 		// Construir el objeto de datos base
 		const updateData: any = {
@@ -103,8 +111,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 			marcaId: data.marcaId ?? undefined,
 			genero: data.genero ?? null,
 			subtitulo: data.subtitulo ?? null,
-			volumen: data.volumen ?? null,
-			notas: data.notas ?? [],
+			// Solo si vienen: los formularios ya no los editan y no deben borrarlos.
+			volumen: data.volumen !== undefined ? data.volumen || null : undefined,
+			notas: data.notas !== undefined ? data.notas ?? [] : undefined,
 			sizes: data.sizes ?? [],
 		}
 		
@@ -133,9 +142,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		if (data.ordenFijado !== undefined) {
 			updateData.ordenFijado = Number(data.ordenFijado) || 0
 		}
-		if (data.sku !== undefined) {
-			updateData.sku = data.sku || null
-		}
+		updateData.sku = data.sku
 		
 		// Intentar actualizar usando Prisma
 		let perfume
@@ -205,6 +212,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		return NextResponse.json({ id: perfume.id })
 	} catch (e: any) {
 		console.error("Error al actualizar perfume:", e)
+		const duplicado = await mensajePerfumeDuplicado(e, { sku: data?.sku, slug: data?.slug }, id)
+		if (duplicado) return new NextResponse(duplicado, { status: 409 })
 		let errorMessage = "Error al actualizar el perfume"
 		if (e.message) {
 			if (e.message.includes("Can't reach database") || e.message.includes("connection")) {

@@ -9,17 +9,17 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ProductCard, type Product } from "@/components/ProductCard"
 import { Upload, X } from "lucide-react"
+import { skuEnUso } from "@/lib/skuEnUso"
 
 const schema = z.object({
 	name: z.string().min(2),
-	sku: z.string().optional(),
+	sku: z.string().trim().min(1, "El SKU es obligatorio."),
 	subtitle: z.string().optional(),
 	gender: z.enum(["HOMBRE", "MUJER", "UNISEX"]),
 	mainImage: z.string().url(),
 	stock: z.coerce.number().int().nonnegative(),
 	highlight: z.boolean().optional(),
 	active: z.boolean(),
-	volumen: z.string().optional(),
 	size30: z.boolean(),
 	size50: z.boolean(),
 	precio30: z.string().optional(),
@@ -106,7 +106,6 @@ export default function EditPerfumePage() {
 				stock: p.stock || 0,
 				highlight: !!p.destacado,
 				active: !!p.activo,
-				volumen: p.volumen || "",
 				size30: sizes.includes(30),
 				size50: sizes.includes(50),
 				precio30: p.precio30 || "850 RD",
@@ -242,12 +241,27 @@ export default function EditPerfumePage() {
 	const formValues = form.watch()
 	const defaultUse = formValues.usoPorDefecto || "DIA"
 
+	// Avisa en pantalla si el SKU ya lo tiene otro perfume. Devuelve true si está libre.
+	async function validarSku(sku: string): Promise<boolean> {
+		const error = await skuEnUso(sku, params.id)
+		if (error) {
+			form.setError("sku", { type: "repetido", message: error })
+			return false
+		}
+		if (form.formState.errors.sku?.type === "repetido") form.clearErrors("sku")
+		return true
+	}
+
 	async function onSubmit(data: FormT) {
+		if (!(await validarSku(data.sku))) {
+			form.setFocus("sku")
+			return
+		}
 		// Obtener el slug del perfume actual para no perderlo
 		const currentPerfume = await fetch(`/api/perfumes/${params.id}`).then(r => r.json()).catch(() => null)
 		const payload: any = {
 			name: data.name,
-			sku: data.sku || null,
+			sku: data.sku,
 			slug: currentPerfume?.slug || data.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
 			precio: currentPerfume?.precio || 0, // Mantener el precio existente o usar 0 por defecto
 			imagenPrincipal: data.mainImage,
@@ -257,7 +271,6 @@ export default function EditPerfumePage() {
 			activo: !!data.active,
 			genero: data.gender,
 			subtitulo: data.subtitle || null,
-			volumen: data.volumen,
 			sizes: [data.size30 && 30, data.size50 && 50].filter(Boolean),
 			precio30: data.precio30 || null,
 			precio50: data.precio50 || null,
@@ -272,7 +285,15 @@ export default function EditPerfumePage() {
 			body: JSON.stringify(payload),
 		})
 		if (res.ok) router.push("/admin")
-		else alert(await res.text())
+		else {
+			const msg = await res.text()
+			if (msg.includes("SKU")) {
+				form.setError("sku", { type: "repetido", message: msg })
+				form.setFocus("sku")
+			} else {
+				alert(msg)
+			}
+		}
 	}
 
 	return (
@@ -296,8 +317,16 @@ export default function EditPerfumePage() {
 										)}
 									</div>
 									<div>
-										<label className="block text-sm font-medium mb-1">SKU (Código único)</label>
-										<Input {...form.register("sku")} placeholder="Ej: PF-001" />
+										<label className="block text-sm font-medium mb-1">SKU (Código único) *</label>
+										<Input
+											{...form.register("sku", { onBlur: (e) => validarSku(e.target.value) })}
+											placeholder="Ej: PAR-127"
+											aria-invalid={!!form.formState.errors.sku}
+											className={form.formState.errors.sku ? "border-red-500 focus-visible:ring-red-500" : undefined}
+										/>
+										{form.formState.errors.sku && (
+											<p className="text-xs text-red-500 mt-1">{form.formState.errors.sku.message}</p>
+										)}
 									</div>
 									<div>
 										<label className="block text-sm font-medium mb-1">Subtítulo/Tipo</label>
@@ -338,10 +367,6 @@ export default function EditPerfumePage() {
 									</div>
 
 									<div className="grid grid-cols-2 gap-4">
-										<div>
-											<label className="block text-sm font-medium mb-1">Volumen</label>
-											<Input {...form.register("volumen")} placeholder="Ej: 50ml, 100ml" />
-										</div>
 										<div>
 											<label className="block text-sm font-medium mb-1">Stock</label>
 											<Input type="number" {...form.register("stock")} />

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { exigirSesion } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
+import { mensajePerfumeDuplicado } from "@/lib/perfumeDuplicado"
 
 // Datos de respaldo si la base de datos falla
 const FALLBACK_PERFUMES = [
@@ -348,6 +349,12 @@ export async function POST(req: NextRequest) {
 
 	const data = await req.json()
 
+	// El SKU conecta el perfume con su inventario en Labs: sin él no hay stock.
+	data.sku = typeof data.sku === "string" ? data.sku.trim() : ""
+	if (!data.sku) {
+		return new NextResponse("El SKU es obligatorio.", { status: 400 })
+	}
+
 	if (!process.env.DATABASE_URL) {
 		return new NextResponse(
 			"DATABASE_URL no configurada. Configura la base de datos para guardar perfumes.",
@@ -418,10 +425,7 @@ export async function POST(req: NextRequest) {
 			perfumeData.tipoLanzamiento = (data.tipoLanzamiento === "NINGUNO" || !data.tipoLanzamiento) ? null : data.tipoLanzamiento
 		}
 
-		// Agregar SKU
-		if (data.sku !== undefined) {
-			perfumeData.sku = data.sku || null
-		}
+		perfumeData.sku = data.sku
 
 		// Intentar crear con Prisma, pero si falla por campos que no existen, usar SQL raw
 		let perfume
@@ -460,6 +464,9 @@ export async function POST(req: NextRequest) {
 		console.error("Error al guardar perfume:", e)
 		console.error("Mensaje completo:", e.message)
 		console.error("Stack:", e.stack)
+
+		const duplicado = await mensajePerfumeDuplicado(e, { sku: data.sku, slug: data.slug })
+		if (duplicado) return new NextResponse(duplicado, { status: 409 })
 		
 		// Mensajes de error más descriptivos
 		let errorMessage = "Error al guardar el perfume"

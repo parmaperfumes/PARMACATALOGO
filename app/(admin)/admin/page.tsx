@@ -5,7 +5,9 @@ import useSWR from "swr"
 import Link from "next/link"
 import { Search, Eye, EyeOff, Pencil } from "lucide-react"
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
+// El panel siempre pide datos frescos: la API deja cachear la lista unos segundos
+// (pensado para el catálogo público) y tras eliminar volvía la copia vieja.
+const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json())
 
 function SkuEditor({ perfumeId, currentSku, onSaved }: { perfumeId: string; currentSku: string | null; onSaved: (newSku: string | null) => void }) {
 	const [editing, setEditing] = useState(false)
@@ -91,7 +93,7 @@ export default function AdminDashboardPage() {
 	async function handleDelete(id: string) {
 		if (!confirm("¿Eliminar este perfume?")) return
 		const res = await fetch(`/api/perfumes/${id}`, { method: "DELETE" })
-		if (res.ok) mutate()
+		if (res.ok) mutate((actual: any[] | undefined) => actual?.filter((p) => p.id !== id))
 		else alert(await res.text())
 	}
 
