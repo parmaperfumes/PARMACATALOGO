@@ -1,14 +1,33 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { X } from "lucide-react"
 import { WhatsAppGlyph } from "./WhatsAppGlyph"
 import { WHATSAPP_SITIO } from "@/lib/sitio"
 
 // Popup de ofertas al entrar a /perfumes: la imagen de la oferta y un botón
 // «Pedir oferta» que abre WhatsApp. Se configura en Ajustes del Catálogo.
-// Sale una vez por sesión y por imagen: una oferta nueva vuelve a mostrarse.
-const CLAVE_VISTA = "oferta-popup-vista"
+// Sale hasta 2 veces por visita (pestaña) y por imagen: al entrar y, si la cierran,
+// otra vez un minuto después. Si piden la oferta, no vuelve en esa visita.
+// Una oferta nueva (otra imagen) cuenta desde cero.
+const CLAVE_VISTAS = "oferta-popup-vistas"
+const MAX_VECES = 2
+const ESPERA_SEGUNDA_MS = 60_000
+
+function leerVistas(imagen: string): number {
+	try {
+		const d = JSON.parse(sessionStorage.getItem(CLAVE_VISTAS) || "null")
+		return d?.imagen === imagen ? Number(d.veces) || 0 : 0
+	} catch {
+		return 0
+	}
+}
+
+function guardarVistas(imagen: string, veces: number) {
+	try {
+		sessionStorage.setItem(CLAVE_VISTAS, JSON.stringify({ imagen, veces }))
+	} catch {}
+}
 
 // Las imágenes de Cloudinary se piden al tamaño del popup: la original puede
 // pesar varios MB y retrasar la aparición en el teléfono.
@@ -21,18 +40,28 @@ function imagenLigera(url: string) {
 export function OfertaModal() {
 	const [oferta, setOferta] = useState<{ imagen: string; mensajeWhatsApp: string } | null>(null)
 	const [abierto, setAbierto] = useState(false)
+	const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+	// Abre y lo cuenta, así una recarga no regala una vista extra.
+	function programar(imagen: string, esperaMs: number) {
+		if (timer.current) clearTimeout(timer.current)
+		timer.current = setTimeout(() => {
+			const veces = leerVistas(imagen)
+			if (veces >= MAX_VECES) return
+			guardarVistas(imagen, veces + 1)
+			setAbierto(true)
+		}, esperaMs)
+	}
 
 	useEffect(() => {
 		let vivo = true
-		let timer: ReturnType<typeof setTimeout> | null = null
 
 		fetch("/api/oferta-popup")
 			.then((r) => r.json())
 			.then((d) => {
 				if (!vivo || !d.activo || !d.imagen) return
-				try {
-					if (sessionStorage.getItem(CLAVE_VISTA) === d.imagen) return
-				} catch {}
+				const veces = leerVistas(d.imagen)
+				if (veces >= MAX_VECES) return
 				// Se abre cuando la imagen ya cargó (y al menos 1 s después de entrar),
 				// para no mostrar un recuadro vacío.
 				const inicio = Date.now()
@@ -40,7 +69,8 @@ export function OfertaModal() {
 				img.onload = () => {
 					if (!vivo) return
 					setOferta({ imagen: d.imagen, mensajeWhatsApp: d.mensajeWhatsApp })
-					timer = setTimeout(() => vivo && setAbierto(true), Math.max(0, 1000 - (Date.now() - inicio)))
+					// Si ya la vio una vez en esta visita, la segunda espera el minuto.
+					programar(d.imagen, veces === 0 ? Math.max(0, 1000 - (Date.now() - inicio)) : ESPERA_SEGUNDA_MS)
 				}
 				img.src = imagenLigera(d.imagen)
 			})
@@ -48,7 +78,7 @@ export function OfertaModal() {
 
 		return () => {
 			vivo = false
-			if (timer) clearTimeout(timer)
+			if (timer.current) clearTimeout(timer.current)
 		}
 	}, [])
 
@@ -61,9 +91,12 @@ export function OfertaModal() {
 
 	function cerrar() {
 		setAbierto(false)
-		try {
-			if (oferta) sessionStorage.setItem(CLAVE_VISTA, oferta.imagen)
-		} catch {}
+		if (oferta) programar(oferta.imagen, ESPERA_SEGUNDA_MS)
+	}
+
+	function pedir() {
+		setAbierto(false)
+		if (oferta) guardarVistas(oferta.imagen, MAX_VECES)
 	}
 
 	if (!abierto || !oferta) return null
@@ -96,7 +129,7 @@ export function OfertaModal() {
 						href={href}
 						target="_blank"
 						rel="noopener noreferrer"
-						onClick={cerrar}
+						onClick={pedir}
 						className="help-pulse flex items-center justify-center gap-2 w-full h-10 rounded-xl bg-[#25d366] hover:bg-[#1fbd5a] text-white text-sm font-semibold transition-colors"
 					>
 						<WhatsAppGlyph size={17} color="#fff" />
