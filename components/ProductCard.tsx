@@ -119,7 +119,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 	const sello = selloDe(product)
 
 	return (
-		<div className={`rounded-xl overflow-hidden border border-noche/12 bg-white flex flex-col w-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
+		<div className={`rounded-xl overflow-hidden border border-noche/12 bg-white flex flex-col w-full h-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
 			{/* Header visual con imagen */}
 			<div className="relative bg-noche text-white overflow-hidden flex-shrink-0 flex items-center justify-center w-full p-0" style={{ willChange: 'contents', contain: 'layout style paint' }}>
 				{/* Sello: QUEDAN N, si no NUEVO, si no MÁS VENDIDO (lib/sello.ts) */}
@@ -152,9 +152,10 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 
 			{/* Info y controles */}
 			<div className="p-2 sm:p-3 sm:p-4 flex flex-col flex-1 min-h-0">
-				{/* Título - Altura fija */}
-				<div className="h-[26px] sm:h-[32px] flex items-center mb-1 sm:mb-1.5">
-					<h3 className="font-serif text-xl sm:text-2xl font-medium leading-tight text-noche line-clamp-1">
+				{/* Título - Hasta 2 líneas y solo el alto que ocupa: las tarjetas de una
+				    fila se alinean por abajo (el bloque de controles va con mt-auto). */}
+				<div className="mb-1.5 sm:mb-2">
+					<h3 title={product.name} className="font-serif text-lg sm:text-2xl font-medium leading-[1.15] sm:leading-tight text-noche line-clamp-2">
 						{nombreDePerfume(product.name)}
 					</h3>
 				</div>
@@ -168,8 +169,9 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 					</div>
 				) : null}
 
-				{/* Género y Uso: Día/Noche - Altura fija */}
-				<div className="h-[26px] sm:h-[32px] flex items-center gap-1.5 sm:gap-2 lg:gap-3 mb-1.5 sm:mb-2">
+				{/* Género y Uso: Día/Noche - Altura fija. mt-auto: de aquí para abajo todo
+				    queda pegado al pie de la tarjeta, alineado con las de al lado. */}
+				<div className="mt-auto h-[26px] sm:h-[32px] flex items-center gap-1.5 sm:gap-2 lg:gap-3 mb-1.5 sm:mb-2">
 					{product.gender ? (
 						<span className="h-6 sm:h-7 lg:h-8 pl-1.5 pr-2 sm:pl-2 sm:pr-3 gap-1 rounded-full text-xs font-semibold capitalize whitespace-nowrap bg-white text-noche border border-noche flex items-center justify-center flex-shrink-0">
 							{product.gender === "HOMBRE" ? <IconoHombre /> : product.gender === "MUJER" ? <IconoMujer /> : <IconoUnisex />}
@@ -332,7 +334,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 				</div>
 
 				{/* CTA - Altura fija y siempre al final */}
-				<div className="mt-auto">
+				<div>
 					{quantity > 0 ? (
 						// Selector de cantidad: el cliente ve claramente que puede agregar o quitar unidades
 						<div className="w-full h-9 sm:h-10 lg:h-11 rounded-full bg-senal/10 flex items-center justify-between px-1 sm:px-1.5">
