@@ -17,6 +17,14 @@ model HeaderConfig {
   updatedAt     DateTime? @default(now()) @db.Timestamp(6)
 }
 
+model OfertaPopupConfig {
+  id              String   @id @default("main")
+  activo          Boolean  @default(false)
+  imagen          String?
+  mensajeWhatsApp String?
+  updatedAt       DateTime @default(now()) @db.Timestamp(6)
+}
+
 model CatalogPopupConfig {
   id              String   @id @default("main")
   activo          Boolean  @default(true)

@@ -5,6 +5,7 @@ import { ProductCard, type Product } from "@/components/ProductCard"
 import { useSearch } from "@/context/SearchContext"
 import { MobileNav } from "@/components/MobileNav"
 import { HelpBanner } from "@/components/HelpBanner"
+import { OfertaModal } from "@/components/OfertaModal"
 import { SopaBanner } from "@/components/SopaBanner"
 
 export type PerfumeFromDB = {
@@ -182,6 +183,9 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 
 			{/* Navegación móvil */}
 			<MobileNav onFilterChange={setSelectedFilter} currentFilter={selectedFilter} />
+
+			{/* Popup de ofertas (se activa en Ajustes del Catálogo) */}
+			<OfertaModal />
 		</div>
 	)
 }

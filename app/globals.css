@@ -697,6 +697,35 @@ header {
   }
 }
 
+/* Popup de ofertas: el velo aparece, la tarjeta sube. */
+.oferta-velo {
+  animation: ofertaVelo 0.4s ease both;
+}
+
+.oferta-tarjeta {
+  animation: ofertaSube 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes ofertaVelo {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ofertaSube {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oferta-velo,
+  .oferta-tarjeta {
+    animation: none;
+  }
+}
+
 /* Carrito de WhatsApp: la hoja sube, el velo aparece. */
 .pedido-velo {
   animation: pedidoVelo 0.24s ease both;

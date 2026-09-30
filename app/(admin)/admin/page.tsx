@@ -137,6 +137,54 @@ export default function AdminDashboardPage() {
 		}
 	}
 
+	function guardarSkuLocal(id: string, newSku: string | null) {
+		mutate((current: any) => current?.map((item: any) => (item.id === id ? { ...item, sku: newSku } : item)), { revalidate: false })
+	}
+
+	// Ocultar/mostrar, Editar y Eliminar: igual en la tabla y en las tarjetas del teléfono.
+	function acciones(p: any) {
+		return (
+			<>
+				<button
+					onClick={() => handleToggleActive(p.id, p.activo)}
+					disabled={togglingIds.has(p.id)}
+					className={`p-2 rounded-lg border border-[#e3e4e9] bg-white transition-colors ${
+						togglingIds.has(p.id)
+							? "opacity-50 cursor-not-allowed"
+							: p.activo
+							? "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+							: "text-blue-600 hover:bg-blue-50 hover:text-blue-800"
+					}`}
+					title={p.activo ? "Ocultar perfume" : "Mostrar perfume"}
+					aria-label={p.activo ? "Ocultar perfume" : "Mostrar perfume"}
+				>
+					{p.activo ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+				</button>
+				<Link className="text-blue-600 text-sm font-bold hover:text-blue-800 px-2 py-1" href={`/perfumes/${p.id}/edit`}>
+					Editar
+				</Link>
+				<button className="text-red-600 text-sm font-bold hover:text-red-800 px-2 py-1" onClick={() => handleDelete(p.id)}>
+					Eliminar
+				</button>
+			</>
+		)
+	}
+
+	function estado(p: any) {
+		return (
+			<span className={`inline-block px-3.5 py-1.5 rounded-full text-xs font-semibold ${p.activo ? "bg-[#e4f7ec] text-[#1e9e57]" : "bg-gray-100 text-gray-500"}`}>
+				{p.activo ? "Visible" : "Oculto"}
+			</span>
+		)
+	}
+
+	const mensajeVacio =
+		searchQuery.trim() !== ""
+			? `No se encontraron perfumes que coincidan con "${searchQuery}"`
+			: showHidden
+				? "No hay perfumes ocultos"
+				: "No hay perfumes activos"
+
 	// Filtrar perfumes según búsqueda y estado
 	const filteredPerfumes = displayData.filter((p: any) => {
 		// Filtro por búsqueda
@@ -158,14 +206,14 @@ export default function AdminDashboardPage() {
 	return (
 		<div className="container mx-auto px-4 py-8 space-y-4">
 			{/* Header: título + acciones */}
-			<div className="flex items-center justify-between">
+			<div className="flex flex-wrap items-center justify-between gap-3">
 				<h1 className="text-2xl font-bold text-black">
 					Perfumes {!isLoading && <span className="text-lg text-gray-400 font-normal">({filteredPerfumes.length})</span>}
 				</h1>
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-3 w-full sm:w-auto">
 					<button
 						onClick={() => setShowHidden(!showHidden)}
-						className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+						className={`flex-1 sm:flex-none justify-center whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
 							showHidden
 								? "bg-gray-800 text-white border-gray-800"
 								: "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
@@ -185,7 +233,7 @@ export default function AdminDashboardPage() {
 					</button>
 					<Link
 						href="/perfumes/new"
-						className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-black text-white text-sm font-semibold shadow-sm hover:bg-gray-800 transition-colors"
+						className="flex-1 sm:flex-none justify-center whitespace-nowrap flex items-center gap-1.5 px-4 py-2 rounded-lg bg-black text-white text-sm font-semibold shadow-sm hover:bg-gray-800 transition-colors"
 					>
 						+ Agregar perfume
 					</Link>
@@ -204,8 +252,32 @@ export default function AdminDashboardPage() {
 				/>
 			</div>
 
-			{/* Tabla de perfumes */}
-			<div className="overflow-x-auto bg-white border border-[#ececef] rounded-2xl">
+			{/* Teléfono: una tarjeta por perfume, sin deslizar hacia los lados */}
+			<div className="md:hidden space-y-3">
+				{isLoading ? (
+					<p className="px-1 py-6 text-sm">Cargando...</p>
+				) : error ? (
+					<p className="px-1 py-6 text-sm text-red-500">Error al cargar</p>
+				) : filteredPerfumes.length === 0 ? (
+					<p className="px-1 py-6 text-sm text-muted-foreground">{mensajeVacio}</p>
+				) : (
+					filteredPerfumes.map((p: any) => (
+						<div key={p.id} className={`bg-white border border-[#ececef] rounded-2xl p-4 ${!p.activo ? "opacity-60" : ""}`}>
+							<div className="flex items-start justify-between gap-3">
+								<span className={`font-semibold leading-snug ${!p.activo ? "text-gray-500" : "text-black"}`}>{p.nombre}</span>
+								{estado(p)}
+							</div>
+							<div className="mt-3 flex items-center justify-between gap-2">
+								<SkuEditor perfumeId={p.id} currentSku={p.sku} onSaved={(newSku: string | null) => guardarSkuLocal(p.id, newSku)} />
+								<div className="flex items-center gap-1">{acciones(p)}</div>
+							</div>
+						</div>
+					))
+				)}
+			</div>
+
+			{/* Tabla de perfumes (tablet y computadora) */}
+			<div className="hidden md:block overflow-x-auto bg-white border border-[#ececef] rounded-2xl">
 				<table className="min-w-full text-sm">
 					<thead className="bg-[#fafafa]">
 						<tr>
@@ -224,11 +296,7 @@ export default function AdminDashboardPage() {
 						) : filteredPerfumes.length === 0 ? (
 							<tr>
 								<td className="px-4 py-6 text-muted-foreground" colSpan={5}>
-									{searchQuery.trim() !== "" 
-										? `No se encontraron perfumes que coincidan con "${searchQuery}"`
-										: showHidden
-											? "No hay perfumes ocultos"
-											: "No hay perfumes activos"}
+									{mensajeVacio}
 								</td>
 							</tr>
 						) : (
@@ -238,65 +306,16 @@ export default function AdminDashboardPage() {
 										<span className={!p.activo ? "text-gray-500" : "text-black"}>{p.nombre}</span>
 									</td>
 									<td className="px-4 py-3">
-										<SkuEditor
-											perfumeId={p.id}
-											currentSku={p.sku}
-											onSaved={(newSku: string | null) => {
-												mutate(
-													(current: any) => current?.map((item: any) =>
-														item.id === p.id ? { ...item, sku: newSku } : item
-													),
-													{ revalidate: false }
-												)
-											}}
-										/>
+										<SkuEditor perfumeId={p.id} currentSku={p.sku} onSaved={(newSku: string | null) => guardarSkuLocal(p.id, newSku)} />
 									</td>
 									<td className="px-4 py-3">
 										<span className={!p.activo ? "text-gray-500" : "text-gray-900"}>{p.stock}</span>
 									</td>
 									<td className="px-4 py-3">
-										<span className={`inline-block px-3.5 py-1.5 rounded-full text-xs font-semibold ${
-											p.activo
-												? "bg-[#e4f7ec] text-[#1e9e57]"
-												: "bg-gray-100 text-gray-500"
-										}`}>
-											{p.activo ? "Visible" : "Oculto"}
-										</span>
+										{estado(p)}
 									</td>
 									<td className="px-4 py-3">
-										<div className="flex gap-2 justify-end items-center">
-											<button
-												onClick={() => handleToggleActive(p.id, p.activo)}
-												disabled={togglingIds.has(p.id)}
-												className={`p-2 rounded-lg border border-[#e3e4e9] bg-white transition-colors ${
-													togglingIds.has(p.id)
-														? "opacity-50 cursor-not-allowed"
-														: p.activo
-														? "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
-														: "text-blue-600 hover:bg-blue-50 hover:text-blue-800"
-												}`}
-												title={p.activo ? "Ocultar perfume" : "Mostrar perfume"}
-												aria-label={p.activo ? "Ocultar perfume" : "Mostrar perfume"}
-											>
-												{p.activo ? (
-													<EyeOff className="h-4 w-4" />
-												) : (
-													<Eye className="h-4 w-4" />
-												)}
-											</button>
-											<Link
-												className="text-blue-600 text-sm font-bold hover:text-blue-800 px-2 py-1"
-												href={`/perfumes/${p.id}/edit`}
-											>
-												Editar
-											</Link>
-											<button
-												className="text-red-600 text-sm font-bold hover:text-red-800 px-2 py-1"
-												onClick={() => handleDelete(p.id)}
-											>
-												Eliminar
-											</button>
-										</div>
+										<div className="flex gap-2 justify-end items-center">{acciones(p)}</div>
 									</td>
 								</tr>
 							))

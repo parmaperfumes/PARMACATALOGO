@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { OfertaPopupAjustes } from "./OfertaPopupAjustes"
 
 type CatalogPopupConfig = {
 	activo: boolean
@@ -121,6 +122,8 @@ export default function AjustesCatalogoPage() {
 					{saving ? "Guardando..." : "Guardar"}
 				</Button>
 			</div>
+
+			<OfertaPopupAjustes />
 		</div>
 	)
 }

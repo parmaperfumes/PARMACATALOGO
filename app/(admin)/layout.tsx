@@ -39,11 +39,12 @@ export default async function AdminLayout({
 	return (
 		<div className="min-h-screen bg-white">
 			<nav className="bg-white border-b border-[#ececef]">
-				<div className="px-8 py-4 flex items-center justify-between">
+				{/* En el teléfono: título y Salir arriba, los enlaces en una fila debajo. */}
+				<div className="px-4 md:px-8 py-3 md:py-4 flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2.5">
 					<Link href="/admin" className="text-base font-bold text-black cursor-pointer">
 						Panel Administrativo
 					</Link>
-					<div className="flex items-center gap-[22px]">
+					<div className="order-3 md:order-none w-full md:w-auto flex items-center justify-between md:justify-start gap-3 md:gap-[22px] overflow-x-auto whitespace-nowrap [scrollbar-width:none]">
 						<Link href="/estadisticas" className="text-[12.5px] font-semibold text-[#6c6e78] hover:text-black transition-colors">
 							Estadísticas
 						</Link>
