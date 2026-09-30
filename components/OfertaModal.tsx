@@ -10,6 +10,14 @@ import { WHATSAPP_SITIO } from "@/lib/sitio"
 // Sale una vez por sesión y por imagen: una oferta nueva vuelve a mostrarse.
 const CLAVE_VISTA = "oferta-popup-vista"
 
+// Las imágenes de Cloudinary se piden al tamaño del popup: la original puede
+// pesar varios MB y retrasar la aparición en el teléfono.
+function imagenLigera(url: string) {
+	return url.includes("res.cloudinary.com") && url.includes("/upload/")
+		? url.replace("/upload/", "/upload/f_auto,q_auto,w_720/")
+		: url
+}
+
 export function OfertaModal() {
 	const [oferta, setOferta] = useState<{ imagen: string; mensajeWhatsApp: string } | null>(null)
 	const [abierto, setAbierto] = useState(false)
@@ -34,7 +42,7 @@ export function OfertaModal() {
 					setOferta({ imagen: d.imagen, mensajeWhatsApp: d.mensajeWhatsApp })
 					timer = setTimeout(() => vivo && setAbierto(true), Math.max(0, 1000 - (Date.now() - inicio)))
 				}
-				img.src = d.imagen
+				img.src = imagenLigera(d.imagen)
 			})
 			.catch(() => {})
 
@@ -70,7 +78,7 @@ export function OfertaModal() {
 				role="dialog"
 				aria-modal="true"
 				aria-label="Oferta especial"
-				className="oferta-tarjeta relative w-full max-w-[280px] sm:max-w-[320px] rounded-2xl bg-white shadow-[0_24px_60px_-18px_rgba(0,0,0,0.45)] overflow-hidden"
+				className="oferta-tarjeta relative w-fit max-w-[280px] sm:max-w-[320px] rounded-2xl bg-white shadow-[0_24px_60px_-18px_rgba(0,0,0,0.45)] overflow-hidden"
 			>
 				<button
 					onClick={cerrar}
@@ -80,7 +88,8 @@ export function OfertaModal() {
 					<X className="w-4 h-4" />
 				</button>
 
-				<img src={oferta.imagen} alt="Oferta especial de Parma" className="block w-full h-auto max-h-[45vh] object-cover" />
+				{/* La imagen se ve completa, sin recortes: si es alta, la tarjeta se angosta. */}
+				<img src={imagenLigera(oferta.imagen)} alt="Oferta especial de Parma" className="block w-auto h-auto max-w-full max-h-[60vh] mx-auto" />
 
 				<div className="p-3">
 					<a
