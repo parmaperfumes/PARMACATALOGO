@@ -12,6 +12,7 @@ import { selloDe, type TonoSello } from "@/lib/sello"
 const COLOR_SELLO: Record<TonoSello, string> = {
 	quedan: "bg-sello-quedan text-white",
 	nuevo: "bg-sello-nuevo text-noche",
+	restock: "bg-sello-restock text-white",
 	vendido: "bg-sello-vendido text-noche",
 }
 
@@ -116,7 +117,7 @@ const ProductCardComponent = ({ product, onAdd, className, defaultUse, fixedUse 
 		item.use === currentUse
 	).length
 
-	const sello = selloDe(product)
+	const sello = selloDe({ ...product, esRestock: product.tipoLanzamiento === "RESTOCK" })
 
 	return (
 		<div className={`rounded-xl overflow-hidden border border-noche/12 bg-white flex flex-col w-full h-full ${className ?? ""}`} style={{ willChange: 'transform', transform: 'translateZ(0)' }}>

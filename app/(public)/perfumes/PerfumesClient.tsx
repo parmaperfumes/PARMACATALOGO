@@ -100,9 +100,12 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 			return (a.perfumeData.ordenFijado || 0) - (b.perfumeData.ordenFijado || 0)
 		}
 
-		const labelRank = (tipo: string | null | undefined) =>
-			tipo === "LANZAMIENTO" ? 0 : tipo === "RESTOCK" ? 1 : 2
-		const rankDiff = labelRank(a.perfumeData.tipoLanzamiento) - labelRank(b.perfumeData.tipoLanzamiento)
+		// Después de los fijados: los 3 nuevos (sello «Nuevo»), los marcados «NUEVO» en
+		// el menú Etiqueta (se guarda como LANZAMIENTO), los Re-stock y el resto. Dentro
+		// de cada grupo queda el orden de la consulta: el más reciente primero.
+		const rango = (p: PerfumeFromDB) =>
+			p.esNuevo ? 0 : p.tipoLanzamiento === "LANZAMIENTO" ? 1 : p.tipoLanzamiento === "RESTOCK" ? 2 : 3
+		const rankDiff = rango(a.perfumeData) - rango(b.perfumeData)
 		if (rankDiff !== 0) return rankDiff
 
 		return 0

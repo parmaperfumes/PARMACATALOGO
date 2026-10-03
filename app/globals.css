@@ -11,6 +11,7 @@
   --color-sello-quedan: #DC343B;
   --color-sello-nuevo: #00D4FF;
   --color-sello-vendido: #FBAE00;
+  --color-sello-restock: #2F6BFF;
 }
 
 @theme inline {
