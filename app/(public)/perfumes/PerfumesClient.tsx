@@ -91,24 +91,29 @@ export default function PerfumesClient({ initialData }: PerfumesClientProps) {
 			return true
 		})
 
-	// Ordenar: 1) fijados, 2) NUEVO, 3) RE-STOCK, 4) resto
+	// Ordenar: 1) los 3 nuevos (sello «Nuevo»), 2) Re-stock, 3) el resto. Ni fijar
+	// ni la etiqueta LANZAMIENTO adelantan a un perfume a otro grupo: sólo ordenan
+	// dentro del suyo (los fijados primero, por su orden). Después, el más reciente.
+	const rango = (p: PerfumeFromDB) => (p.esNuevo ? 0 : p.tipoLanzamiento === "RESTOCK" ? 1 : 2)
+	const fecha = (p: PerfumeFromDB) => {
+		const t = p.createdAt ? new Date(p.createdAt).getTime() : NaN
+		return Number.isFinite(t) ? t : 0
+	}
 	const sortedFilteredData = [...filteredData].sort((a, b) => {
-		const aFijado = a.perfumeData.fijado ? 1 : 0
-		const bFijado = b.perfumeData.fijado ? 1 : 0
-		if (aFijado !== bFijado) return bFijado - aFijado
-		if (aFijado && bFijado) {
-			return (a.perfumeData.ordenFijado || 0) - (b.perfumeData.ordenFijado || 0)
-		}
-
-		// Después de los fijados: los 3 nuevos (sello «Nuevo»), los marcados «NUEVO» en
-		// el menú Etiqueta (se guarda como LANZAMIENTO), los Re-stock y el resto. Dentro
-		// de cada grupo queda el orden de la consulta: el más reciente primero.
-		const rango = (p: PerfumeFromDB) =>
-			p.esNuevo ? 0 : p.tipoLanzamiento === "LANZAMIENTO" ? 1 : p.tipoLanzamiento === "RESTOCK" ? 2 : 3
-		const rankDiff = rango(a.perfumeData) - rango(b.perfumeData)
+		const pa = a.perfumeData
+		const pb = b.perfumeData
+		const rankDiff = rango(pa) - rango(pb)
 		if (rankDiff !== 0) return rankDiff
 
-		return 0
+		const aFijado = pa.fijado ? 1 : 0
+		const bFijado = pb.fijado ? 1 : 0
+		if (aFijado !== bFijado) return bFijado - aFijado
+		if (aFijado && bFijado) {
+			const ordenDiff = (pa.ordenFijado || 0) - (pb.ordenFijado || 0)
+			if (ordenDiff !== 0) return ordenDiff
+		}
+
+		return fecha(pb) - fecha(pa)
 	})
 
 	const filteredPerfumes = sortedFilteredData.map(({ perfume }) => perfume)
