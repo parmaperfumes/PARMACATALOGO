@@ -5,6 +5,12 @@ import { NextRequest, NextResponse } from "next/server";
  * Ej: /perfumes]  -> /perfumes
  */
 export function middleware(req: NextRequest) {
+  // El catálogo viejo en Render (parmacatalogo.onrender.com) manda todo al sitio nuevo.
+  const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").toLowerCase();
+  if (host.split(":")[0].endsWith(".onrender.com")) {
+    return NextResponse.redirect("https://parmaperfume.com/perfumes", 301);
+  }
+
   const url = req.nextUrl.clone();
   const pathname = url.pathname;
 
